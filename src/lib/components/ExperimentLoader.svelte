@@ -85,7 +85,7 @@
           src={experiment.fallbackImage} 
           alt="Fallback preview for {experiment.title}"
           class="fallback-image"
-          on:error={(e) => e.currentTarget.style.display = 'none'}
+          on:error={(e) => (e.currentTarget as HTMLElement).style.display = 'none'}
         />
 
         <div class="fallback-overlay">

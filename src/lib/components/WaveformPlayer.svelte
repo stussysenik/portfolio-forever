@@ -53,7 +53,7 @@
   function updateVisualization() {
     if (!analyser || !isPlaying) return;
 
-    analyser.getByteFrequencyData(dataArray);
+    analyser.getByteFrequencyData(dataArray as any);
 
     waveformBars = Array.from(dataArray).map(value => {
       const normalized = value / 255;

@@ -32,8 +32,8 @@ export interface PersonSchema {
 export const cvData: PersonSchema = {
         '@context': 'https://schema.org',
         '@type': 'Person',
-        name: 'YOUR NAME',
-        jobTitle: 'Creative Technologist',
+        name: 'Stüssy Senik',
+        jobTitle: 'Experience Design Engineer',
         url: 'https://yoursite.com',
         sameAs: [
                 'https://github.com/username',

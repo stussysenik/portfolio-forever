@@ -56,28 +56,6 @@
     </p>
   </header>
 
-  <!-- Tag Filter -->
-  <nav class="tags-nav" aria-label="Filter by tag">
-    <span class="tags-label">◆ FILTER:</span>
-    <div class="tags-list">
-      {#each allTags as tag}
-        <button
-          class="tag-button"
-          class:active={activeTag === tag}
-          on:click={() => toggleTag(tag)}
-          aria-pressed={activeTag === tag}
-        >
-          {tag}
-        </button>
-      {/each}
-    </div>
-    {#if activeTag}
-      <button class="tag-clear" on:click={() => activeTag = null}>
-        ✕ clear
-      </button>
-    {/if}
-  </nav>
-
   <!-- Notes List -->
   <ul class="notes-list">
     {#each filteredNotes as note (note.slug)}
@@ -122,6 +100,30 @@
     {/each}
   </ul>
 
+  <!-- Tag Filter (Moved to bottom) -->
+  <div class="filter-section">
+      <nav class="tags-nav" aria-label="Filter by tag">
+        <span class="tags-label">◆ FILTER:</span>
+        <div class="tags-list">
+          {#each allTags as tag}
+            <button
+              class="tag-button"
+              class:active={activeTag === tag}
+              on:click={() => toggleTag(tag)}
+              aria-pressed={activeTag === tag}
+            >
+              {tag}
+            </button>
+          {/each}
+        </div>
+        {#if activeTag}
+          <button class="tag-clear" on:click={() => activeTag = null}>
+            ✕ clear
+          </button>
+        {/if}
+      </nav>
+  </div>
+  
   <!-- Feed Links -->
   <footer class="notes-footer">
     <span class="footer-label">Subscribe:</span>
@@ -179,7 +181,7 @@
     align-items: center;
     flex-wrap: wrap;
     gap: var(--space-sm);
-    margin-bottom: var(--space-xl);
+    margin-top: var(--space-2xl);
     padding: var(--space-md);
     background: var(--color-surface);
     border-radius: var(--radius-md);
@@ -248,11 +250,12 @@
     padding: var(--space-lg);
     background: var(--color-surface);
     border-radius: var(--radius-md);
-    transition: transform var(--duration-fast) var(--easing);
+    border: var(--border-width) solid transparent;
+    transition: border-color var(--duration-fast) var(--easing);
   }
 
   .note-card:hover {
-    transform: translateX(4px);
+    border-color: var(--border-color);
   }
 
   .note-header {

@@ -1,0 +1,350 @@
+<script lang="ts">
+  import { galleryItems, type GalleryItem } from '$lib/data/content';
+
+  // Filter state
+  let activeFilter: string = 'all';
+  const categories = ['all', 'design', 'technology', 'art', 'film'];
+
+  // Color mapping for category dots
+  const categoryColors: Record<string, string> = {
+    design: 'var(--color-design)',
+    technology: 'var(--color-technology)',
+    art: 'var(--color-art)',
+    film: 'var(--color-film)',
+  };
+
+  // Extended gallery with placeholder items
+  const extendedGallery: GalleryItem[] = [
+    ...galleryItems,
+    { id: 'exp-1', title: 'Raymarching', thumbnail: '', category: ['technology'], year: 2023 },
+    { id: 'exp-2', title: 'Generative Type', thumbnail: '', category: ['design', 'technology'], year: 2023 },
+    { id: 'exp-3', title: 'Sound Visual', thumbnail: '', category: ['art', 'technology'], year: 2022 },
+    { id: 'exp-4', title: 'Arch Render', thumbnail: '', category: ['design'], year: 2021 },
+    { id: 'exp-5', title: 'Documentary', thumbnail: '', category: ['film'], year: 2022 },
+    { id: 'exp-6', title: 'WebGPU Particles', thumbnail: '', category: ['technology'], year: 2024 },
+    { id: 'exp-7', title: 'Brand System', thumbnail: '', category: ['design'], year: 2021 },
+    { id: 'exp-8', title: 'Installation', thumbnail: '', category: ['art', 'technology'], year: 2020 },
+    { id: 'exp-9', title: 'Music Video', thumbnail: '', category: ['film', 'art'], year: 2019 },
+    { id: 'exp-10', title: 'CAD Study', thumbnail: '', category: ['design'], year: 2023 },
+    { id: 'exp-11', title: 'Shader Art', thumbnail: '', category: ['technology', 'art'], year: 2024 },
+    { id: 'exp-12', title: 'Product Viz', thumbnail: '', category: ['design'], year: 2022 },
+    { id: 'exp-13', title: 'Exp. Film', thumbnail: '', category: ['film'], year: 2021 },
+    { id: 'exp-14', title: 'Kinetic', thumbnail: '', category: ['art'], year: 2020 },
+    { id: 'exp-15', title: 'Real-time GFX', thumbnail: '', category: ['technology'], year: 2024 },
+    { id: 'exp-16', title: 'Motion Sys', thumbnail: '', category: ['design'], year: 2023 },
+  ];
+
+  function getPlaceholderColor(item: GalleryItem): string {
+    const cat = item.category[0];
+    return categoryColors[cat] || 'var(--color-text-subtle)';
+  }
+
+  $: filteredItems = activeFilter === 'all' 
+    ? extendedGallery 
+    : extendedGallery.filter(item => item.category.includes(activeFilter as any));
+
+  function setFilter(category: string) {
+    activeFilter = category;
+  }
+
+  // Selected item for detail view
+  let selected: GalleryItem | null = null;
+</script>
+
+<svelte:head>
+  <title>Gallery</title>
+  <meta name="description" content="Visual archive" />
+</svelte:head>
+
+<svelte:window on:keydown={(e) => e.key === 'Escape' && (selected = null)} />
+
+<header class="page-header">
+  <h1 class="page-title">◇ GALLERY</h1>
+  <span class="page-count">[{filteredItems.length}]</span>
+</header>
+
+<!-- Filter -->
+<nav class="filter-row">
+  {#each categories as cat}
+    <button 
+      class="filter-btn" 
+      class:active={activeFilter === cat}
+      on:click={() => setFilter(cat)}
+    >
+      {cat}
+    </button>
+  {/each}
+</nav>
+
+<!-- Grid -->
+<div class="mosaic">
+  {#each filteredItems as item (item.id)}
+    <button 
+      class="tile"
+      style="--bg: {getPlaceholderColor(item)}"
+      on:click={() => selected = item}
+    >
+      <span class="tile-char">{item.title.charAt(0)}</span>
+      <div class="tile-overlay">
+        <span class="tile-title">{item.title}</span>
+        <span class="tile-year">{item.year}</span>
+      </div>
+    </button>
+  {/each}
+</div>
+
+<!-- Detail Panel -->
+{#if selected}
+  <div class="detail-backdrop" on:click={() => selected = null}>
+    <div class="detail-panel" on:click|stopPropagation>
+      <button class="detail-close" on:click={() => selected = null}>×</button>
+      <div class="detail-visual" style="--bg: {getPlaceholderColor(selected)}">
+        <span class="detail-char">{selected.title.charAt(0)}</span>
+      </div>
+      <div class="detail-info">
+        <h2 class="detail-title">{selected.title}</h2>
+        <span class="detail-year">{selected.year}</span>
+        <div class="detail-tags">
+          {#each selected.category as cat}
+            <span class="tag">{cat}</span>
+          {/each}
+        </div>
+      </div>
+    </div>
+  </div>
+{/if}
+
+<style>
+  .page-header {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+    padding-bottom: var(--space-sm);
+    border-bottom: var(--border-width-thick) solid var(--color-text);
+  }
+  
+  .page-title {
+    font-family: var(--font-sans);
+    font-size: var(--font-size-xl);
+    font-weight: 600;
+    letter-spacing: var(--letter-spacing-tight);
+    margin: 0;
+  }
+  
+  .page-count {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-xs);
+    color: var(--color-text-subtle);
+  }
+  
+  /* Filter */
+  .filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+    margin-bottom: var(--space-lg);
+  }
+  
+  .filter-btn {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-xs);
+    padding: var(--space-xs) var(--space-sm);
+    background: transparent;
+    border: var(--border-width) solid var(--border-color);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-muted);
+    cursor: pointer;
+    transition: all var(--duration-fast) var(--easing);
+  }
+  
+  .filter-btn:hover {
+    border-color: var(--color-text-muted);
+    color: var(--color-text);
+  }
+  
+  .filter-btn.active {
+    background: var(--color-text);
+    border-color: var(--color-text);
+    color: var(--color-bg);
+  }
+  
+  /* Mosaic Grid */
+  .mosaic {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+    gap: 3px;
+  }
+  
+  @media (min-width: 480px) {
+    .mosaic {
+      grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+      gap: 4px;
+    }
+  }
+  
+  @media (min-width: 768px) {
+    .mosaic {
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    }
+  }
+  
+  .tile {
+    aspect-ratio: 1;
+    background: var(--bg);
+    border: none;
+    border-radius: 2px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform var(--duration-fast) var(--easing);
+  }
+  
+  .tile:hover {
+    transform: scale(1.05);
+    z-index: 5;
+  }
+  
+  .tile-char {
+    font-family: var(--font-sans);
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+    color: white;
+    opacity: 0.3;
+    text-transform: uppercase;
+  }
+  
+  .tile-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: var(--space-xs);
+    background: linear-gradient(to top, hsla(0,0%,0%,0.8), transparent 70%);
+    opacity: 0;
+    transition: opacity var(--duration-fast) var(--easing);
+  }
+  
+  .tile:hover .tile-overlay {
+    opacity: 1;
+  }
+  
+  .tile-title {
+    font-size: var(--font-size-2xs);
+    font-weight: 500;
+    color: white;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .tile-year {
+    font-family: var(--font-mono);
+    font-size: 8px;
+    color: hsla(0,0%,100%,0.6);
+  }
+  
+  /* Detail Panel */
+  .detail-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: hsla(0,0%,0%,0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-md);
+    animation: fadeIn var(--duration-fast) var(--easing);
+  }
+  
+  .detail-panel {
+    background: var(--color-surface);
+    border-radius: var(--radius-md);
+    max-width: 500px;
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+  }
+  
+  .detail-close {
+    position: absolute;
+    top: var(--space-sm);
+    right: var(--space-sm);
+    width: 2em;
+    height: 2em;
+    background: var(--color-bg);
+    border: var(--border-width) solid var(--border-color);
+    border-radius: 50%;
+    font-size: var(--font-size-lg);
+    color: var(--color-text-muted);
+    cursor: pointer;
+    z-index: 10;
+  }
+  
+  .detail-close:hover {
+    background: var(--color-text);
+    color: var(--color-bg);
+  }
+  
+  .detail-visual {
+    aspect-ratio: 16/9;
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .detail-char {
+    font-family: var(--font-sans);
+    font-size: var(--font-size-display);
+    font-weight: 700;
+    color: white;
+    opacity: 0.2;
+    text-transform: uppercase;
+  }
+  
+  .detail-info {
+    padding: var(--space-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+  
+  .detail-title {
+    font-family: var(--font-sans);
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    margin: 0;
+  }
+  
+  .detail-year {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+  }
+  
+  .detail-tags {
+    display: flex;
+    gap: var(--space-xs);
+  }
+  
+  .tag {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-2xs);
+    text-transform: uppercase;
+    letter-spacing: var(--letter-spacing-wide);
+    padding: var(--space-2xs) var(--space-xs);
+    background: var(--color-bg-alt);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-muted);
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+</style>
