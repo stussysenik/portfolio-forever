@@ -1,11 +1,10 @@
 <script lang="ts">
-  import { page } from '$app/stores';
-  import { notesWithBacklinks, type Note } from '$lib/data/notes';
+  import type { PageData } from './$types';
+  import { PortableText } from '@portabletext/svelte';
 
-  // Get the current note based on the slug
-  $: slug = $page.params.slug;
-  $: note = notesWithBacklinks.find(n => n.slug === slug);
-  $: relatedNotes = note?.backlinks?.map(s => notesWithBacklinks.find(n => n.slug === s)).filter(Boolean) as Note[] || [];
+  export let data: PageData;
+
+  $: note = data.post;
 
   function formatDate(dateStr: string): string {
     const date = new Date(dateStr);
@@ -16,46 +15,16 @@
       day: 'numeric',
     });
   }
-
-  // Simple markdown renderer for demo purposes
-  // In production, use a proper markdown parser
-  function renderMarkdown(content: string): string {
-    if (!content) return '';
-    
-    return content
-      // Headers
-      .replace(/^### (.+)$/gm, '<h3>$1</h3>')
-      .replace(/^## (.+)$/gm, '<h2>$1</h2>')
-      // Code blocks with language
-      .replace(/```(\w+)\n([\s\S]*?)```/g, '<pre class="code-block" data-lang="$1"><code>$2</code></pre>')
-      // Inline code
-      .replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>')
-      // Wiki links
-      .replace(/\[\[([^\]|]+)\|([^\]]+)\]\]/g, '<a href="/notes/$1" class="wiki-link">$2</a>')
-      .replace(/\[\[([^\]]+)\]\]/g, '<a href="/notes/$1" class="wiki-link">$1</a>')
-      // Bold
-      .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-      // Lists
-      .replace(/^- (.+)$/gm, '<li>$1</li>')
-      // Paragraphs (simple)
-      .split('\n\n')
-      .map(p => {
-        if (p.startsWith('<h') || p.startsWith('<pre') || p.startsWith('<li')) return p;
-        if (p.trim() === '') return '';
-        return `<p>${p.replace(/\n/g, ' ')}</p>`;
-      })
-      .join('\n');
-  }
 </script>
 
 <svelte:head>
   {#if note}
     <title>{note.title}</title>
-    <meta name="description" content={note.excerpt} />
+    <meta name="description" content={note.excerpt || ''} />
     <meta property="og:title" content={note.title} />
-    <meta property="og:description" content={note.excerpt} />
+    <meta property="og:description" content={note.excerpt || ''} />
     <meta property="og:type" content="article" />
-    <meta property="article:published_time" content={note.date} />
+    <meta property="article:published_time" content={note.publishedAt} />
   {:else}
     <title>Note not found</title>
   {/if}
@@ -69,49 +38,39 @@
         <a href="/notes">← back to notes</a>
       </nav>
       
-      <time class="note-date" datetime={note.date}>
-        {formatDate(note.date)}
+      <time class="note-date" datetime={note.publishedAt}>
+        {formatDate(note.publishedAt)}
       </time>
       
       <h1 class="note-title">{note.title}</h1>
       
-      <p class="note-excerpt">{note.excerpt}</p>
+      {#if note.excerpt}
+        <p class="note-excerpt">{note.excerpt}</p>
+      {/if}
       
-      <div class="note-tags">
-        {#each note.tags as tag}
-          <a href="/notes?tag={tag}" class="note-tag">#{tag}</a>
-        {/each}
-      </div>
+      {#if note.tags && note.tags.length > 0}
+        <div class="note-tags">
+          {#each note.tags as tag}
+            <a href="/notes?tag={tag}" class="note-tag">#{tag}</a>
+          {/each}
+        </div>
+      {/if}
     </header>
 
     <!-- Content -->
     <div class="note-content">
-      {@html renderMarkdown(note.content)}
+      {#if note.body}
+        <PortableText value={note.body} />
+      {:else}
+        <p class="no-content">No content yet.</p>
+      {/if}
     </div>
-
-    <!-- Related Notes (Bidirectional Links) -->
-    {#if relatedNotes.length > 0}
-      <aside class="related-notes">
-        <h2 class="related-title">◆ CONNECTED NOTES</h2>
-        <ul class="related-list">
-          {#each relatedNotes as related}
-            <li class="related-item">
-              <a href="/notes/{related.slug}" class="related-link">
-                <span class="related-arrow">⟷</span>
-                <span class="related-name">{related.title}</span>
-              </a>
-              <time class="related-date">{new Date(related.date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</time>
-            </li>
-          {/each}
-        </ul>
-      </aside>
-    {/if}
 
     <!-- Footer -->
     <footer class="note-footer">
       <div class="footer-meta">
-        <span class="footer-label">Last updated:</span>
-        <time datetime={note.date}>{formatDate(note.date)}</time>
+        <span class="footer-label">Published:</span>
+        <time datetime={note.publishedAt}>{formatDate(note.publishedAt)}</time>
       </div>
       <div class="footer-actions">
         <a href="/notes" class="footer-link">← all notes</a>
@@ -123,7 +82,7 @@
 {:else}
   <div class="note-not-found">
     <h1>Note not found</h1>
-    <p>The note "{slug}" doesn't exist.</p>
+    <p>This note doesn't exist.</p>
     <a href="/notes">← back to notes</a>
   </div>
 {/if}

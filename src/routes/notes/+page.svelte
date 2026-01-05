@@ -1,14 +1,16 @@
 <script lang="ts">
-  import { notesWithBacklinks, type Note } from '$lib/data/notes';
+  import type { PageData } from './$types';
+  import type { SanityPost } from '$lib/sanity/types';
 
-  // Sort notes by date (newest first)
-  const sortedNotes = [...notesWithBacklinks]
-    .filter(note => !note.draft)
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  export let data: PageData;
+
+  // Map Sanity posts to note-like structure and sort by date
+  $: sortedNotes = [...(data.posts || [])]
+    .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
 
   // Get all unique tags
-  const allTags = Array.from(
-    new Set(sortedNotes.flatMap(note => note.tags))
+  $: allTags = Array.from(
+    new Set(sortedNotes.flatMap(note => note.tags || []))
   ).sort();
 
   let activeTag: string | null = null;
@@ -18,7 +20,7 @@
   }
 
   $: filteredNotes = activeTag
-    ? sortedNotes.filter(note => note.tags.includes(activeTag!))
+    ? sortedNotes.filter(note => (note.tags || []).includes(activeTag!))
     : sortedNotes;
 
   function formatDate(dateStr: string): string {
@@ -28,11 +30,6 @@
       month: 'short',
       day: 'numeric',
     });
-  }
-
-  function getSlugFromDate(slug: string): string {
-    // Extract just the title part from slugs like "20250105-webgpu-vs-webgl"
-    return slug.replace(/^\d{8}-/, '').replace(/-/g, ' ');
   }
 </script>
 
@@ -58,38 +55,37 @@
 
   <!-- Notes List -->
   <ul class="notes-list">
-    {#each filteredNotes as note (note.slug)}
+    {#each filteredNotes as note (note.slug || note._id)}
       <li class="note-card">
         <article>
           <header class="note-header">
-            <time class="note-date" datetime={note.date}>
-              {formatDate(note.date)}
+            <time class="note-date" datetime={note.publishedAt}>
+              {formatDate(note.publishedAt)}
             </time>
-            {#if note.backlinks && note.backlinks.length > 0}
-              <span class="note-links-count" title="Connected notes">
-                ⟷ {note.backlinks.length}
-              </span>
-            {/if}
           </header>
           
           <a href="/notes/{note.slug}" class="note-title-link">
             <h2 class="note-title">{note.title}</h2>
           </a>
           
-          <p class="note-excerpt">{note.excerpt}</p>
+          {#if note.excerpt}
+            <p class="note-excerpt">{note.excerpt}</p>
+          {/if}
           
           <footer class="note-footer">
-            <div class="note-tags">
-              {#each note.tags as tag}
-                <button
-                  class="note-tag"
-                  class:active={activeTag === tag}
-                  on:click|stopPropagation={() => toggleTag(tag)}
-                >
-                  #{tag}
-                </button>
-              {/each}
-            </div>
+            {#if note.tags && note.tags.length > 0}
+              <div class="note-tags">
+                {#each note.tags as tag}
+                  <button
+                    class="note-tag"
+                    class:active={activeTag === tag}
+                    onclick={() => toggleTag(tag)}
+                  >
+                    #{tag}
+                  </button>
+                {/each}
+              </div>
+            {/if}
             
             <a href="/notes/{note.slug}" class="note-read-more">
               read →
@@ -109,7 +105,7 @@
             <button
               class="tag-button"
               class:active={activeTag === tag}
-              on:click={() => toggleTag(tag)}
+              onclick={() => toggleTag(tag)}
               aria-pressed={activeTag === tag}
             >
               {tag}
@@ -117,7 +113,7 @@
           {/each}
         </div>
         {#if activeTag}
-          <button class="tag-clear" on:click={() => activeTag = null}>
+          <button class="tag-clear" onclick={() => activeTag = null}>
             ✕ clear
           </button>
         {/if}
