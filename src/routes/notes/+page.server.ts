@@ -5,5 +5,6 @@ import type { SanityPost } from '$lib/sanity/types';
 
 export const load: PageServerLoad = async () => {
         const posts = await client.fetch<SanityPost[]>(POSTS_QUERY);
+        console.log('Sanity posts:', JSON.stringify(posts, null, 2)); // Debug log
         return { posts };
 };
