@@ -112,10 +112,37 @@ Notes are managed through Sanity Studio. The content is fetched via GROQ queries
 - `body` – PortableText rich content
 
 ### Adding Content
-
 1. Access Sanity Studio at your project's hosted URL
 2. Create/edit notes in the studio
-3. Changes appear automatically on the site
+3. **Publish**: The site rebuilds automatically via Vercel Webhooks (approx. 2-3 mins)
+
+## 🚀 Deployment & Automation
+
+This project uses **Static Site Generation (SSG)** on Vercel. Code updates via Git and content updates via Sanity both trigger rebuilds.
+
+### 1. The Workflow
+- **Code Changes**: `git push` → Vercel Rebuilds.
+- **Content Changes**: Publisher hits "Publish" in Sanity Studio → Webhook triggers Vercel Rebuild.
+
+### 2. Configuration Setup
+If you need to re-configure the automation:
+
+#### Step A: Vercel (The Receiver)
+1. Go to **Settings** > **Git** > **Deploy Hooks**.
+2. Create a hook named "Sanity Update".
+3. Copy the unique URL.
+
+#### Step B: Sanity (The Trigger)
+1. Go to [manage.sanity.io](https://manage.sanity.io) -> API -> Webhooks.
+2. Create a new Webhook:
+   - **URL**: Paste the Vercel URL.
+   - **Trigger on**: Create, Update, Delete.
+   - **Filter**: `_type == "post"`
+   - **Method**: POST.
+
+   > [!CAAUTION]
+   > **Do NOT check "Drafts" or "Versions".**
+   > Sanity autosaves every few seconds. Checking these will spam Vercel with thousands of build requests, hitting your limits instantly. Use `npm run dev` locally to preview drafts.
 
 ## 🧪 Labs (Experiments)
 
