@@ -3,7 +3,7 @@
 
 export interface CVEntry {
         id: string;
-        type: 'work' | 'education' | 'award' | 'publication' | 'project';
+        type: "work" | "education" | "award" | "publication" | "project";
         title: string;
         organization?: string;
         location?: string;
@@ -17,8 +17,8 @@ export interface CVEntry {
 }
 
 export interface PersonSchema {
-        '@context': string;
-        '@type': string;
+        "@context": string;
+        "@type": string;
         name: string;
         jobTitle: string;
         knowsAbout: { name: string; proficiency: number }[];
@@ -30,123 +30,138 @@ export interface PersonSchema {
 }
 
 export const cvData: PersonSchema = {
-        '@context': 'https://schema.org',
-        '@type': 'Person',
-        name: 'Stüssy Senik',
-        jobTitle: 'Experience Design Engineer',
-        url: 'https://yoursite.com',
+        "@context": "https://schema.org",
+        "@type": "Person",
+        name: "WIP EXAMPLE ONLY",
+        jobTitle: "Experience Design Engineer",
+        url: "https://yoursite.com",
         sameAs: [
-                'https://github.com/username',
-                'https://bsky.app/profile/username',
-                'https://instagram.com/username',
+                "https://github.com/username",
+                "https://bsky.app/profile/username",
+                "https://instagram.com/username",
         ],
         knowsAbout: [
-                { name: 'Filmmaking', proficiency: 0.9 },
-                { name: 'Lighting Design', proficiency: 0.85 },
-                { name: 'Graphic Design', proficiency: 0.8 },
-                { name: 'Music Production', proficiency: 0.75 },
-                { name: 'DJing', proficiency: 0.7 },
-                { name: 'WebGL / Three.js', proficiency: 0.95 },
-                { name: 'WebGPU / WGSL', proficiency: 0.85 },
-                { name: 'TypeScript', proficiency: 0.9 },
-                { name: 'Creative Coding', proficiency: 0.95 },
+                // { name: "Filmmaking", proficiency: 0.9 },
+                // { name: "Lighting Design", proficiency: 0.85 },
+                // { name: "Graphic Design", proficiency: 0.8 },
+                // { name: "Music Production", proficiency: 0.75 },
+                // { name: "DJing", proficiency: 0.7 },
+                // { name: "WebGL / Three.js", proficiency: 0.95 },
+                // { name: "WebGPU / WGSL", proficiency: 0.85 },
+                // { name: "TypeScript", proficiency: 0.9 },
+                { name: "Creative Coding", proficiency: 0.95 },
         ],
         workExperience: [
                 {
-                        id: 'exp-1',
-                        type: 'work',
-                        title: 'Senior Creative Technologist',
-                        organization: 'Studio XYZ',
-                        location: 'Tokyo, Japan',
-                        startDate: '2020-01',
-                        endDate: 'present',
-                        description: 'Leading immersive web experiences and WebGPU experiments',
+                        id: "exp-1",
+                        type: "work",
+                        title: "Senior Creative Technologist",
+                        organization: "Studio XYZ",
+                        location: "Tokyo, Japan",
+                        startDate: "2020-01",
+                        endDate: "present",
+                        description:
+                                "Leading immersive web experiences and WebGPU experiments",
                         highlights: [
-                                'Pioneered real-time raymarching for product visualization',
-                                'Built internal tools for motion capture to web pipeline',
-                                'Mentored junior developers in graphics programming',
+                                "Pioneered real-time raymarching for product visualization",
+                                "Built internal tools for motion capture to web pipeline",
+                                "Mentored junior developers in graphics programming",
                         ],
-                        tools: ['Three.js', 'WebGPU', 'TypeScript', 'Blender'],
+                        tools: ["Three.js", "WebGPU", "TypeScript", "Blender"],
                 },
-                {
-                        id: 'exp-2',
-                        type: 'work',
-                        title: 'Interactive Developer',
-                        organization: 'Creative Agency ABC',
-                        location: 'Berlin, Germany',
-                        startDate: '2017-03',
-                        endDate: '2019-12',
-                        description: 'Crafted interactive experiences for global brands',
-                        highlights: [
-                                'Developed award-winning WebGL campaigns',
-                                'Created custom shader libraries for brand identities',
-                                'Integrated motion capture with web technologies',
-                        ],
-                        tools: ['WebGL', 'GLSL', 'JavaScript', 'Cinema 4D'],
-                },
-                {
-                        id: 'exp-3',
-                        type: 'work',
-                        title: 'Freelance Creative Developer',
-                        organization: 'Self-employed',
-                        location: 'Remote',
-                        startDate: '2014-01',
-                        endDate: '2017-02',
-                        description: 'Independent work on experimental web projects',
-                        highlights: [
-                                'Built tools for electronic music visualization',
-                                'Created interactive documentaries',
-                                'Contributed to open-source graphics libraries',
-                        ],
-                        tools: ['JavaScript', 'Canvas', 'Web Audio API'],
-                },
+                // {
+                //         id: "exp-2",
+                //         type: "work",
+                //         title: "Interactive Developer",
+                //         organization: "Creative Agency ABC",
+                //         location: "Berlin, Germany",
+                //         startDate: "2017-03",
+                //         endDate: "2019-12",
+                //         description:
+                //                 "Crafted interactive experiences for global brands",
+                //         highlights: [
+                //                 "Developed award-winning WebGL campaigns",
+                //                 "Created custom shader libraries for brand identities",
+                //                 "Integrated motion capture with web technologies",
+                //         ],
+                //         tools: ["WebGL", "GLSL", "JavaScript", "Cinema 4D"],
+                // },
+                // {
+                //         id: "exp-3",
+                //         type: "work",
+                //         title: "Freelance Creative Developer",
+                //         organization: "Self-employed",
+                //         location: "Remote",
+                //         startDate: "2014-01",
+                //         endDate: "2017-02",
+                //         description:
+                //                 "Independent work on experimental web projects",
+                //         highlights: [
+                //                 "Built tools for electronic music visualization",
+                //                 "Created interactive documentaries",
+                //                 "Contributed to open-source graphics libraries",
+                //         ],
+                //         tools: ["JavaScript", "Canvas", "Web Audio API"],
+                // },
         ],
         education: [
                 {
-                        id: 'edu-1',
-                        type: 'education',
-                        title: 'MA Digital Media',
-                        organization: 'Royal College of Art',
-                        location: 'London, UK',
-                        startDate: '2012-09',
-                        endDate: '2014-06',
-                        description: 'Focus on computational design and interactive installations',
+                        id: "edu-1",
+                        type: "education",
+                        title: "MA Digital Media",
+                        organization: "Royal College of Art",
+                        location: "London, UK",
+                        startDate: "2012-09",
+                        endDate: "2014-06",
+                        description:
+                                "Focus on computational design and interactive installations",
                 },
-                {
-                        id: 'edu-2',
-                        type: 'education',
-                        title: 'BSc Computer Science',
-                        organization: 'Technical University',
-                        location: 'Prague, Czech Republic',
-                        startDate: '2008-09',
-                        endDate: '2012-06',
-                        description: 'Specialization in computer graphics and multimedia',
-                },
+                // {
+                //         id: "edu-2",
+                //         type: "education",
+                //         title: "BSc Computer Science",
+                //         organization: "Technical University",
+                //         location: "Prague, Czech Republic",
+                //         startDate: "2008-09",
+                //         endDate: "2012-06",
+                //         description:
+                //                 "Specialization in computer graphics and multimedia",
+                // },
         ],
         awards: [
+                // {
+                //         id: "award-1",
+                //         type: "award",
+                //         title: "FWA Site of the Day",
+                //         organization: "Favourite Website Awards",
+                //         startDate: "2023-05",
+                //         description:
+                //                 "For experimental WebGPU raymarching project",
+                // },
+                // {
+                //         id: "award-2",
+                //         type: "award",
+                //         title: "Awwwards SOTD",
+                //         organization: "Awwwards",
+                //         startDate: "2022-11",
+                //         description: "Interactive portfolio experience",
+                // },
+                // {
+                //         id: "award-3",
+                //         type: "award",
+                //         title: "CSS Design Awards",
+                //         organization: "CSSDA",
+                //         startDate: "2021-08",
+                //         description: "Best UI/UX Innovation",
+                // },
                 {
-                        id: 'award-1',
-                        type: 'award',
-                        title: 'FWA Site of the Day',
-                        organization: 'Favourite Website Awards',
-                        startDate: '2023-05',
-                        description: 'For experimental WebGPU raymarching project',
-                },
-                {
-                        id: 'award-2',
-                        type: 'award',
-                        title: 'Awwwards SOTD',
-                        organization: 'Awwwards',
-                        startDate: '2022-11',
-                        description: 'Interactive portfolio experience',
-                },
-                {
-                        id: 'award-3',
-                        type: 'award',
-                        title: 'CSS Design Awards',
-                        organization: 'CSSDA',
-                        startDate: '2021-08',
-                        description: 'Best UI/UX Innovation',
+                        id: "award-4",
+                        type: "award",
+                        title: "@certified at copyright",
+                        organization: "Nobel Prize for Googling",
+                        startDate: "2048-08",
+                        description:
+                                "for breathing fresh air",
                 },
         ],
 };

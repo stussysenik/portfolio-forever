@@ -140,8 +140,8 @@
 
   <!-- Footer / Download -->
   <footer class="cv-footer">
-    <span class="cv-footer-text">[ Generated from structured data ]</span>
-    <a href="/data/cv.jsonld" download class="cv-download">↓ Download JSON-LD</a>
+    <!-- <span class="cv-footer-text">[ Generated from structured data ]</span> -->
+    <a href="/data/cv.jsonld" download class="cv-download">↓ Download JSON</a> <!-- LD? -->
   </footer>
 </div>
 

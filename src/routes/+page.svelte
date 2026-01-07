@@ -1,8 +1,8 @@
 <script lang="ts">
         import {
-                works,
-                talks,
-                interviews,
+                sortedWorks,
+                sortedTalks,
+                sortedInterviews,
                 profile,
                 formatDate,
                 getHighlight,
@@ -59,10 +59,10 @@
         <header class="section-header">
                 <span class="section-marker">◆</span>
                 <h2 class="section-title">WORKS</h2>
-                <span class="section-count">{works.length}</span>
+                <span class="section-count">{sortedWorks.length}</span>
         </header>
         <ul class="entry-list">
-                {#each works as entry}
+                {#each sortedWorks as entry}
                         <li class="entry" data-highlight={getHighlight(entry)}>
                                 <span class="entry-date"
                                         >{formatDate(entry)}</span
@@ -116,10 +116,10 @@
                 <header class="section-header">
                         <span class="section-marker">◆</span>
                         <h2 class="section-title">TALKS</h2>
-                        <span class="section-count">{talks.length}</span>
+                        <span class="section-count">{sortedTalks.length}</span>
                 </header>
                 <ul class="entry-list">
-                        {#each talks as entry}
+                        {#each sortedTalks as entry}
                                 <li
                                         class="entry"
                                         data-highlight={getHighlight(entry)}
@@ -149,10 +149,12 @@
                 <header class="section-header">
                         <span class="section-marker">◆</span>
                         <h2 class="section-title">INTERVIEWS</h2>
-                        <span class="section-count">{interviews.length}</span>
+                        <span class="section-count"
+                                >{sortedInterviews.length}</span
+                        >
                 </header>
                 <ul class="entry-list">
-                        {#each interviews as entry}
+                        {#each sortedInterviews as entry}
                                 <li
                                         class="entry"
                                         data-highlight={getHighlight(entry)}
