@@ -30,9 +30,16 @@
 </script>
 
 <svelte:head>
-        <title>{profile.name}</title>
+        <title>WIP Stüssy Senik</title>
         <meta name="description" content={profile.shortBio} />
 </svelte:head>
+
+<!-- WIP BANNER - VERY VISIBLE -->
+<div class="wip-banner">
+        <span class="wip-icon">⚠</span>
+        <span class="wip-text">HEAVY CONSTRUCTION IN PROGRESS — WIP EVERYWHERE</span>
+        <span class="wip-icon">⚠</span>
+</div>
 
 <!-- Hero - Breathing Space -->
 <header class="hero">
@@ -531,11 +538,69 @@
                 color: var(--color-accent);
         }
 
+        /* WIP BANNER - VERY VISIBLE */
+        .wip-banner {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                gap: var(--space-md);
+                padding: var(--space-lg);
+                background: #ff6b6b;
+                color: #ffffff;
+                font-family: var(--font-mono);
+                font-size: var(--font-size-sm);
+                font-weight: var(--font-weight-medium);
+                text-transform: uppercase;
+                letter-spacing: var(--letter-spacing-wide);
+                animation: wip-pulse 3s ease-in-out infinite;
+                margin-bottom: var(--space-xl);
+        }
+
+        .wip-icon {
+                font-size: var(--font-size-lg);
+                animation: wip-shake 2s ease-in-out infinite;
+        }
+
+        .wip-text {
+                font-weight: 700;
+        }
+
+        @keyframes wip-pulse {
+                0%, 100% {
+                        background: #ff6b6b;
+                }
+                50% {
+                        background: #ff5252;
+                }
+        }
+
+        @keyframes wip-shake {
+                0% {
+                        transform: rotate(-3deg);
+                }
+                50% {
+                        transform: rotate(3deg);
+                }
+                100% {
+                        transform: rotate(-3deg);
+                }
+        }
+
         /* Mobile adjustments */
         @media (max-width: 600px) {
                 .footer-content {
                         flex-direction: column;
                         gap: var(--space-sm);
+                }
+
+                .wip-banner {
+                        flex-direction: column;
+                        text-align: center;
+                        gap: var(--space-xs);
+                }
+
+                .wip-text {
+                        font-size: var(--font-size-xs);
                 }
         }
 </style>

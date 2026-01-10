@@ -258,7 +258,10 @@ export interface Profile {
 export const profile: Profile = {
         name: "Stüssy Senik",
         taglines: [
-                { lang: "en", text: "DevEx & XD Engineer" }, // NOTE: I wanted to add something like in the @2026 part but I kind of forgot what it was... it was like a tiny detail - made with love on earth? i dunno, just something super personal! quirky... smth quirky!
+                {
+                        lang: "en",
+                        text: "I focus on building detailed precise technical interfaces that value minimalism",
+                },
                 {
                         lang: "de",
                         text: "Kreativtechnologe & Digitaler Handwerker",
