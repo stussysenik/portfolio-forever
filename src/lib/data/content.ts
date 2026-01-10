@@ -7,16 +7,17 @@ export interface Entry {
         title: string;
         description?: string;
         links?: { label: string; url: string }[];
-        featured?: "yellow" | "green";
+        featured?: "yellow" | "green" | "electric-green" | "orange" | "ocean" | "gold" | "pink" | "cloud" | "red";
         category?:
-                | "design"
-                | "technology"
-                | "art"
-                | "film"
-                | "tool"
-                | "AR/XR"
-                | "science"
-                | "music DJ";
+        | "design"
+        | "technology"
+        | "art"
+        | "film"
+        | "tool"
+        | "AR/XR"
+        | "science"
+        | "music DJ"
+        | "personal software";
         tools?: string[];
 }
 
@@ -307,22 +308,36 @@ export const socialLinks = [
 // Works (existing, enhanced)
 export const works: Entry[] = [
         {
-                year: 2025,
-                month: 12,
-                title: "Untangle your problem (like spaghetti)",
+                year: 2026,
+                month: 1,
+                title: "mymind.com clone",
                 links: [
                         {
-                                label: "say spaghetti",
+                                label: "personal software",
+                                url: "https://mymind-clone.vercel.app",
+                        },
+                ],
+                featured: "orange",
+                category: "personal software",
+        },
+        {
+                year: 2025,
+                month: 12,
+                title: "uyr-problem",
+                links: [
+                        {
+                                label: "cooking",
                                 url: "https://uyr-problem.vercel.app",
                         },
                 ],
+                featured: "cloud",
                 category: "tool",
                 tools: ["JavaScript", "WebGL"],
         },
         {
                 year: 2025,
                 month: 12,
-                title: "checklisting... ✅",
+                title: "infinite checklist",
                 links: [
                         {
                                 label: "todo",
@@ -334,14 +349,14 @@ export const works: Entry[] = [
         {
                 year: 2025,
                 month: 12,
-                title: "clean typewriter experience",
+                title: "typewriter that doesn't delete, or can't go back",
                 links: [
                         {
-                                label: "clicki-kat",
+                                label: "try here",
                                 url: "https://clean-writer.vercel.app",
                         },
                 ],
-                featured: "green",
+                featured: "gold",
                 category: "tool",
         },
         {
@@ -354,40 +369,41 @@ export const works: Entry[] = [
                                 url: "https://creative-block.vercel.app",
                         },
                 ],
+                featured: "ocean",
                 category: "art",
         },
         {
                 year: 2025,
                 month: 12,
-                title: "b-boy filter",
+                title: "AR b-boy filter",
                 links: [
                         {
                                 label: "link",
                                 url: "https://bboy-filter.vercel.app",
                         },
                 ],
-                featured: "green",
+                featured: "pink",
                 category: "AR/XR",
         },
         {
                 year: 2025,
                 month: 12,
-                title: "CAD editor",
+                title: "two-dimensional CAD editor in the browser",
                 links: [{ label: "link", url: "https://1985-cad.vercel.app" }],
                 category: "technology",
         },
         {
                 year: 2024,
                 month: 11,
-                title: "PH-213 - electricity, current and magnetism visualizations",
+                title: "PH-213 - Electricity, Current and Magnetism concepts viz",
                 links: [{ label: "https", url: "https://ph213.vercel.app" }],
-                featured: "green",
+                featured: "electric-green",
                 category: "science",
         },
         {
                 year: 2025,
                 month: 2,
-                title: "📀DVD",
+                title: "DVD corner video animation",
                 links: [
                         {
                                 label: "link",
@@ -407,7 +423,7 @@ export const works: Entry[] = [
                                 url: "https://wavelength-radio.vercel.app",
                         },
                 ],
-                featured: "green",
+                featured: "cloud",
                 category: "music DJ",
         },
         // { year: 2025, month: 7, title: 'Obsolidian', links: [{ label: 'link', url: '#' }, { label: 'tweet', url: '#' }], category: 'technology' },
@@ -537,6 +553,13 @@ export function getHighlight(entry: Entry): string | null {
         if (!entry.featured) return null;
         if (entry.featured === "yellow") return "1";
         if (entry.featured === "green") return "2";
+        if (entry.featured === "electric-green") return "3";
+        if (entry.featured === "orange") return "4";
+        if (entry.featured === "ocean") return "5";
+        if (entry.featured === "gold") return "6";
+        if (entry.featured === "pink") return "7";
+        if (entry.featured === "cloud") return "8";
+        if (entry.featured === "red") return "9";
         return null;
 }
 

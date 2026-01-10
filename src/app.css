@@ -89,6 +89,17 @@
   --color-technology: hsl(220, 75%, 52%);
   --color-art: hsl(45, 85%, 48%);
   --color-film: hsl(275, 50%, 52%);
+  --color-electric-green: #44D62C;
+  /* Pantone 802 C */
+  --color-orange: #F97242;
+  /* Pantone 2026 C */
+  --color-ocean: #B3EBF2;
+  --color-gold: #D2AF26;
+  --color-pink: #FFC5D3;
+  --color-cloud: #F0EEE9;
+  /* Pantone Cloud Dancer */
+  --color-red: #691424;
+  /* Pantone Sceptre Red */
 
   /* === Borders & Effects === */
   --border-width: 1px;
@@ -268,7 +279,8 @@ html {
   text-rendering: optimizeLegibility;
   font-feature-settings: 'kern' 1, 'liga' 1, 'calt' 1;
   scroll-behavior: smooth;
-  overflow-x: hidden; /* Prevent horizontal scroll */
+  overflow-x: hidden;
+  /* Prevent horizontal scroll */
   width: 100%;
 
   /* Smooth theme transitions */
@@ -285,7 +297,8 @@ body {
   /* Space for terminal bar */
   max-width: var(--container-max);
   margin: 0 auto;
-  overflow-x: hidden; /* Double safety */
+  overflow-x: hidden;
+  /* Double safety */
   width: 100%;
   position: relative;
 }
@@ -754,11 +767,40 @@ a:focus-visible {
 }
 
 .entry[data-highlight="3"] {
-  background: hsl(200, 60%, 88%);
+  background: var(--color-electric-green);
+  color: #000;
+  /* Ensure readable contrast on bright bg */
 }
 
 .entry[data-highlight="4"] {
-  background: hsl(280, 40%, 90%);
+  background: var(--color-orange);
+  color: #000;
+}
+
+.entry[data-highlight="5"] {
+  background: var(--color-ocean);
+  color: #000;
+  /* Light bg needs dark text */
+}
+
+.entry[data-highlight="6"] {
+  background: var(--color-gold);
+  color: #000;
+}
+
+.entry[data-highlight="7"] {
+  background: var(--color-pink);
+  color: #000;
+}
+
+.entry[data-highlight="8"] {
+  background: var(--color-cloud);
+  color: #000;
+}
+
+.entry[data-highlight="9"] {
+  background: var(--color-red);
+  color: #fff;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -771,11 +813,48 @@ a:focus-visible {
   }
 
   .entry[data-highlight="3"] {
-    background: hsl(200, 50%, 18%);
+    background: hsla(120, 100%, 40%, 0.3);
+    color: var(--color-electric-green);
+    border: 1px solid var(--color-electric-green);
   }
 
   .entry[data-highlight="4"] {
-    background: hsl(280, 35%, 20%);
+    background: hsla(30, 100%, 40%, 0.3);
+    color: var(--color-orange);
+    border: 1px solid var(--color-orange);
+  }
+
+  .entry[data-highlight="5"] {
+    background: hsla(186, 65%, 40%, 0.3);
+    /* Muted ocean for dark mode */
+    color: #B3EBF2;
+    border: 1px solid var(--color-ocean);
+  }
+
+  .entry[data-highlight="6"] {
+    background: hsla(42, 80%, 40%, 0.3);
+    color: var(--color-gold);
+    border: 1px solid var(--color-gold);
+  }
+
+  .entry[data-highlight="7"] {
+    background: hsla(15, 60%, 40%, 0.3);
+    color: hsl(15, 80%, 80%);
+    /* Use a slightly more vibrant pink for text legibility in dark mode */
+    border: 1px solid var(--color-pink);
+  }
+
+  .entry[data-highlight="8"] {
+    background: hsla(40, 10%, 90%, 0.15);
+    color: var(--color-cloud);
+    border: 1px solid var(--color-cloud);
+  }
+
+  .entry[data-highlight="9"] {
+    background: hsla(350, 70%, 25%, 0.5);
+    color: #ff8a95;
+    /* Lightened red for text legibility */
+    border: 1px solid var(--color-red);
   }
 }
 
