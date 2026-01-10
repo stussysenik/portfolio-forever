@@ -15,6 +15,15 @@
       day: 'numeric',
     });
   }
+
+  function formatShortDate(dateStr: string): string {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  }
 </script>
 
 <svelte:head>
@@ -32,33 +41,28 @@
 
 {#if note}
   <article class="note-article">
-    <!-- Header -->
-    <header class="note-header">
-      <nav class="note-breadcrumb">
-        <a href="/notes">← back to notes</a>
-      </nav>
-      
-      <time class="note-date" datetime={note.publishedAt}>
+    <!-- Breadcrumb - Minimal, functional -->
+    <nav class="breadcrumb">
+      <a href="/notes">← notes</a>
+    </nav>
+
+    <!-- Article Header - Clear hierarchy -->
+    <header class="article-header">
+      <time class="article-date" datetime={note.publishedAt}>
         {formatDate(note.publishedAt)}
       </time>
-      
-      <h1 class="note-title">{note.title}</h1>
-      
-      {#if note.excerpt}
-        <p class="note-excerpt">{note.excerpt}</p>
-      {/if}
-      
+      <h1 class="article-title">{note.title}</h1>
       {#if note.tags && note.tags.length > 0}
-        <div class="note-tags">
+        <div class="article-tags">
           {#each note.tags as tag}
-            <a href="/notes?tag={tag}" class="note-tag">#{tag}</a>
+            <a href="/notes?tag={tag}" class="article-tag">#{tag}</a>
           {/each}
         </div>
       {/if}
     </header>
 
-    <!-- Content -->
-    <div class="note-content">
+    <!-- Article Content - Optimal reading width, proper rhythm -->
+    <div class="article-content">
       {#if note.body}
         <PortableText value={note.body} />
       {:else}
@@ -66,21 +70,17 @@
       {/if}
     </div>
 
-    <!-- Footer -->
-    <footer class="note-footer">
-      <div class="footer-meta">
-        <span class="footer-label">Published:</span>
-        <time datetime={note.publishedAt}>{formatDate(note.publishedAt)}</time>
-      </div>
-      <div class="footer-actions">
+    <!-- Article Footer - Clear separation -->
+    <footer class="article-footer">
+      <div class="footer-nav">
         <a href="/notes" class="footer-link">← all notes</a>
-        <span class="footer-separator">│</span>
+        <span class="footer-sep">·</span>
         <a href="#top" class="footer-link">↑ top</a>
       </div>
     </footer>
   </article>
 {:else}
-  <div class="note-not-found">
+  <div class="not-found">
     <h1>Note not found</h1>
     <p>This note doesn't exist.</p>
     <a href="/notes">← back to notes</a>
@@ -88,251 +88,232 @@
 {/if}
 
 <style>
+  /* === ARTICLE STRUCTURE === */
   .note-article {
-    max-width: 720px;
+    max-width: 640px;
     margin: 0 auto;
+    padding: var(--space-xl) var(--space-lg) var(--space-4xl);
   }
 
-  /* Header */
-  .note-header {
+  /* === BREADCRUMB === */
+  .breadcrumb {
     margin-bottom: var(--space-2xl);
-    padding-bottom: var(--space-xl);
-    border-bottom: 2px solid var(--border-color);
   }
 
-  .note-breadcrumb {
-    margin-bottom: var(--space-lg);
-  }
-
-  .note-breadcrumb a {
-    font-size: var(--font-size-sm);
+  .breadcrumb a {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-xs);
     color: var(--color-text-subtle);
+    text-decoration: none;
+    letter-spacing: var(--letter-spacing-wide);
   }
 
-  .note-breadcrumb a:hover {
+  .breadcrumb a:hover {
     color: var(--color-accent);
   }
 
-  .note-date {
-    display: block;
-    font-size: var(--font-size-xs);
-    color: var(--color-text-subtle);
-    margin-bottom: var(--space-sm);
-    font-variant-numeric: tabular-nums;
+  /* === ARTICLE HEADER === */
+  .article-header {
+    margin-bottom: var(--space-3xl);
+    padding-bottom: var(--space-2xl);
+    border-bottom: 1px solid var(--border-color-subtle);
   }
 
-  .note-title {
+  .article-date {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: var(--font-size-xs);
+    color: var(--color-text-subtle);
+    letter-spacing: var(--letter-spacing-wide);
+    margin-bottom: var(--space-md);
+  }
+
+  .article-title {
     font-size: var(--font-size-2xl);
     font-weight: 600;
     letter-spacing: var(--letter-spacing-tight);
     line-height: var(--line-height-tight);
-    margin-bottom: var(--space-md);
+    margin: 0 0 var(--space-lg) 0;
+    color: var(--color-text);
   }
 
-  .note-excerpt {
-    font-size: var(--font-size-lg);
-    color: var(--color-text-muted);
-    line-height: var(--line-height-normal);
-    margin-bottom: var(--space-lg);
-  }
-
-  .note-tags {
+  .article-tags {
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-sm);
   }
 
-  .note-tag {
+  .article-tag {
+    font-family: var(--font-mono);
     font-size: var(--font-size-xs);
     color: var(--color-text-subtle);
-    background: var(--color-surface);
-    padding: var(--space-xs) var(--space-sm);
-    border-radius: var(--radius-sm);
+    text-decoration: none;
   }
 
-  .note-tag:hover {
+  .article-tag:hover {
     color: var(--color-accent);
   }
 
-  /* Content */
-  .note-content {
+  /* === ARTICLE CONTENT === */
+  .article-content {
+    font-size: var(--font-size-base);
     line-height: var(--line-height-loose);
-  }
-
-  .note-content :global(h2) {
-    font-size: var(--font-size-xl);
-    font-weight: 600;
-    margin-top: var(--space-2xl);
-    margin-bottom: var(--space-md);
-    padding-bottom: var(--space-sm);
-    border-bottom: var(--border-width) solid var(--border-color);
-  }
-
-  .note-content :global(h3) {
-    font-size: var(--font-size-lg);
-    font-weight: 500;
-    margin-top: var(--space-xl);
-    margin-bottom: var(--space-sm);
-  }
-
-  .note-content :global(p) {
-    margin-bottom: var(--space-md);
     color: var(--color-text);
   }
 
-  .note-content :global(li) {
-    margin-bottom: var(--space-xs);
-    padding-left: var(--space-md);
-    position: relative;
+  /* Prose styling */
+  .article-content :global(h2) {
+    font-size: var(--font-size-xl);
+    font-weight: 600;
+    margin: var(--space-3xl) 0 var(--space-lg) 0;
+    padding-bottom: var(--space-sm);
+    border-bottom: 1px solid var(--border-color-subtle);
+    letter-spacing: var(--letter-spacing-tight);
   }
 
-  .note-content :global(li)::before {
-    content: '→';
-    position: absolute;
-    left: 0;
+  .article-content :global(h3) {
+    font-size: var(--font-size-lg);
+    font-weight: 500;
+    margin: var(--space-2xl) 0 var(--space-md) 0;
+  }
+
+  .article-content :global(p) {
+    margin: 0 0 var(--space-lg) 0;
+    max-width: 60ch;
+  }
+
+  .article-content :global(ul),
+  .article-content :global(ol) {
+    margin: 0 0 var(--space-lg) 0;
+    padding-left: var(--space-lg);
+  }
+
+  .article-content :global(li) {
+    margin-bottom: var(--space-sm);
+    padding-left: var(--space-xs);
+  }
+
+  .article-content :global(li)::marker {
     color: var(--color-text-subtle);
   }
 
-  .note-content :global(.code-block) {
+  .article-content :global(blockquote) {
+    margin: var(--space-xl) 0;
+    padding-left: var(--space-lg);
+    border-left: 2px solid var(--color-accent);
+    font-style: italic;
+    color: var(--color-text-muted);
+  }
+
+  .article-content :global(code) {
+    font-family: var(--font-mono);
+    font-size: 0.9em;
     background: var(--color-surface);
-    border: var(--border-width) solid var(--border-color);
+    padding: 2px var(--space-xs);
+    border-radius: var(--radius-sm);
+    color: var(--color-accent);
+  }
+
+  .article-content :global(pre) {
+    background: var(--color-surface);
+    border: 1px solid var(--border-color-subtle);
     border-radius: var(--radius-md);
-    padding: var(--space-md);
-    margin: var(--space-lg) 0;
+    padding: var(--space-lg);
+    margin: var(--space-xl) 0;
     overflow-x: auto;
     font-size: var(--font-size-sm);
   }
 
-  .note-content :global(.code-block code) {
+  .article-content :global(pre code) {
     background: transparent;
     padding: 0;
   }
 
-  .note-content :global(.inline-code) {
-    background: var(--color-surface);
-    padding: 2px var(--space-xs);
-    border-radius: var(--radius-sm);
-    font-size: 0.9em;
-    color: var(--color-accent);
-  }
-
-  .note-content :global(.wiki-link) {
+  .article-content :global(a) {
     color: var(--color-accent);
     text-decoration: underline;
-    text-decoration-style: dotted;
     text-underline-offset: 3px;
   }
 
-  .note-content :global(.wiki-link:hover) {
-    text-decoration-style: solid;
+  .article-content :global(a:hover) {
+    text-decoration-thickness: 2px;
   }
 
-  /* Related Notes */
-  .related-notes {
-    margin-top: var(--space-2xl);
-    padding: var(--space-lg);
-    background: var(--color-surface);
-    border-radius: var(--radius-md);
+  .no-content {
+    color: var(--color-text-muted);
+    font-style: italic;
   }
 
-  .related-title {
-    font-size: var(--font-size-xs);
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: var(--letter-spacing-wide);
-    color: var(--color-text-subtle);
-    margin-bottom: var(--space-md);
+  /* === ARTICLE FOOTER === */
+  .article-footer {
+    margin-top: var(--space-4xl);
+    padding-top: var(--space-xl);
+    border-top: 1px solid var(--border-color-subtle);
   }
 
-  .related-list {
-    list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-sm);
-  }
-
-  .related-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: var(--space-xs) 0;
-  }
-
-  .related-link {
+  .footer-nav {
     display: flex;
     align-items: center;
-    gap: var(--space-sm);
-    color: var(--color-text);
-    font-size: var(--font-size-sm);
-  }
-
-  .related-link:hover {
-    color: var(--color-accent);
-  }
-
-  .related-arrow {
-    color: var(--color-accent);
-    font-size: var(--font-size-xs);
-  }
-
-  .related-date {
-    font-size: var(--font-size-xs);
-    color: var(--color-text-subtle);
-  }
-
-  /* Footer */
-  .note-footer {
-    margin-top: var(--space-2xl);
-    padding-top: var(--space-lg);
-    border-top: var(--border-width) solid var(--border-color);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
     gap: var(--space-md);
   }
 
-  .footer-meta {
-    font-size: var(--font-size-xs);
-    color: var(--color-text-subtle);
-  }
-
-  .footer-label {
-    margin-right: var(--space-xs);
-  }
-
-  .footer-actions {
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm);
-    font-size: var(--font-size-xs);
-  }
-
   .footer-link {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-xs);
     color: var(--color-accent);
+    text-decoration: none;
   }
 
-  .footer-separator {
+  .footer-link:hover {
+    text-decoration: underline;
+  }
+
+  .footer-sep {
     color: var(--color-text-subtle);
   }
 
-  /* Not Found */
-  .note-not-found {
+  /* === NOT FOUND === */
+  .not-found {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: var(--space-4xl) var(--space-lg);
     text-align: center;
-    padding: var(--space-2xl);
   }
 
-  .note-not-found h1 {
+  .not-found h1 {
     font-size: var(--font-size-xl);
     margin-bottom: var(--space-md);
   }
 
-  .note-not-found p {
+  .not-found p {
     color: var(--color-text-muted);
     margin-bottom: var(--space-lg);
   }
 
-  .note-not-found a {
+  .not-found a {
     color: var(--color-accent);
+  }
+
+  /* === MOBILE === */
+  @media (max-width: 600px) {
+    .note-article {
+      padding: var(--space-lg) var(--space-md) var(--space-3xl);
+    }
+
+    .article-title {
+      font-size: var(--font-size-xl);
+    }
+
+    .article-content {
+      font-size: var(--font-size-sm);
+    }
+
+    .article-content :global(h2) {
+      font-size: var(--font-size-lg);
+    }
+
+    .article-content :global(h3) {
+      font-size: var(--font-size-base);
+    }
   }
 </style>

@@ -10,21 +10,23 @@
         import AsciiDonut from "$lib/components/AsciiDonut.svelte";
         import AsciiVideo from "$lib/components/AsciiVideo.svelte";
 
-        // Featured showcase - the real thing
+        // Featured showcase - sample videos (publicly accessible)
         const showcaseItems = [
                 {
                         type: "video",
-                        title: "Under Neon Lights",
-                        subtitle: "Light • Film • 2024",
+                        title: "Big Buck Bunny",
+                        subtitle: "Animation • Blender Foundation • 2008",
                         src: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-                        aspectRatio: "21/9",
+                        aspectRatio: "16/9",
+                        link: "https://peach.blender.org/",
                 },
                 {
                         type: "video",
-                        title: "3D Comic",
-                        subtitle: "WebGL • 2020",
-                        src: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
-                        aspectRatio: "16/9",
+                        title: "Sintel",
+                        subtitle: "Fantasy • Blender Foundation • 2010",
+                        src: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4",
+                        aspectRatio: "21/9",
+                        link: "https://durian.blender.org/",
                 },
         ];
 </script>
@@ -33,13 +35,6 @@
         <title>WIP Stüssy Senik</title>
         <meta name="description" content={profile.shortBio} />
 </svelte:head>
-
-<!-- WIP BANNER - VERY VISIBLE -->
-<div class="wip-banner">
-        <span class="wip-icon">⚠</span>
-        <span class="wip-text">HEAVY CONSTRUCTION IN PROGRESS — WIP EVERYWHERE</span>
-        <span class="wip-icon">⚠</span>
-</div>
 
 <!-- Hero - Breathing Space -->
 <header class="hero">
@@ -105,12 +100,13 @@
                                         aspectRatio={item.aspectRatio}
                                 />
                                 <div class="showcase-meta">
-                                        <span class="showcase-title"
-                                                >{item.title}</span
-                                        >
-                                        <span class="showcase-subtitle"
-                                                >{item.subtitle}</span
-                                        >
+                                        <div class="showcase-info">
+                                                <span class="showcase-title">{item.title}</span>
+                                                <span class="showcase-subtitle">{item.subtitle}</span>
+                                        </div>
+                                        {#if item.link}
+                                                <a href={item.link} target="_blank" rel="noopener" class="showcase-link">→ project</a>
+                                        {/if}
                                 </div>
                         </div>
                 {/each}
@@ -188,14 +184,10 @@
         </section>
 </div>
 
-<!-- Footer with technical signature -->
+<!-- Footer separator -->
 <footer class="page-footer">
         <div class="footer-content">
-                <!-- <span class="footer-eof">/* EOF */</span> -->
-                <span class="footer-copy"
-                        >© {new Date().getFullYear()} {profile.name}</span
-                >
-                <!-- <span class="footer-edition">EDITION {profile.edition}</span> -->
+                <span class="footer-eof">/* EOF */</span>
         </div>
 </footer>
 
@@ -264,20 +256,24 @@
         }
 
         .hero-tagline {
-                font-size: var(--font-size-xl);
-                font-weight: var(--font-weight-light);
+                font-family: var(--font-mono);
+                font-size: var(--font-size-lg);
+                font-weight: var(--font-weight-normal);
                 color: var(--color-text-secondary);
-                letter-spacing: var(--letter-spacing-tight);
+                letter-spacing: var(--letter-spacing-normal);
                 line-height: var(--line-height-snug);
                 margin: 0;
+                max-width: 32ch;
         }
 
         .hero-bio {
-                font-size: var(--font-size-base);
+                font-family: var(--font-mono);
+                font-size: var(--font-size-sm);
                 font-weight: var(--font-weight-normal);
                 color: var(--color-text-muted);
                 line-height: var(--line-height-relaxed);
                 margin: 0;
+                max-width: 38ch;
         }
 
         .hero-meta {
@@ -293,13 +289,14 @@
                 font-weight: var(--font-weight-normal);
         }
 
-        /* Mobile adjustments for hero */
+        /* Mobile adjustments for hero - Intentional, commanding design */
         @media (max-width: 768px) {
                 .hero {
                         min-height: auto;
-                        padding-top: var(--space-xl);
+                        padding-top: var(--space-2xl);
+                        padding-bottom: var(--space-3xl);
                         flex-direction: column-reverse;
-                        gap: var(--space-xl);
+                        gap: var(--space-2xl);
                         text-align: center;
                 }
 
@@ -307,18 +304,44 @@
                         max-width: 100%;
                         flex: none;
                         align-items: center;
+                        gap: var(--space-xl);
+                }
+
+                .hero-main {
+                        gap: var(--space-md);
+                }
+
+                /* Hero name: commanding presence on mobile - minimum 40px */
+                .hero-name {
+                        font-size: clamp(2.5rem, 12vw, 3.5rem); /* 40px minimum, up to 56px */
+                        letter-spacing: -0.03em;
+                        line-height: 1;
+                }
+
+                .hero-tagline {
+                        font-size: var(--font-size-lg);
+                        line-height: var(--line-height-snug);
+                }
+
+                .hero-bio {
+                        font-size: var(--font-size-base);
+                        max-width: 32ch;
+                        margin: 0 auto;
                 }
 
                 .hero-meta {
                         justify-content: center;
+                        padding-top: var(--space-md);
                 }
 
                 .hero-visual {
                         width: 100%;
-                        max-width: 100%;
+                        max-width: 280px;
+                        min-width: auto;
                         justify-content: center;
                         order: -1;
-                        margin-bottom: var(--space-lg);
+                        margin: 0 auto;
+                        margin-bottom: var(--space-md);
                 }
         }
 
@@ -474,30 +497,49 @@
                 }
         }
 
-        .showcase-item {
-                display: flex;
-                flex-direction: column;
-                gap: var(--space-sm);
-        }
+	.showcase-item {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-md);
+	}
 
-        .showcase-meta {
-                display: flex;
-                justify-content: space-between;
-                align-items: baseline;
-                font-size: var(--font-size-sm);
-                padding-top: var(--space-xs);
-        }
+	.showcase-meta {
+		display: flex;
+		justify-content: space-between;
+		align-items: flex-start;
+		gap: var(--space-lg);
+		padding: var(--space-xs) 0;
+	}
 
-        .showcase-title {
-                font-weight: 500;
-                color: var(--color-text);
-        }
+	.showcase-info {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2xs);
+	}
 
-        .showcase-subtitle {
-                font-size: var(--font-size-xs);
-                color: var(--color-text-subtle);
-        }
+	.showcase-title {
+		font-weight: 500;
+		color: var(--color-text);
+		font-size: var(--font-size-base);
+	}
 
+	.showcase-subtitle {
+		font-size: var(--font-size-xs);
+		color: var(--color-text-subtle);
+	}
+
+	.showcase-link {
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+		color: var(--color-accent);
+		text-decoration: none;
+		white-space: nowrap;
+		transition: opacity var(--duration-fast) var(--easing);
+	}
+
+	.showcase-link:hover {
+		opacity: 0.7;
+	}
         /* TWO COLUMN */
         .two-column {
                 display: grid;
@@ -538,69 +580,11 @@
                 color: var(--color-accent);
         }
 
-        /* WIP BANNER - VERY VISIBLE */
-        .wip-banner {
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                gap: var(--space-md);
-                padding: var(--space-lg);
-                background: #ff6b6b;
-                color: #ffffff;
-                font-family: var(--font-mono);
-                font-size: var(--font-size-sm);
-                font-weight: var(--font-weight-medium);
-                text-transform: uppercase;
-                letter-spacing: var(--letter-spacing-wide);
-                animation: wip-pulse 3s ease-in-out infinite;
-                margin-bottom: var(--space-xl);
-        }
-
-        .wip-icon {
-                font-size: var(--font-size-lg);
-                animation: wip-shake 2s ease-in-out infinite;
-        }
-
-        .wip-text {
-                font-weight: 700;
-        }
-
-        @keyframes wip-pulse {
-                0%, 100% {
-                        background: #ff6b6b;
-                }
-                50% {
-                        background: #ff5252;
-                }
-        }
-
-        @keyframes wip-shake {
-                0% {
-                        transform: rotate(-3deg);
-                }
-                50% {
-                        transform: rotate(3deg);
-                }
-                100% {
-                        transform: rotate(-3deg);
-                }
-        }
-
         /* Mobile adjustments */
         @media (max-width: 600px) {
                 .footer-content {
                         flex-direction: column;
                         gap: var(--space-sm);
-                }
-
-                .wip-banner {
-                        flex-direction: column;
-                        text-align: center;
-                        gap: var(--space-xs);
-                }
-
-                .wip-text {
-                        font-size: var(--font-size-xs);
                 }
         }
 </style>

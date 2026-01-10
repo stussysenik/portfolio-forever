@@ -2,6 +2,7 @@
         import "../app.css";
         import { page } from "$app/stores";
         import { siteConfig, socialLinks, profile } from "$lib/data/content";
+        import { layoutConfig } from "$lib/data/layout-config";
         import CommandPalette from "$lib/components/CommandPalette.svelte";
 
         // Navigation - ordered by importance
@@ -15,6 +16,13 @@
         ];
 
         $: currentPath = $page.url.pathname;
+
+        // Social links toggle for mobile
+        let socialExpanded = false;
+
+        function toggleSocial() {
+                socialExpanded = !socialExpanded;
+        }
 
         function handleGlobalSlash(e: KeyboardEvent) {
                 if (typeof document === "undefined") return;
@@ -49,37 +57,51 @@
 <!-- Command Palette (global) -->
 <CommandPalette />
 
+<!-- WIP BANNER - First visible element, before everything -->
+{#if layoutConfig.showWipBanner && layoutConfig.wipBannerPosition !== 'hidden'}
+<div class="wip-banner" class:wip-banner--sticky={layoutConfig.wipBannerPosition === 'sticky'}>
+        <span class="wip-icon">⚠</span>
+        <span class="wip-text">{layoutConfig.wipBannerMessage}</span>
+        <span class="wip-icon">⚠</span>
+</div>
+{/if}
+
 <header class="header">
         <div class="header-inner">
                 <a href="/" class="header-name">{siteConfig.name}</a>
 
-                <nav class="nav" aria-label="Main">
-                        {#each mainNav as item}
-                                <a
-                                        href={item.href}
-                                        class="nav-link"
-                                        class:active={currentPath ===
-                                                item.href ||
-                                                (item.href !== "/" &&
-                                                        currentPath.startsWith(
-                                                                item.href,
-                                                        ))}
-                                >
-                                        {item.label}
-                                </a>
-                        {/each}
-                </nav>
-
-                <div class="header-actions">
-                        <nav class="social" aria-label="Social">
-                                {#each socialLinks as link}
+                <div class="header-nav-group">
+                        <!-- Main navigation -->
+                        <nav class="nav" aria-label="Main">
+                                {#each mainNav as item}
                                         <a
-                                                href={link.url}
-                                                target="_blank"
-                                                rel="noopener"
+                                                href={item.href}
+                                                class="nav-link"
+                                                class:active={currentPath ===
+                                                        item.href ||
+                                                        (item.href !== "/" &&
+                                                                currentPath.startsWith(
+                                                                        item.href,
+                                                                ))}
                                         >
-                                                {link.label}
+                                                {item.label}
                                         </a>
+                                {/each}
+                        </nav>
+
+                        <!-- Desktop: social links inline | Mobile: toggle button -->
+                        <button 
+                                class="social-toggle"
+                                on:click={toggleSocial}
+                                aria-expanded={socialExpanded}
+                                aria-label="Toggle social links"
+                        >
+                                {socialExpanded ? '×' : '@'}
+                        </button>
+
+                        <nav class="social-links" class:mobile-expanded={socialExpanded} aria-label="Social">
+                                {#each socialLinks as link}
+                                        <a href={link.url} target="_blank" rel="noopener">{link.label}</a>
                                 {/each}
                         </nav>
                 </div>
@@ -92,7 +114,7 @@
 
 <footer class="terminal">
         <div class="terminal-left">
-                <span class="terminal-os">SENIK OS</span>
+                <span class="terminal-edition">© 2026</span>
                 <span class="terminal-sep">·</span>
                 <span class="terminal-path">{currentPath}</span>
         </div>
@@ -128,7 +150,7 @@
 
         .header-inner {
                 display: flex;
-                flex-wrap: wrap;
+                flex-wrap: nowrap;
                 align-items: center;
                 gap: var(--space-sm);
                 max-width: var(--max-width);
@@ -161,8 +183,8 @@
 
         .nav {
                 display: flex;
-                flex-wrap: wrap;
-                gap: var(--space-sm);
+                flex-wrap: nowrap;
+                gap: var(--space-xs);
         }
 
         @media (min-width: 768px) {
@@ -201,64 +223,148 @@
                 background: var(--color-text);
         }
 
-        .header-actions {
+        /* Nav group - contains nav + @ toggle inline */
+        /* Nav group - contains nav + @ toggle inline */
+        .header-nav-group {
+                position: relative; /* Anchor for dropdown */
                 display: flex;
                 align-items: center;
-                gap: var(--space-md);
+                gap: var(--space-sm);
                 margin-left: auto;
         }
 
-        @media (min-width: 768px) {
-                .header-actions {
-                        margin-left: 0;
-                }
-        }
-
-        .social {
-                display: none;
-                gap: var(--space-xs);
-        }
-
-        @media (min-width: 768px) {
-                .social {
-                        display: flex;
-                        flex-wrap: wrap;
-                        margin-left: var(--space-md);
-                }
-        }
-
-        .social a {
+        .social-toggle {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 24px;
+                height: 24px;
+                font-family: var(--font-mono);
                 font-size: var(--font-size-xs);
-                color: var(--color-text-subtle);
-                transition: color var(--duration-fast) var(--easing);
+                font-weight: 600;
+                color: var(--color-text);
+                background: transparent;
+                border: 1px solid var(--color-text-muted);
+                border-radius: var(--radius-sm);
+                cursor: pointer;
+                transition: all var(--duration-fast) var(--easing);
+                flex-shrink: 0;
         }
 
-        .social a:hover {
+        .social-toggle:hover {
+                color: var(--color-accent);
+                border-color: var(--color-accent);
+        }
+
+        /* Toggle visibility - localized to the component logic */
+        @media (min-width: 1025px) {
+                .social-toggle {
+                        display: none;
+                }
+        }
+
+        /* Social dropdown */
+        /* Social links - desktop: inline, mobile: dropdown */
+        .social-links {
+                display: none; /* Hidden on mobile by default */
+        }
+
+        .social-links a {
+                font-family: var(--font-mono);
+                font-size: var(--font-size-xs);
+                font-weight: 500;
                 color: var(--color-text-muted);
+                padding: var(--space-xs) var(--space-sm);
+                border-radius: var(--radius-sm);
+                transition: all var(--duration-fast) var(--easing);
+                white-space: nowrap;
+        }
+
+        .social-links a:hover {
+                background: var(--color-surface);
+                color: var(--color-accent);
+        }
+
+        /* Mobile/Tablet Dropdown Styles (Up to 1024px) */
+        @media (max-width: 1024px) {
+                .social-links.mobile-expanded {
+                        display: flex;
+                        flex-direction: column;
+                        position: absolute;
+                        top: 100%;
+                        right: 0;
+                        margin-top: var(--space-xs);
+                        background: var(--color-bg);
+                        border: 1px solid var(--border-color);
+                        border-radius: var(--radius-md);
+                        padding: var(--space-xs);
+                        z-index: 200;
+                        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+                        gap: 2px;
+                        min-width: 140px;
+                }
+
+                .social-links.mobile-expanded a {
+                        display: block;
+                        width: 100%;
+                }
+        }
+
+        /* Desktop: always visible, inline with separator */
+        @media (min-width: 1025px) {
+                .social-links {
+                        display: flex;
+                        flex-direction: row;
+                        align-items: center;
+                        position: static;
+                        background: transparent;
+                        border: none;
+                        border-left: 1px solid var(--border-color-subtle);
+                        border-radius: 0;
+                        padding: 0;
+                        padding-left: var(--space-lg);
+                        margin-left: var(--space-2xl);
+                        box-shadow: none;
+                        gap: var(--space-xs);
+                        min-width: 0;
+                }
+
+                .social-links a {
+                        padding: var(--space-2xs) var(--space-xs);
+                        font-size: var(--font-size-2xs);
+                }
+
+                .social-links a:hover {
+                        background: transparent;
+                }
         }
 
         /* Mobile responsive adjustments */
-        @media (max-width: 767px) {
+        @media (max-width: 1024px) {
                 .header-inner {
-                        flex-direction: column;
-                        align-items: flex-start;
-                        gap: var(--space-md);
+                        gap: var(--space-sm);
+                        justify-content: space-between; /* Ensure logo/nav are balanced */
+                }
+
+                .header-nav-group {
+                        gap: var(--space-md); /* Increased gap for Pro Max sizes */
                 }
 
                 .nav {
-                        margin-right: 0;
-                        margin-bottom: var(--space-md);
-                        width: 100%;
+                        gap: var(--space-xs);
                 }
+        }
 
-                .header-actions {
-                        margin-left: 0;
-                        margin-top: var(--space-md);
-                        width: 100%;
+        /* Tight spacing for small screens (iPhone SE, etc) */
+        @media (max-width: 380px) {
+                 .header-inner {
+                        gap: var(--space-xs);
                 }
-
-                .social {
-                        justify-content: flex-start;
+                .header-nav-group {
+                        gap: var(--space-xs);
+                }
+                .nav {
+                        gap: var(--space-2xs);
                 }
         }
 
@@ -287,7 +393,7 @@
                 gap: var(--space-sm);
         }
 
-        .terminal-os {
+        .terminal-edition {
                 color: var(--color-text-subtle);
         }
 
@@ -377,6 +483,75 @@
 
                 .terminal-hint {
                         display: none;
+                }
+        }
+
+        /* WIP BANNER - VERY VISIBLE, First element */
+        .wip-banner {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                gap: var(--space-md);
+                padding: var(--space-lg);
+                background: #ff6b6b;
+                color: #ffffff;
+                font-family: var(--font-mono);
+                font-size: var(--font-size-sm);
+                font-weight: var(--font-weight-medium);
+                text-transform: uppercase;
+                letter-spacing: var(--letter-spacing-wide);
+                animation: wip-pulse 3s ease-in-out infinite;
+                margin: calc(-1 * var(--container-padding));
+                margin-bottom: var(--space-xl);
+        }
+
+        .wip-banner--sticky {
+                position: sticky;
+                top: 0;
+                z-index: 1000;
+        }
+
+        .wip-icon {
+                font-size: var(--font-size-lg);
+                animation: wip-shake 2s ease-in-out infinite;
+        }
+
+        .wip-text {
+                font-weight: 700;
+        }
+
+        @keyframes wip-pulse {
+                0%, 100% {
+                        background: #ff6b6b;
+                }
+                50% {
+                        background: #ff5252;
+                }
+        }
+
+        @keyframes wip-shake {
+                0% {
+                        transform: rotate(-3deg);
+                }
+                50% {
+                        transform: rotate(3deg);
+                }
+                100% {
+                        transform: rotate(-3deg);
+                }
+        }
+
+        /* Mobile adjustments for WIP banner */
+        @media (max-width: 600px) {
+                .wip-banner {
+                        flex-direction: column;
+                        text-align: center;
+                        gap: var(--space-xs);
+                        padding: var(--space-md);
+                }
+
+                .wip-text {
+                        font-size: var(--font-size-xs);
                 }
         }
 </style>
