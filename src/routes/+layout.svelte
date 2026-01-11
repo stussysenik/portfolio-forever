@@ -83,6 +83,7 @@
 </script>
 
 <svelte:window on:keydown={handleGlobalSlash} />
+<svelte:body class:scroll-lock={currentPath === '/process'} />
 
 <svelte:head>
         <title>{siteConfig.title}</title>
@@ -167,7 +168,7 @@
                                         }),
                                 )}
                 >
-                        <span class="terminal-hint">/ for CMDs</span>
+                        <span class="terminal-hint"><kbd class="hint-key">/</kbd> for CMDs</span>
                 </button>
                 {#if profile.available}
                         <span class="terminal-sep">·</span>
@@ -195,15 +196,16 @@
         }
 
         .header {
-                /* Removed bottom margin since it's now handled by main padding */
-                padding-bottom: var(--space-md);
+                /* Minimal padding: text height (approx 24px) + small space */
+                padding: var(--space-xs) 0;
                 border-bottom: none; /* Handled by top-frame for cleaner glass edge */
         }
 
         .main-content {
                /* Clear fixed header + banner (~ 30px banner + 70px header + spacing) */
-               /* Refined spacing for cleaner banner */
-               padding-top: 140px; 
+               /* Clear fixed header + banner (~ 30px banner + 50px header + spacing) */
+               /* Refined spacing for slimmer header */
+               padding-top: 100px; 
                /* Clear floating terminal */
                padding-bottom: 140px;
         }
@@ -543,15 +545,42 @@
 		color: var(--color-text);
 	}
 
-	.terminal-hint {
-		color: var(--color-text-subtle);
-		font-family: var(--font-mono);
-		font-size: var(--font-size-2xs);
-		padding: 0;
-		background: none;
-		border: none;
-		transition: color var(--duration-fast) var(--easing);
-	}
+	        .terminal-hint {
+                display: flex;
+                align-items: center;
+                gap: var(--space-xs);
+                color: var(--color-text-subtle);
+                font-family: var(--font-mono);
+                font-size: var(--font-size-2xs);
+                padding: 0;
+                background: none;
+                border: none;
+                transition: color var(--duration-fast) var(--easing);
+        }
+
+        .hint-key {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                min-width: 1.6em;
+                height: 1.6em;
+                padding: 0 var(--space-xs);
+                font-family: var(--font-mono);
+                font-size: var(--font-size-2xs);
+                font-weight: 500;
+                color: var(--color-text-muted);
+                background: var(--color-surface);
+                border: 1px solid var(--border-color);
+                border-radius: var(--radius-sm);
+                box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+                transition: all var(--duration-fast) var(--easing);
+        }
+
+        .terminal-hint-btn:hover .hint-key {
+                background: var(--color-accent);
+                color: white;
+                border-color: var(--color-accent);
+        }
 
         .terminal-status {
                 display: inline-flex;
@@ -622,7 +651,7 @@
                 }
                 
                 .main-content {
-                        padding-top: 160px; /* Refined for slimmer banner */
+                        padding-top: 120px; /* Refined for slimmer banner on mobile */
                 }
         }
 
@@ -633,7 +662,7 @@
                 align-items: center;
                 gap: var(--space-xs);
                 padding: 4px var(--space-md); /* Very slim */
-                margin-bottom: var(--space-xs); /* Breathing room */
+                margin-bottom: 0; /* No gap between banner and header */
                 background: #ff6b6b; /* Warning Red restored */
                 color: #ffffff; /* White text */
                 font-family: "Helvetica", sans-serif;
@@ -642,7 +671,7 @@
                 text-transform: uppercase;
                 letter-spacing: 0.05em;
                 border-bottom: 1px solid rgba(0,0,0,0.1);
-                margin: 0;
+                margin: 0; /* Remove margin to stack tightly with header */
                 width: 100%;
                 z-index: 2000;
         }
@@ -673,5 +702,12 @@
                 .wip-sep {
                         display: none;
                 }
+        }
+
+        /* Scroll Lock for Process Page */
+        :global(body.scroll-lock) {
+                overflow: hidden !important;
+                height: 100vh !important;
+                touch-action: none; /* Disable touch scrolling */
         }
 </style>
