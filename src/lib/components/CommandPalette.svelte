@@ -91,9 +91,11 @@
                 );
         }
 
+        let inputElement: HTMLInputElement;
+
         function handleKeydown(e: KeyboardEvent) {
-                // Ignore if input is focused
-                if (isInputFocused() && e.key !== "Escape") return;
+                // Ignore if input is focused (unless it's OUR input)
+                if (isInputFocused() && document.activeElement !== inputElement && e.key !== "Escape") return;
 
                 // Toggle with ?
                 if (e.key === "?" && !e.metaKey && !e.ctrlKey) {
@@ -119,7 +121,21 @@
                         !e.altKey
                 ) {
                         clearTimeout(keyBufferTimeout);
-                        keyBuffer += e.key;
+                        const potentialBuffer = keyBuffer + e.key;
+
+                        // Check if this keystroke could be part of a command
+                        const hasPartialMatch = commands.some((cmd) =>
+                                cmd.keys
+                                        .replace(/\s/g, "")
+                                        .startsWith(potentialBuffer),
+                        );
+
+                        // Prevent scroll if we're building a command sequence
+                        if (hasPartialMatch) {
+                                e.preventDefault();
+                        }
+
+                        keyBuffer = potentialBuffer;
 
                         // Check for matching command
                         const matchedCommand = commands.find(
@@ -128,18 +144,11 @@
                                         keyBuffer,
                         );
                         if (matchedCommand) {
-                                e.preventDefault();
                                 matchedCommand.action();
                                 keyBuffer = "";
                                 return;
                         }
 
-                        // Check if any command starts with buffer
-                        const hasPartialMatch = commands.some((cmd) =>
-                                cmd.keys
-                                        .replace(/\s/g, "")
-                                        .startsWith(keyBuffer),
-                        );
                         if (!hasPartialMatch) {
                                 keyBuffer = "";
                         } else {
@@ -165,6 +174,11 @@
         $: groupedCommands = {
                 navigation: commands.filter((c) => c.category === "navigation"),
         };
+        
+        $: if (isOpen && inputElement) {
+                // Small delay to ensure render
+                setTimeout(() => inputElement.focus(), 50);
+        }
 </script>
 
 {#if isOpen}
@@ -205,6 +219,15 @@
                 <footer class="palette-footer">
                         <kbd>Esc</kbd> to close
                 </footer>
+
+                <!-- Hidden input to capture focus on mobile and prevent scroll on desktop -->
+                <input
+                        bind:this={inputElement}
+                        type="text"
+                        style="opacity: 0; position: absolute; pointer-events: none; height: 1px; width: 1px;"
+                        autocomplete="off"
+                        aria-hidden="true"
+                />
         </div>
 {/if}
 
@@ -300,6 +323,7 @@
         .command-item {
                 display: flex;
                 align-items: center;
+                justify-content: center;
                 padding: var(--space-sm) 0;
                 border-bottom: 1px solid #f8f8f8;
         }
