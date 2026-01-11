@@ -73,8 +73,8 @@
   /* Refined text hierarchy - fewer, clearer steps */
   --color-text: hsl(220, 15%, 8%);
   --color-text-secondary: hsl(220, 8%, 28%);
-  --color-text-muted: hsl(220, 5%, 45%);
-  --color-text-subtle: hsl(220, 3%, 58%);
+  --color-text-muted: hsl(220, 20%, 43%);
+  --color-text-subtle: hsl(220, 10%, 55%);
 
   /* Understated accent - doesn't compete with content */
   --color-accent: hsl(220, 85%, 48%);
@@ -240,8 +240,8 @@
 
     --color-text: hsl(60, 10%, 92%);
     --color-text-secondary: hsl(60, 5%, 72%);
-    --color-text-muted: hsl(60, 3%, 52%);
-    --color-text-subtle: hsl(60, 2%, 38%);
+    --color-text-muted: hsl(60, 3%, 56%);
+    --color-text-subtle: hsl(60, 2%, 42%);
 
     --color-accent: hsl(220, 90%, 62%);
     --color-accent-hover: hsl(220, 90%, 72%);
@@ -456,7 +456,12 @@ body {
 a {
   color: var(--color-accent);
   text-decoration: none;
-  transition: color var(--duration-fast) var(--easing);
+  transition:
+    color var(--duration-fast) var(--easing),
+    border-color var(--duration-fast) var(--easing),
+    background-color var(--duration-fast) var(--easing),
+    opacity var(--duration-fast) var(--easing),
+    transform var(--duration-fast) var(--easing);
 }
 
 a:hover {

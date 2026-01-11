@@ -11,24 +11,25 @@
         import AsciiVideo from "$lib/components/AsciiVideo.svelte";
 
         // Featured showcase - sample videos (publicly accessible)
-        const showcaseItems = [
-                {
-                        type: "video",
-                        title: "Big Buck Bunny",
-                        subtitle: "Animation • Blender Foundation • 2008",
-                        src: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-                        aspectRatio: "16/9",
-                        link: "https://peach.blender.org/",
-                },
-                {
-                        type: "video",
-                        title: "Sintel",
-                        subtitle: "Fantasy • Blender Foundation • 2010",
-                        src: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4",
-                        aspectRatio: "21/9",
-                        link: "https://durian.blender.org/",
-                },
-        ];
+	// Featured showcase - YouTube embeds
+	const showcaseItems = [
+		{
+			type: "video",
+			title: "MIND180 (USA) VS MORTAL EX (JAPAN | FINAL BATTLE | BBOY UNIT 9)",
+			subtitle: "bboying • battle • old-school",
+			src: "https://youtu.be/asYJkYYEUQc?si=mUdU57hPT0yhmtRJ",
+			aspectRatio: "16/9",
+			link: "https://google.com",
+		},
+		{
+			type: "video",
+			title: "fléau",
+			subtitle: "demo • FREZE • 1999",
+			src: "https://youtu.be/NsDXMDFSmgc?si=It6aYslUZedIQbyL",
+			aspectRatio: "16/9",
+			link: "https://google.com",
+		},
+	];
 </script>
 
 <svelte:head>
@@ -416,73 +417,71 @@
                 margin-left: auto;
         }
 
-        /* ENTRY LIST */
-        .entry-list {
-                display: flex;
-                flex-direction: column;
-                gap: var(--space-sm);
-        }
+	/* ENTRY LIST */
+	.entry-list {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-sm);
+	}
 
-        .entry {
-                display: flex;
-                align-items: baseline;
-                gap: var(--space-md);
-                padding: var(--space-sm) 0;
-                transition: all var(--duration-fast) var(--easing);
-        }
+	.entry {
+		display: flex;
+		align-items: baseline;
+		gap: var(--space-md);
+		padding: var(--space-sm) 0;
+	}
 
-        .entry:hover {
-                transform: translateX(2px);
-        }
+	.entry:hover {
+		/* transform removed for old-school feel */
+	}
 
-        .entry[data-highlight="1"] {
-                color: var(--color-design);
-        }
+	.entry[data-highlight="1"] {
+		color: var(--color-design);
+	}
 
-        .entry[data-highlight="2"] {
-                color: var(--color-technology);
-        }
+	.entry[data-highlight="2"] {
+		color: var(--color-technology);
+	}
 
-        .entry[data-highlight="3"] {
-                color: var(--color-art);
-        }
+	.entry[data-highlight="3"] {
+		color: var(--color-art);
+	}
 
-        .entry[data-highlight="4"] {
-                color: var(--color-film);
-        }
+	.entry[data-highlight="4"] {
+		color: var(--color-film);
+	}
 
-        .entry-date {
-                font-family: var(--font-mono);
-                font-size: var(--font-size-xs);
-                color: var(--color-text-subtle);
-                min-width: 5ch;
-                flex-shrink: 0;
-                font-variant-numeric: tabular-nums;
-        }
+	.entry-date {
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+		color: var(--color-text-subtle);
+		min-width: 5ch;
+		flex-shrink: 0;
+		font-variant-numeric: tabular-nums;
+	}
 
-        .entry-title {
-                font-size: var(--font-size-sm);
-                color: var(--color-text);
-                font-weight: 450;
-                flex-grow: 1;
-        }
+	.entry-title {
+		font-size: var(--font-size-sm);
+		color: var(--color-text);
+		font-weight: 450;
+		flex-grow: 1;
+	}
 
-        .entry-links {
-                display: flex;
-                gap: var(--space-sm);
-        }
+	.entry-links {
+		display: flex;
+		gap: var(--space-sm);
+	}
 
-        .entry-links a {
-                font-family: var(--font-mono);
-                font-size: var(--font-size-xs);
-                color: var(--color-accent);
-                text-decoration: none;
-                transition: opacity var(--duration-fast) var(--easing);
-        }
+	.entry-links a {
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+		color: var(--color-accent);
+		text-decoration: none;
+	}
 
-        .entry-links a:hover {
-                opacity: 0.7;
-        }
+	.entry-links a:hover {
+		text-decoration: underline;
+	}
 
         /* SHOWCASE */
         .showcase-grid {

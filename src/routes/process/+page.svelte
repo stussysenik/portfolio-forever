@@ -7,11 +7,10 @@
   <meta name="description" content="How I work" />
 </svelte:head>
 
-<header class="page-header">
-  <h1 class="page-title">◇ PROCESS</h1>
-</header>
+
 
 <!-- Steps - compact, let users discover -->
+<!-- ARCHIVED CONTENT
 <div class="steps">
   {#each processSteps as step, i}
     <div class="step">
@@ -26,7 +25,6 @@
   {/each}
 </div>
 
-<!-- Hidden depth - users can discover -->
 <details class="depth-section">
   <summary class="depth-toggle">[ expand: principles ]</summary>
   <ul class="principles">
@@ -46,8 +44,49 @@
     <p><strong>Embrace discomfort.</strong> Best work happens at the edge of competence.</p>
   </div>
 </details>
+-->
 
-<!-- ASCII signature -->
+<div class="process-cycle">
+  <svg class="process-svg" viewBox="0 0 300 380" aria-label="Process: Imagine, Re-think, Ship">
+    <defs>
+      <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+        <polygon points="0 0, 10 3.5, 0 7" fill="currentColor" />
+      </marker>
+    </defs>
+    
+    <!-- Styles -->
+    <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      
+      <!-- IMAGINE -->
+      <rect x="80" y="20" width="180" height="60" />
+      <text x="170" y="55" fill="currentColor" stroke="none" text-anchor="middle" font-family="monospace" font-weight="bold" font-size="24">IMAGINE</text>
+      
+      <!-- Arrow 1 -->
+      <line x1="170" y1="80" x2="170" y2="120" marker-end="url(#arrowhead)" />
+      
+      <!-- RE-THINK -->
+      <rect x="80" y="120" width="180" height="60" />
+      <text x="170" y="155" fill="currentColor" stroke="none" text-anchor="middle" font-family="monospace" font-weight="bold" font-size="24">RE-THINK</text>
+      
+      <!-- Arrow 2 -->
+      <line x1="170" y1="180" x2="170" y2="220" marker-end="url(#arrowhead)" />
+      
+      <!-- SHIP -->
+      <rect x="80" y="220" width="180" height="60" />
+      <text x="170" y="255" fill="currentColor" stroke="none" text-anchor="middle" font-family="monospace" font-weight="bold" font-size="24">SHIP</text>
+      
+      <!-- Cycle Path: Bottom of Ship -> Left -> Up -> Into Imagine -->
+      <!-- Coming out bottom of SHIP -->
+      <line x1="170" y1="280" x2="170" y2="340" />
+      
+      <!-- Turn Left and go Up -->
+      <path d="M 170 340 L 40 340 L 40 50 L 70 50" marker-end="url(#arrowhead)" />
+      
+    </g>
+  </svg>
+</div>
+
+<!--
 <footer class="process-footer">
   <pre class="ascii-sig">
     ┌─────────────┐
@@ -67,6 +106,7 @@
     └─────────────┘
   </pre>
 </footer>
+-->
 
 <style>
   .page-header {
@@ -187,18 +227,20 @@
   }
   
   /* Footer */
-  .process-footer {
-    padding-top: var(--space-xl);
-    border-top: var(--border-width) dashed var(--border-color);
+  /* Process Cycle */
+  .process-cycle {
     display: flex;
     justify-content: center;
+    align-items: center;
+    min-height: 70vh; 
+    padding: var(--space-md);
+    width: 100%;
   }
-  
-  .ascii-sig {
-    font-family: var(--font-mono);
-    font-size: var(--font-size-xs);
-    line-height: 1.3;
-    color: var(--color-text-subtle);
-    margin: 0;
+
+  .process-svg {
+    width: 100%;
+    max-width: 400px;
+    height: auto;
+    color: var(--color-text);
   }
 </style>

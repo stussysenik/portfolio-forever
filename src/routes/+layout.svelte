@@ -1,4 +1,5 @@
 <script lang="ts">
+        import { onMount } from "svelte";
         import "../app.css";
         import { page } from "$app/stores";
         import { siteConfig, socialLinks, profile } from "$lib/data/content";
@@ -45,6 +46,40 @@
                         );
                 }
         }
+
+
+        // Dynamic Clock
+        let pragueTime = "";
+
+        onMount(() => {
+                const updateTime = () => {
+                        const now = new Date();
+                        const options: Intl.DateTimeFormatOptions = {
+                                timeZone: 'Europe/Prague',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                second: '2-digit',
+                                weekday: 'short', 
+                                month: 'short', 
+                                day: 'numeric'
+                        };
+                        try {
+                                const formatter = new Intl.DateTimeFormat('en-US', {
+                                        ...options,
+                                        hour12: false
+                                });
+                                // Result ex: "SUN · JAN 11 · 00:05:30 PRAGUE"
+                                pragueTime = formatter.format(now).replace(/,/g, ' ·').toUpperCase() + " PRAGUE";
+                        } catch (e) {
+                                pragueTime = "TIME ONLINE";
+                        }
+                };
+                
+                updateTime();
+                const interval = setInterval(updateTime, 1000);
+                return () => clearInterval(interval);
+        });
+
 </script>
 
 <svelte:window on:keydown={handleGlobalSlash} />
@@ -57,13 +92,16 @@
 <!-- Command Palette (global) -->
 <CommandPalette />
 
+<div class="top-frame">
 <!-- WIP BANNER - First visible element, before everything -->
 {#if layoutConfig.showWipBanner && layoutConfig.wipBannerPosition !== 'hidden'}
-<div class="wip-banner" class:wip-banner--sticky={layoutConfig.wipBannerPosition === 'sticky'}>
-        <span class="wip-icon">⚠</span>
-        <span class="wip-text">{layoutConfig.wipBannerMessage}</span>
-        <span class="wip-icon">⚠</span>
-</div>
+        <div class="wip-banner" class:wip-banner--sticky={layoutConfig.wipBannerPosition === 'sticky'}>
+                <span class="wip-text">
+                        <span class="wip-msg">{layoutConfig.wipBannerMessage}</span>
+                        <span class="wip-sep">·</span>
+                        <span class="wip-time">{pragueTime}</span>
+                </span>
+        </div>
 {/if}
 
 <header class="header">
@@ -101,14 +139,15 @@
 
                         <nav class="social-links" class:mobile-expanded={socialExpanded} aria-label="Social">
                                 {#each socialLinks as link}
-                                        <a href={link.url} target="_blank" rel="noopener">{link.label}</a>
+                                        <a href={link.url} target="_blank" rel="noopener" data-brand={link.label}>{link.label}</a>
                                 {/each}
                         </nav>
                 </div>
         </div>
 </header>
+</div>
 
-<main>
+<main class="main-content">
         <slot />
 </main>
 
@@ -141,26 +180,48 @@
 </footer>
 
 <style>
+
+        .top-frame {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                z-index: 1000;
+                background: color-mix(in srgb, var(--color-bg), transparent 15%);
+                backdrop-filter: blur(12px);
+                -webkit-backdrop-filter: blur(12px);
+                transition: transform var(--duration-normal) var(--easing);
+                border-bottom: 1px solid color-mix(in srgb, var(--border-color-subtle), transparent 50%);
+        }
+
         .header {
-                margin-bottom: var(--space-xl);
+                /* Removed bottom margin since it's now handled by main padding */
                 padding-bottom: var(--space-md);
-                border-bottom: var(--border-width) solid
-                        var(--border-color-subtle);
+                border-bottom: none; /* Handled by top-frame for cleaner glass edge */
+        }
+
+        .main-content {
+               /* Clear fixed header + banner (~ 30px banner + 70px header + spacing) */
+               /* Refined spacing for cleaner banner */
+               padding-top: 140px; 
+               /* Clear floating terminal */
+               padding-bottom: 140px;
         }
 
         .header-inner {
                 display: flex;
                 flex-wrap: nowrap;
                 align-items: center;
-                gap: var(--space-sm);
-                max-width: var(--max-width);
+                justify-content: center; /* Center everything */
+                gap: var(--space-xl); /* Larger gap for centered look */
+                max-width: var(--container-max); /* Fix variable name */
                 margin: 0 auto;
                 padding: 0 var(--container-padding);
         }
 
         @media (min-width: 768px) {
                 .header-inner {
-                        gap: var(--space-lg);
+                        gap: var(--space-2xl);
                 }
         }
 
@@ -171,7 +232,7 @@
                 color: var(--color-text);
                 text-decoration: none;
                 letter-spacing: var(--letter-spacing-tight);
-                margin-right: auto;
+                margin-right: 0; /* Remove force left */
         }
 
         @media (min-width: 768px) {
@@ -189,7 +250,7 @@
 
         @media (min-width: 768px) {
                 .nav {
-                        margin-left: auto;
+                        margin-left: 0; /* Remove force right */
                         margin-right: 0;
                         gap: var(--space-lg);
                 }
@@ -213,7 +274,7 @@
                 color: var(--color-text);
         }
 
-        .nav-link.active::after {
+        .nav-link::after {
                 content: "";
                 position: absolute;
                 bottom: 0;
@@ -221,6 +282,19 @@
                 right: 0;
                 height: 1.5px;
                 background: var(--color-text);
+                transform: scaleX(0);
+                transform-origin: right;
+                transition: transform var(--duration-fast) var(--easing);
+        }
+
+        .nav-link:hover::after {
+                transform: scaleX(1);
+                transform-origin: left;
+        }
+
+        .nav-link.active::after {
+                transform: scaleX(1);
+                transform-origin: left;
         }
 
         /* Nav group - contains nav + @ toggle inline */
@@ -336,6 +410,47 @@
 
                 .social-links a:hover {
                         background: transparent;
+                        /* Base hover handled by brand specific now, or fallback handled generally */
+                }
+
+                /* Brand Gradients - Desktop hover effects */
+                .social-links a[data-brand] {
+                        /* Prepare for gradient text */
+                        background-clip: padding-box; /* Default */
+                }
+
+                .social-links a[data-brand]:hover {
+                        background-clip: text;
+                        -webkit-background-clip: text;
+                        -webkit-text-fill-color: transparent;
+                        color: transparent;
+                }
+
+                /* Specific Brand Maps */
+                .social-links a[data-brand="soundcloud"]:hover {
+                        background-image: linear-gradient(135deg, #ff5500, #ff8800);
+                }
+                .social-links a[data-brand="imdb"]:hover {
+                        background-image: linear-gradient(135deg, #F5C518, #E2B616);
+                }
+                .social-links a[data-brand="github"]:hover {
+                        /* White to Grey to keep visibility on dark */
+                        background-image: linear-gradient(135deg, #ffffff, #999999);
+                }
+                .social-links a[data-brand="linkedin"]:hover {
+                        background-image: linear-gradient(135deg, #0077b5, #00a0dc);
+                }
+                .social-links a[data-brand="instagram"]:hover {
+                        /* Official Insta Gradient approximation */
+                        background-image: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+                }
+                .social-links a[data-brand="x"]:hover {
+                         /* Silver aura */
+                        background-image: linear-gradient(135deg, #E0E0E0, #707070);
+                }
+                .social-links a[data-brand="email"]:hover {
+                        /* Electric Blue/Teal */
+                        background-image: linear-gradient(135deg, #2AFADF, #4C83FF);
                 }
         }
 
@@ -368,17 +483,24 @@
                 }
         }
 
+
         /* Terminal Status Bar */
         .terminal {
                 position: fixed;
-                bottom: 0;
-                left: 0;
-                right: 0;
+                bottom: var(--space-md); /* Floating up */
+                left: var(--space-md);
+                right: var(--space-md);
+                border-radius: var(--radius-md); /* Encapsulated look */
+                border: 1px solid var(--border-color);
+                box-shadow: var(--shadow-lg); /* Lift it up */
+
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
                 padding: var(--space-sm) var(--container-padding);
-                background: var(--color-surface);
+                background: color-mix(in srgb, var(--color-surface), transparent 10%);
+                backdrop-filter: blur(12px);
+                -webkit-backdrop-filter: blur(12px);
                 border-top: var(--border-width) solid var(--border-color);
                 font-family: var(--font-mono);
                 font-size: var(--font-size-2xs);
@@ -406,20 +528,30 @@
                 color: var(--color-text-muted);
         }
 
-        .terminal-hint-btn {
-                background: none;
-                border: none;
-                padding: 0;
-                cursor: pointer;
-                font: inherit;
-        }
+	.terminal-hint-btn {
+		appearance: none;
+		background: transparent;
+		border: none;
+		padding: 0;
+		cursor: pointer;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
 
-        .terminal-hint {
-                color: var(--color-text-subtle);
-                padding: var(--space-3xs) var(--space-xs);
-                background: var(--color-bg-alt);
-                border-radius: var(--radius-sm);
-        }
+	.terminal-hint-btn:hover .terminal-hint {
+		color: var(--color-text);
+	}
+
+	.terminal-hint {
+		color: var(--color-text-subtle);
+		font-family: var(--font-mono);
+		font-size: var(--font-size-2xs);
+		padding: 0;
+		background: none;
+		border: none;
+		transition: color var(--duration-fast) var(--easing);
+	}
 
         .terminal-status {
                 display: inline-flex;
@@ -475,83 +607,71 @@
 
         @media (max-width: 767px) {
                 .terminal {
-                        position: relative;
-                        margin-top: var(--space-3xl);
+                        bottom: var(--space-sm);
+                        left: var(--space-sm);
+                        right: var(--space-sm);
                         flex-wrap: wrap;
                         gap: var(--space-sm);
+                        justify-content: center; /* Center content on mobile */
                 }
 
                 .terminal-hint {
-                        display: none;
+                        display: block; /* Show hint on mobile */
+                        font-size: var(--font-size-2xs); /* Make it smaller */
+                        opacity: 0.7;
+                }
+                
+                .main-content {
+                        padding-top: 160px; /* Refined for slimmer banner */
                 }
         }
 
-        /* WIP BANNER - VERY VISIBLE, First element */
+        /* WIP BANNER - RED, SLIM, TECH */
         .wip-banner {
                 display: flex;
                 justify-content: center;
                 align-items: center;
-                gap: var(--space-md);
-                padding: var(--space-lg);
-                background: #ff6b6b;
-                color: #ffffff;
-                font-family: var(--font-mono);
-                font-size: var(--font-size-sm);
-                font-weight: var(--font-weight-medium);
+                gap: var(--space-xs);
+                padding: 4px var(--space-md); /* Very slim */
+                margin-bottom: var(--space-xs); /* Breathing room */
+                background: #ff6b6b; /* Warning Red restored */
+                color: #ffffff; /* White text */
+                font-family: "Helvetica", sans-serif;
+                font-size: 11px; /* Micro tech text */
+                font-weight: bold;
                 text-transform: uppercase;
-                letter-spacing: var(--letter-spacing-wide);
-                animation: wip-pulse 3s ease-in-out infinite;
-                margin: calc(-1 * var(--container-padding));
-                margin-bottom: var(--space-xl);
-        }
-
-        .wip-banner--sticky {
-                position: sticky;
-                top: 0;
-                z-index: 1000;
-        }
-
-        .wip-icon {
-                font-size: var(--font-size-lg);
-                animation: wip-shake 2s ease-in-out infinite;
+                letter-spacing: 0.05em;
+                border-bottom: 1px solid rgba(0,0,0,0.1);
+                margin: 0;
+                width: 100%;
+                z-index: 2000;
         }
 
         .wip-text {
-                font-weight: 700;
+                font-variant-numeric: tabular-nums;
+                font-weight: bold;
         }
 
-        @keyframes wip-pulse {
-                0%, 100% {
-                        background: #ff6b6b;
-                }
-                50% {
-                        background: #ff5252;
-                }
-        }
-
-        @keyframes wip-shake {
-                0% {
-                        transform: rotate(-3deg);
-                }
-                50% {
-                        transform: rotate(3deg);
-                }
-                100% {
-                        transform: rotate(-3deg);
-                }
-        }
+        /* Dot removed */
 
         /* Mobile adjustments for WIP banner */
         @media (max-width: 600px) {
                 .wip-banner {
-                        flex-direction: column;
+                        padding: 8px; /* Slightly more vertical padding */
                         text-align: center;
-                        gap: var(--space-xs);
-                        padding: var(--space-md);
                 }
 
                 .wip-text {
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        gap: 2px;
+                        line-height: 1.3;
                         font-size: var(--font-size-xs);
+                }
+
+                .wip-sep {
+                        display: none;
                 }
         }
 </style>

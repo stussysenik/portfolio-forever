@@ -214,7 +214,7 @@
                 inset: 0;
                 background: hsl(0, 0%, 0%, 0.5);
                 backdrop-filter: blur(2px);
-                z-index: 999;
+                z-index: 2000;
                 animation: fade-in var(--duration-fast) var(--easing);
         }
 
@@ -238,7 +238,7 @@
                 border: 1px solid #e0e0e0;
                 border-radius: var(--radius-lg);
                 box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-                z-index: 1000;
+                z-index: 2001;
                 overflow: hidden;
                 animation: scale-in var(--duration-normal) var(--easing-out);
         }

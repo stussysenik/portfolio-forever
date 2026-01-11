@@ -14,6 +14,8 @@
   ).sort();
 
   let activeTag: string | null = null;
+  let activeView: 'list' | 'grid' = 'grid';
+
 
   function toggleTag(tag: string) {
     activeTag = activeTag === tag ? null : tag;
@@ -34,13 +36,13 @@
 </script>
 
 <svelte:head>
-  <title>Notes | Technical Opinions & Tutorials</title>
+  <title>Short notes | Technical Opinions & Tutorials</title>
   <meta name="description" content="Atomic notes on WebGPU, graphics programming, and creative technology" />
   <link rel="alternate" type="application/rss+xml" title="RSS Feed" href="/feed.xml" />
   <link rel="alternate" type="application/json" title="JSON Feed" href="/feed.json" />
 </svelte:head>
 
-<article class="notes-page">
+<article class="notes-page" class:wide-container={activeView === 'grid'}>
   <!-- Page Header - Clear hierarchy -->
   <header class="page-header">
     <div class="header-meta">
@@ -50,15 +52,31 @@
           × {activeTag}
         </button>
       {/if}
+      
+      <div class="view-toggle">
+        <button 
+          class="toggle-btn" 
+          class:active={activeView === 'grid'} 
+          on:click={() => activeView = 'grid'}
+          aria-label="Grid view"
+        >
+          GRID
+        </button>
+        <button 
+          class="toggle-btn" 
+          class:active={activeView === 'list'} 
+          on:click={() => activeView = 'list'}
+          aria-label="List view"
+        >
+          LIST
+        </button>
+      </div>
     </div>
-    <h1 class="page-title">Notes</h1>
-    <p class="page-description">
-      Atomic notes on graphics programming, creative technology, and technical opinions.
-    </p>
+    <h1 class="page-title">Short notes</h1>
   </header>
 
   <!-- Notes List - Clean cards with consistent rhythm -->
-  <section class="notes-list">
+  <section class="notes-list" class:notes-grid={activeView === 'grid'}>
     {#each filteredNotes as note (note.slug || note._id)}
       <a href="/notes/{note.slug}" class="note-card">
         <time class="note-date" datetime={note.publishedAt}>
@@ -72,6 +90,10 @@
       </a>
     {/each}
   </section>
+
+  <p class="page-description">
+    EXPL. atomic notes on graphics programming, creative technology, and technical opinions.
+  </p>
 
   <!-- Footer - Minimal, functional -->
   <footer class="page-footer">
@@ -138,6 +160,42 @@
     padding: 0;
   }
 
+  .view-toggle {
+    margin-left: auto;
+    display: flex;
+    gap: var(--space-xs);
+  }
+
+  .toggle-btn {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-2xs);
+    color: var(--color-text-subtle);
+    color: var(--color-text-subtle);
+    background: transparent;
+    border: none;
+    padding: var(--space-2xs) var(--space-xs);
+    cursor: pointer;
+    line-height: 1;
+    opacity: 0.5;
+    transition: opacity var(--duration-fast) var(--easing);
+  }
+
+  .toggle-btn.active {
+    background: transparent;
+    color: var(--color-text);
+    opacity: 1;
+    border: none;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
+  .toggle-btn:hover:not(.active) {
+    color: var(--color-text);
+    opacity: 0.8;
+    border: none;
+  }
+
+
   .page-title {
     font-size: var(--font-size-3xl);
     font-weight: 600;
@@ -152,7 +210,7 @@
     color: var(--color-text-muted);
     line-height: var(--line-height-relaxed);
     max-width: 48ch;
-    margin: 0;
+    margin: var(--space-2xl) 0 0 0;
   }
 
   /* === NOTES LIST === */
@@ -161,6 +219,31 @@
     flex-direction: column;
     gap: var(--space-lg);
   }
+
+  .wide-container {
+    max-width: 1200px;
+  }
+
+  /* Grid Mode */
+  .notes-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    auto-rows: 1fr; /* Force rows to be equal height */
+    gap: var(--space-md);
+  }
+
+  @media (max-width: 900px) {
+    .notes-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 600px) {
+    .notes-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
 
   .note-card {
     display: block;
@@ -180,6 +263,40 @@
     border-left: 2px solid var(--color-accent);
     margin-left: calc(-1 * var(--space-md) - 2px);
   }
+
+  /* Grid Card Overrides */
+  .notes-grid .note-card {
+    border: 1px solid var(--border-color-subtle);
+    border-radius: var(--radius-md);
+    padding: var(--space-xl); /* Generous padding */
+    height: auto;
+    aspect-ratio: 1 / 1; /* Perfectly square */
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .notes-grid .note-card:hover {
+    padding-left: var(--space-xl); /* Match padding on hover */
+    border-left: 1px solid var(--border-color-subtle);
+    border-color: var(--color-accent);
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .notes-grid .note-card:hover {
+    padding-left: var(--space-md);
+    border-left: 1px solid var(--border-color-subtle);
+    border-color: var(--color-accent);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .notes-grid .note-card .note-excerpt {
+    flex-grow: 1; /* Push CTA to bottom */
+  }
+
 
   .note-date {
     display: block;

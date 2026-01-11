@@ -1,10 +1,11 @@
 <!-- 
   AsciiVideo Component
   Enhanced video player with terminal-aesthetic controls
-  Features: Full-width progress bar, fullscreen, loop toggle, playback rate
+  Features: ASCII progress bar, fullscreen, loop toggle, playback rate
+  Updates: Supports YouTube embeds, removed title overlay, text-based progress
 -->
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
 
   export let src: string;
   export let poster: string = '';
@@ -13,8 +14,14 @@
 
   let containerElement: HTMLDivElement;
   let videoElement: HTMLVideoElement;
-  let progressBarElement: HTMLButtonElement;
+  let progressBarElement: HTMLDivElement;
   
+  // YouTube State
+  let isYoutube = false;
+  let youtubeId = '';
+  let ytPlayer: any;
+  let ytPollInterval: any;
+
   // Playback state
   let isPlaying = false;
   let isMuted = true;
@@ -25,29 +32,60 @@
   // Progress state
   let currentTime = 0;
   let duration = 0;
-  let progress = 0;
-  let buffered = 0;
+  let percentage = 0;
+  let loadedPercentage = 0;
   
   // UI state
   let isLoaded = false;
   let isHovering = false;
+  let isLoaded = false;
+  let isHovering = false;
+  let hasStarted = false;
+
+  // ASCII Config Removed
+  
+  // Detect YouTube
+  $: {
+    const ytMatch = src.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
+    if (ytMatch) {
+      isYoutube = true;
+      youtubeId = ytMatch[1];
+      hasStarted = false;
+    } else {
+      isYoutube = false;
+      youtubeId = '';
+    }
+  }
+  
+  // YouTube Thumbnail
+  $: coverUrl = poster || (isYoutube ? `https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg` : '');
+
+  // ASCII Bar Generation Removed
 
   function togglePlay() {
-    if (isPlaying) {
-      videoElement.pause();
-    } else {
-      videoElement.play();
+    if (isYoutube && ytPlayer && ytPlayer.playVideo) {
+       hasStarted = true;
+       if (isPlaying) {
+         ytPlayer.pauseVideo();
+       } else {
+         ytPlayer.playVideo();
+       }
+    } else if (videoElement) {
+      if (isPlaying) {
+        videoElement.pause();
+      } else {
+        videoElement.play();
+      }
     }
   }
 
   function toggleMute() {
     isMuted = !isMuted;
-    videoElement.muted = isMuted;
-  }
-
-  function toggleLoop() {
-    isLooping = !isLooping;
-    videoElement.loop = isLooping;
+    if (isYoutube && ytPlayer && ytPlayer.mute) {
+      if (isMuted) ytPlayer.mute(); else ytPlayer.unMute();
+    } else if (videoElement) {
+      videoElement.muted = isMuted;
+    }
   }
 
   function toggleFullscreen() {
@@ -66,33 +104,38 @@
     }
   }
 
-  function cyclePlaybackRate() {
-    const rates = [0.5, 1, 1.5, 2];
-    const currentIndex = rates.indexOf(playbackRate);
-    playbackRate = rates[(currentIndex + 1) % rates.length];
-    videoElement.playbackRate = playbackRate;
-  }
-
   function handleTimeUpdate() {
-    currentTime = videoElement.currentTime;
-    progress = duration > 0 ? (currentTime / duration) * 100 : 0;
-    
-    // Update buffered progress
-    if (videoElement.buffered.length > 0) {
-      buffered = (videoElement.buffered.end(videoElement.buffered.length - 1) / duration) * 100;
+    if (!isYoutube && videoElement) {
+        currentTime = videoElement.currentTime;
+        duration = videoElement.duration || 1; // avoid divide by zero
+        percentage = (currentTime / duration) * 100;
+        
+        if (videoElement.buffered.length > 0) {
+            loadedPercentage = (videoElement.buffered.end(videoElement.buffered.length - 1) / duration) * 100;
+        }
     }
   }
 
   function handleLoadedMetadata() {
-    duration = videoElement.duration;
-    isLoaded = true;
-    videoElement.loop = isLooping;
+    if (!isYoutube && videoElement) {
+        duration = videoElement.duration;
+        isLoaded = true;
+        videoElement.loop = isLooping;
+    }
   }
 
   function handleSeek(event: MouseEvent) {
     const rect = progressBarElement.getBoundingClientRect();
     const pos = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
-    videoElement.currentTime = pos * duration;
+    const seekTime = pos * duration;
+    
+    if (isYoutube && ytPlayer && ytPlayer.seekTo) {
+        ytPlayer.seekTo(seekTime, true);
+        currentTime = seekTime;
+        percentage = pos * 100;
+    } else if (videoElement) {
+        videoElement.currentTime = seekTime;
+    }
   }
 
   function formatTime(seconds: number): string {
@@ -102,17 +145,111 @@
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   }
 
+  // YouTube Logic
+  function initYoutubePlayer() {
+     if (typeof window === 'undefined') return;
+     
+     // @ts-ignore
+     if (!window.YT || !window.YT.Player) {
+         if (!document.querySelector('#yt-api-script')) {
+            const tag = document.createElement('script');
+            tag.id = 'yt-api-script';
+            tag.src = "https://www.youtube.com/iframe_api";
+            document.body.appendChild(tag);
+         }
+         const check = setInterval(() => {
+             // @ts-ignore
+             if (window.YT && window.YT.Player) {
+                 clearInterval(check);
+                 createYTPlayer();
+             }
+         }, 100);
+     } else {
+         createYTPlayer();
+     }
+  }
+
+  function createYTPlayer() {
+      if (!youtubeId) return;
+      // @ts-ignore
+      ytPlayer = new window.YT.Player(`yt-player-${youtubeId}`, {
+          height: '100%',
+          width: '100%',
+          videoId: youtubeId,
+          playerVars: {
+              'playsinline': 1,
+              'controls': 0,
+              'disablekb': 1,
+              'rel': 0,
+              'iv_load_policy': 3,
+              'modestbranding': 1,
+              'fs': 0
+          },
+          events: {
+              'onReady': onPlayerReady,
+              'onStateChange': onPlayerStateChange
+          }
+      });
+  }
+
+  function onPlayerReady(event: any) {
+      isLoaded = true;
+      duration = ytPlayer.getDuration();
+      ytPlayer.mute();
+      isMuted = true;
+      
+      ytPollInterval = setInterval(() => {
+         if (ytPlayer && isPlaying) {
+             currentTime = ytPlayer.getCurrentTime();
+             duration = ytPlayer.getDuration();
+             percentage = duration > 0 ? (currentTime / duration) * 100 : 0;
+             loadedPercentage = (ytPlayer.getVideoLoadedFraction() * 100) || 0;
+             
+             if (isLooping && duration > 0 && currentTime >= duration - 0.5) {
+                ytPlayer.seekTo(0);
+                ytPlayer.playVideo();
+             }
+         }
+      }, 200);
+  }
+
+  function onPlayerStateChange(event: any) {
+      if (event.data === 1) {
+          isPlaying = true;
+          hasStarted = true;
+      } else if (event.data === 2) {
+          isPlaying = false;
+      } else if (event.data === 0) {
+          isPlaying = false;
+          if (isLooping) {
+             ytPlayer.seekTo(0);
+             ytPlayer.playVideo();
+          }
+      }
+  }
+
   onMount(() => {
-    // Listen for fullscreen changes
     const handleFullscreenChange = () => {
       isFullscreen = !!document.fullscreenElement;
     };
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     
+    if (isYoutube) {
+        setTimeout(initYoutubePlayer, 100);
+    }
+
     return () => {
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      if (ytPollInterval) clearInterval(ytPollInterval);
+      if (ytPlayer && ytPlayer.destroy) ytPlayer.destroy();
     };
   });
+  
+  // Watch for src change
+  $: if (isYoutube && youtubeId && ytPlayer && ytPlayer.loadVideoById) {
+      ytPlayer.loadVideoById(youtubeId);
+  }
+
 </script>
 
 <div 
@@ -125,41 +262,45 @@
   role="group"
   aria-label="Video player: {title}"
 >
-  <video
-    bind:this={videoElement}
-    {src}
-    {poster}
-    muted={isMuted}
-    loop={isLooping}
-    playsinline
-    preload="metadata"
-    on:play={() => isPlaying = true}
-    on:pause={() => isPlaying = false}
-    on:timeupdate={handleTimeUpdate}
-    on:loadedmetadata={handleLoadedMetadata}
-    on:click={togglePlay}
-    class="video-element"
-  >
-    <track kind="captions" />
-  </video>
+  {#if isYoutube}
+      <div class="yt-wrapper">
+          <div id="yt-player-{youtubeId}"></div>
+      </div>
+      {#if !hasStarted && coverUrl}
+          <div class="yt-cover" style="background-image: url('{coverUrl}')"></div>
+      {/if}
+      <div class="yt-blocker" on:click={togglePlay}></div>
+  {:else}
+      <video
+        bind:this={videoElement}
+        {src}
+        {poster}
+        muted={isMuted}
+        loop={isLooping}
+        playsinline
+        preload="metadata"
+        on:play={() => isPlaying = true}
+        on:pause={() => isPlaying = false}
+        on:timeupdate={handleTimeUpdate}
+        on:loadedmetadata={handleLoadedMetadata}
+        on:click={togglePlay}
+        class="video-element"
+      >
+        <track kind="captions" />
+      </video>
+  {/if}
 
   <!-- Overlay Controls -->
   <div class="controls-overlay" class:visible={isHovering || !isPlaying}>
-    <!-- Top Bar: Title -->
-    {#if title}
-      <div class="controls-top">
-        <span class="video-title">{title}</span>
-      </div>
-    {/if}
-
-    <!-- Large Play Button (center) -->
+    
+    <!-- Large Play Button (center) only show if paused -->
     {#if !isPlaying && isLoaded}
       <button 
         class="play-button-large" 
         on:click={togglePlay}
         aria-label="Play video"
       >
-        [ ▶ ]
+        ▶
       </button>
     {/if}
 
@@ -170,25 +311,32 @@
         class="control-button" 
         on:click={togglePlay}
         aria-label={isPlaying ? 'Pause' : 'Play'}
-        title="{isPlaying ? 'Pause' : 'Play'} (Space)"
       >
         {isPlaying ? '[ II ]' : '[ > ]'}
       </button>
 
-      <!-- Progress Bar - Full Width -->
-      <button 
+      <!-- Retro Progress Bar -->
+      <div 
         bind:this={progressBarElement}
-        class="progress-container"
+        class="progress-track-container"
         on:click={handleSeek}
+        on:keydown={(e) => { if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') handleSeek(e as any); }}
+        role="slider"
         aria-label="Seek to position"
-        title="Click to seek"
+        aria-valuenow={percentage}
+        aria-valuemin="0"
+        aria-valuemax="100"
+        tabindex="0"
       >
         <div class="progress-track">
-          <div class="progress-buffered" style="width: {buffered}%"></div>
-          <div class="progress-fill" style="width: {progress}%"></div>
-          <div class="progress-thumb" style="left: {progress}%"></div>
+           <!-- Buffered -->
+           <div class="progress-buffer" style="width: {loadedPercentage}%"></div>
+           <!-- Play Progress -->
+           <div class="progress-fill" style="width: {percentage}%"></div>
+           <!-- Retro Thumb -->
+           <div class="progress-thumb" style="left: {percentage}%"></div>
         </div>
-      </button>
+      </div>
 
       <!-- Time -->
       <span class="time-display">
@@ -200,7 +348,6 @@
         class="control-button" 
         on:click={toggleMute}
         aria-label={isMuted ? 'Unmute' : 'Mute'}
-        title="Toggle mute (M)"
       >
         {isMuted ? '[ M ]' : '[ ♪ ]'}
       </button>
@@ -210,7 +357,6 @@
         class="control-button"
         on:click={toggleFullscreen}
         aria-label={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
-        title="Toggle fullscreen (F)"
       >
         [ :: ]
       </button>
@@ -246,18 +392,40 @@
     display: block;
   }
 
+  /* YouTube Specifics */
+  .yt-wrapper {
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+  }
+  
+  .yt-blocker {
+      position: absolute;
+      inset: 0;
+      z-index: 5;
+      background: transparent;
+  }
+  
+  .yt-cover {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      z-index: 6; 
+      pointer-events: none;
+  }
+
   .controls-overlay {
     position: absolute;
     inset: 0;
+    z-index: 10;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: flex-end; /* Push content to bottom */
     background: linear-gradient(
       to bottom,
-      rgba(0, 0, 0, 0.7) 0%,
-      transparent 25%,
-      transparent 75%,
-      rgba(0, 0, 0, 0.85) 100%
+      transparent 0%,
+      rgba(0, 0, 0, 0.4) 100%
     );
     opacity: 0;
     transition: opacity 0.2s ease;
@@ -269,32 +437,20 @@
     pointer-events: all;
   }
 
-  .controls-top {
-    padding: var(--space-md) var(--space-lg);
-  }
-
-  .video-title {
-    font-size: var(--font-size-sm);
-    color: hsl(60, 100%, 95%);
-    text-transform: uppercase;
-    letter-spacing: var(--letter-spacing-wide);
-    font-weight: 500;
-  }
-
   .play-button-large {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     font-family: inherit;
-    font-size: var(--font-size-3xl);
+    font-size: var(--font-size-xl);
     color: hsl(60, 100%, 95%);
     background: rgba(0, 0, 0, 0.6);
-    border: 2px solid hsl(60, 100%, 95%);
-    border-radius: var(--radius-md);
-    padding: var(--space-lg) var(--space-xl);
+    border: 1px solid hsl(60, 100%, 95%);
+    border-radius: var(--radius-sm);
+    padding: var(--space-sm) var(--space-md);
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all var(--duration-fast) var(--easing);
   }
 
   .play-button-large:hover {
@@ -309,8 +465,10 @@
     align-items: center;
     gap: var(--space-sm);
     padding: var(--space-sm) var(--space-md);
-    background: rgba(0, 0, 0, 0.6);
+    background: rgba(0, 0, 0, 0.7);
     backdrop-filter: blur(4px);
+    margin: var(--space-sm);
+    border-radius: var(--radius-sm);
   }
 
   .control-button {
@@ -321,7 +479,7 @@
     border: none;
     cursor: pointer;
     padding: var(--space-xs) var(--space-2xs);
-    transition: color 0.15s ease;
+    transition: color var(--duration-fast) var(--easing);
     white-space: nowrap;
     flex-shrink: 0;
   }
@@ -330,50 +488,47 @@
     color: hsl(140, 60%, 50%);
   }
 
-  .control-button.active {
-    color: hsl(140, 60%, 50%);
-  }
-
-  /* Full-width Progress Bar */
-  .progress-container {
+  /* ASCII Progress Bar */
+  /* Retro Progress Bar */
+  .progress-track-container {
     flex: 1;
     min-width: 0;
-    cursor: pointer;
-    background: transparent;
-    border: none;
-    padding: var(--space-sm) 0;
-    font-family: inherit;
+    height: 24px;
     display: flex;
     align-items: center;
+    cursor: pointer;
+    margin: 0 var(--space-xs);
+    position: relative;
+    user-select: none;
+    -webkit-user-select: none;
   }
 
   .progress-track {
-    position: relative;
     width: 100%;
-    height: 6px;
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 3px;
-    overflow: visible;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    position: relative;
   }
 
-  .progress-buffered {
+  .progress-buffer {
     position: absolute;
-    left: 0;
     top: 0;
+    left: 0;
     height: 100%;
-    background: rgba(255, 255, 255, 0.25);
-    border-radius: 3px;
-    transition: width 0.1s ease;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+    pointer-events: none;
   }
 
   .progress-fill {
     position: absolute;
-    left: 0;
     top: 0;
+    left: 0;
     height: 100%;
-    background: hsl(140, 60%, 50%);
-    border-radius: 3px;
-    transition: width 0.05s linear;
+    background: hsl(140, 60%, 50%); /* Terminal Green */
+    border-radius: 2px;
+    pointer-events: none;
   }
 
   .progress-thumb {
@@ -381,16 +536,33 @@
     top: 50%;
     width: 14px;
     height: 14px;
-    background: hsl(140, 60%, 50%);
-    border: 2px solid hsl(60, 100%, 95%);
+    background: #ff4444; /* Retro Red */
     border-radius: 50%;
     transform: translate(-50%, -50%);
-    transition: transform 0.1s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    box-shadow: 
+        inset 1px 1px 2px rgba(255, 255, 255, 0.4),
+        inset -1px -1px 2px rgba(0, 0, 0, 0.4),
+        0 1px 3px rgba(0, 0, 0, 0.5);
+    pointer-events: none;
+    z-index: 2;
   }
 
-  .progress-container:hover .progress-thumb {
+  .progress-track-container:hover .progress-thumb {
     transform: translate(-50%, -50%) scale(1.2);
+    /* Make it pop on hover */
+    background: #ff5555;
+    box-shadow: 
+        inset 1px 1px 3px rgba(255, 255, 255, 0.5),
+        inset -1px -1px 3px rgba(0, 0, 0, 0.3),
+        0 2px 6px rgba(0, 0, 0, 0.6);
+  }
+
+  /* Responsive tweak for mobile */
+  @media (max-width: 640px) {
+      .progress-thumb {
+          width: 12px;
+          height: 12px;
+      }
   }
 
   .time-display {
@@ -409,6 +581,7 @@
     align-items: center;
     justify-content: center;
     background: rgba(0, 0, 0, 0.9);
+    pointer-events: none;
   }
 
   .loading-text {
@@ -423,33 +596,13 @@
     }
   }
 
-  /* Fullscreen adjustments */
-  .fullscreen .controls-bar {
-    padding: var(--space-md) var(--space-xl);
-  }
-
-  .fullscreen .video-title {
-    font-size: var(--font-size-lg);
-  }
-
-  .fullscreen .control-button {
-    font-size: var(--font-size-sm);
-  }
-
-  .fullscreen .progress-track {
-    height: 8px;
-  }
-
-  .fullscreen .progress-thumb {
-    width: 18px;
-    height: 18px;
-  }
-
   /* Responsive */
   @media (max-width: 640px) {
     .controls-bar {
       gap: var(--space-2xs);
       padding: var(--space-xs) var(--space-sm);
+      margin: 0;
+      border-radius: 0;
     }
 
     .control-button {
@@ -461,14 +614,9 @@
       font-size: 10px;
       min-width: 8ch;
     }
-
-    .progress-track {
-      height: 4px;
-    }
-
-    .progress-thumb {
-      width: 10px;
-      height: 10px;
+    
+    .progress-container-ascii {
+       font-size: 10px;
     }
   }
 </style>

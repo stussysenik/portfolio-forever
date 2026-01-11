@@ -22,7 +22,7 @@ export const layoutConfig = {
         /**
          * WIP banner message
          */
-        wipBannerMessage: 'HEAVY CONSTRUCTION IN PROGRESS — WIP EVERYWHERE',
+        wipBannerMessage: 'WIP — WEBSITE IS UNDER MAINTENANCE',
 };
 
 /**

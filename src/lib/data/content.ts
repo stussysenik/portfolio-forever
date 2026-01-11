@@ -259,13 +259,13 @@ export interface Profile {
 export const profile: Profile = {
         name: "Stüssy Senik",
         taglines: [
-                {
-                        lang: "en",
-                        text: "I focus on building detailed precise technical interfaces that value minimalism",
-                },
+                // {
+                //         lang: "en",
+                //         text: "I focus on building detailed precise technical interfaces that value minimalism",
+                // },
                 {
                         lang: "de",
-                        text: "Kreativtechnologe & Digitaler Handwerker",
+                        text: "DevEx & Experience Design Engineer",
                 },
                 { lang: "ja", text: "クリエイティブ・テクノロジスト" },
         ],
@@ -319,6 +319,34 @@ export const works: Entry[] = [
                 ],
                 featured: "orange",
                 category: "personal software",
+        },
+        {
+                year: 2026,
+                month: 1,
+                title: "iPod emulator",
+                links: [
+                        {
+                                label: "link",
+                                url: "https://ipod-music.vercel.app",
+                        },
+                ],
+                featured: "cloud",
+                category: "tool",
+                tools: ["JavaScript", "WebGL", "ARKit"],
+        },
+        {
+                year: 2026,
+                month: 1,
+                title: "spinning wheel AR face filter lottery",
+                links: [
+                        {
+                                label: "try here",
+                                url: "https://spinning-wheel-filter.vercel.app",
+                        },
+                ],
+                featured: "ocean",
+                category: "tool",
+                tools: ["JavaScript", "WebGL", "ARKit"],
         },
         {
                 year: 2025,
