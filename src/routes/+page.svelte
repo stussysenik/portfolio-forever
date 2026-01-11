@@ -9,6 +9,7 @@
         } from "$lib/data/content";
         import AsciiDonut from "$lib/components/AsciiDonut.svelte";
         import AsciiVideo from "$lib/components/AsciiVideo.svelte";
+        import Elevator from "$lib/components/Elevator.svelte";
 
         // Featured showcase - sample videos (publicly accessible)
 	// Featured showcase - YouTube embeds
@@ -33,7 +34,7 @@
 </script>
 
 <svelte:head>
-        <title>WIP Stüssy Senik</title>
+        <title>Stüssy Senik</title>
         <meta name="description" content={profile.shortBio} />
 </svelte:head>
 
@@ -191,6 +192,9 @@
                 <span class="footer-eof">/* EOF */</span>
         </div>
 </footer>
+
+<!-- Elevator back-to-top with music -->
+<Elevator showAfter={400} />
 
 <style>
         /* HERO */
