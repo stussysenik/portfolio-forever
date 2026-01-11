@@ -74,8 +74,7 @@
   });
   
   afterUpdate(() => {
-    // Scroll to bottom
-    window.scrollTo(0, document.body.scrollHeight);
+    // Removed auto-scroll - let user control scrolling
   });
   
   function focusInput() {

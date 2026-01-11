@@ -38,8 +38,6 @@
   // UI state
   let isLoaded = false;
   let isHovering = false;
-  let isLoaded = false;
-  let isHovering = false;
   let hasStarted = false;
 
   // ASCII Config Removed
