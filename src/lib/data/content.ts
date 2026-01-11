@@ -468,7 +468,7 @@ export const talks: Entry[] = [
         {
                 year: 2025,
                 month: 12,
-                title: "I do not have a stage in mind",
+                title: "26' season",
                 links: [{ label: "info", url: "#" }],
         },
         // { year: 2024, month: 11, title: 'JSConf JP 2024', links: [{ label: 'info', url: '#' }, { label: 'video', url: '#' }] },
@@ -491,7 +491,7 @@ export const interviews: Entry[] = [
         {
                 year: 2025,
                 month: 12,
-                title: "wtf",
+                title: "good things are coming (soon)",
                 links: [{ label: "link", url: "#" }],
         },
         // { year: 2015, month: 3, title: 'cindyhwang.github.io', links: [{ label: 'link', url: '#' }] },

@@ -17,7 +17,7 @@ test.describe("Homepage - Core Functionality", () => {
 
         test("should load homepage successfully", async ({ page }) => {
                 // Check page title
-                await expect(page).toHaveTitle("WIP Stussy Senik");
+                await expect(page).toHaveTitle("Stussy Senik");
 
                 // Check URL
                 await expect(page).toHaveURL(testData.urls.home);
