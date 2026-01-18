@@ -4,7 +4,7 @@
    ============================================ */
 
 /* ---- LAYER 0: Fonts ---- */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=JetBrains+Mono:wght@300;400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=JetBrains+Mono:wght@300;400;500&family=Crimson+Pro:wght@300;400;600&family=Fira+Code:wght@300;400;500&family=Space+Grotesk:wght@300;400;500;700&display=swap');
 
 /* ---- LAYER 1: Design Tokens ---- */
 :root {
@@ -65,21 +65,21 @@
   --letter-spacing-widest: 0.15em;
 
   /* === Theme: Minimal (Default) === */
-  --color-bg: hsl(60, 10%, 98%);
-  --color-bg-alt: hsl(60, 8%, 95%);
-  --color-surface: hsl(60, 5%, 100%);
-  --color-surface-raised: hsl(60, 5%, 100%);
+  --color-bg: #FAFAF9;
+  --color-bg-alt: #F5F5F4;
+  --color-surface: #FFFFFF;
+  --color-surface-raised: #FFFFFF;
 
   /* Refined text hierarchy - fewer, clearer steps */
-  --color-text: hsl(220, 15%, 8%);
-  --color-text-secondary: hsl(220, 8%, 28%);
-  --color-text-muted: hsl(220, 20%, 43%);
-  --color-text-subtle: hsl(220, 10%, 55%);
+  --color-text: #1A1A1A;
+  --color-text-secondary: #525252;
+  --color-text-muted: #737373;
+  --color-text-subtle: #A3A3A3;
 
-  /* Understated accent - doesn't compete with content */
-  --color-accent: hsl(220, 85%, 48%);
-  --color-accent-hover: hsl(220, 85%, 40%);
-  --color-accent-subtle: hsl(220, 40%, 94%);
+  /* Refined blue accent */
+  --color-accent: #2563EB;
+  --color-accent-hover: #1D4ED8;
+  --color-accent-subtle: #DBEAFE;
   --color-success: hsl(155, 65%, 38%);
   --color-warning: hsl(40, 90%, 50%);
   --color-danger: hsl(0, 70%, 50%);
@@ -104,9 +104,9 @@
   /* === Borders & Effects === */
   --border-width: 1px;
   --border-width-thick: 1.5px;
-  --border-color: hsl(220, 8%, 88%);
-  --border-color-strong: hsl(220, 8%, 75%);
-  --border-color-subtle: hsl(220, 5%, 92%);
+  --border-color: #E5E5E5;
+  --border-color-strong: #A3A3A3;
+  --border-color-subtle: #F5F5F4;
   --radius-sm: 4px;
   --radius-md: 8px;
   --radius-lg: 12px;
@@ -185,49 +185,53 @@
 /* ---- THEME: Terminal (Dark) ---- */
 [data-theme="terminal"],
 :root:has([data-theme="terminal"]) {
-  --color-bg: hsl(220, 25%, 5%);
-  --color-bg-alt: hsl(220, 22%, 8%);
-  --color-surface: hsl(220, 20%, 9%);
-  --color-surface-raised: hsl(220, 18%, 12%);
+  --color-bg: #0D1117;
+  --color-bg-alt: #010409;
+  --color-surface: #161B22;
+  --color-surface-raised: #21262D;
 
-  --color-text: hsl(145, 60%, 85%);
-  --color-text-secondary: hsl(145, 30%, 68%);
-  --color-text-muted: hsl(145, 15%, 50%);
-  --color-text-subtle: hsl(145, 10%, 38%);
+  --color-text: #E6EDF3;
+  --color-text-secondary: #7D8590;
+  --color-text-muted: #6E7681;
+  --color-text-subtle: #484F58;
 
-  --color-accent: hsl(145, 75%, 55%);
-  --color-accent-hover: hsl(145, 75%, 65%);
-  --color-accent-subtle: hsl(145, 40%, 12%);
+  --color-accent: #00D9FF;
+  --color-accent-hover: #33E0FF;
+  --color-accent-subtle: #0A2E3B;
 
-  --border-color: hsl(145, 20%, 15%);
-  --border-color-strong: hsl(145, 15%, 25%);
-  --border-color-subtle: hsl(145, 10%, 10%);
+  --border-color: #30363D;
+  --border-color-strong: #484F58;
+  --border-color-subtle: #21262D;
 
-  --shadow-sm: 0 1px 2px hsl(0, 0%, 0%, 0.3);
-  --shadow-md: 0 4px 12px hsl(0, 0%, 0%, 0.4);
-  --shadow-lg: 0 8px 24px hsl(0, 0%, 0%, 0.5);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.6);
 }
 
-/* ---- THEME: Paper (Sepia) ---- */
-[data-theme="paper"],
-:root:has([data-theme="paper"]) {
-  --color-bg: hsl(40, 35%, 94%);
-  --color-bg-alt: hsl(40, 30%, 90%);
-  --color-surface: hsl(40, 40%, 97%);
-  --color-surface-raised: hsl(40, 45%, 98%);
+/* ---- THEME: Accessible (High Contrast WCAG AAA) ---- */
+[data-theme="accessible"],
+:root:has([data-theme="accessible"]) {
+  --color-bg: #FFFFFF;
+  --color-bg-alt: #F5F5F5;
+  --color-surface: #FFFFFF;
+  --color-surface-raised: #F5F5F5;
 
-  --color-text: hsl(25, 30%, 15%);
-  --color-text-secondary: hsl(25, 20%, 32%);
-  --color-text-muted: hsl(25, 12%, 48%);
-  --color-text-subtle: hsl(25, 8%, 60%);
+  --color-text: #000000;
+  --color-text-secondary: #333333;
+  --color-text-muted: #4D4D4D;
+  --color-text-subtle: #666666;
 
-  --color-accent: hsl(25, 70%, 42%);
-  --color-accent-hover: hsl(25, 70%, 35%);
-  --color-accent-subtle: hsl(40, 50%, 90%);
+  --color-accent: #0066CC;
+  --color-accent-hover: #0052A3;
+  --color-accent-subtle: #E6F0FF;
 
-  --border-color: hsl(35, 25%, 82%);
-  --border-color-strong: hsl(35, 20%, 72%);
-  --border-color-subtle: hsl(40, 20%, 88%);
+  --border-color: #333333;
+  --border-color-strong: #000000;
+  --border-color-subtle: #CCCCCC;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.15);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.25);
 }
 
 /* Dark mode via system preference (fallback when no theme set) */
@@ -255,6 +259,29 @@
     --shadow-md: 0 4px 12px hsl(0, 0%, 0%, 0.35);
     --shadow-lg: 0 8px 24px hsl(0, 0%, 0%, 0.45);
   }
+}
+
+/* ---- FONT SWITCHING: Data Attribute-Based Font Selection ---- */
+:root[data-font="inter"] {
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+:root[data-font="crimson"] {
+  --font-sans: 'Crimson Pro', Georgia, 'Times New Roman', serif;
+}
+
+:root[data-font="jetbrains"] {
+  --font-sans: 'JetBrains Mono', ui-monospace, 'SF Mono', 'Cascadia Code', monospace;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', 'Cascadia Code', monospace;
+}
+
+:root[data-font="fira"] {
+  --font-sans: 'Fira Code', 'Cascadia Code', 'SF Mono', monospace;
+  --font-mono: 'Fira Code', 'Cascadia Code', 'SF Mono', monospace;
+}
+
+:root[data-font="space"] {
+  --font-sans: 'Space Grotesk', system-ui, -apple-system, sans-serif;
 }
 
 /* ---- LAYER 2: Reset & Base ---- */

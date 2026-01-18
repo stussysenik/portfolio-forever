@@ -1,23 +1,28 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  
-  type Theme = 'minimal' | 'terminal' | 'paper';
-  
-  const themes: { id: Theme; label: string; icon: string }[] = [
-    { id: 'minimal', label: 'Minimal', icon: '○' },
-    { id: 'terminal', label: 'Terminal', icon: '▣' },
-    { id: 'paper', label: 'Paper', icon: '◐' },
+
+  type Theme = 'accessible' | 'minimal' | 'terminal';
+
+  const themes: { id: Theme; label: string; icon: string; description: string }[] = [
+    { id: 'accessible', label: 'Accessible', icon: '◎', description: 'High contrast WCAG AAA' },
+    { id: 'minimal', label: 'Minimal', icon: '○', description: 'Clean and refined' },
+    { id: 'terminal', label: 'Terminal', icon: '▣', description: 'Developer dark mode' },
   ];
   
   let currentTheme: Theme = 'minimal';
   let isOpen = false;
   
   onMount(() => {
-    // Load saved theme
-    const saved = localStorage.getItem('theme') as Theme | null;
-    if (saved && themes.some(t => t.id === saved)) {
-      currentTheme = saved;
-      applyTheme(saved);
+    // Load saved theme with migration for legacy themes
+    const saved = localStorage.getItem('theme');
+
+    // Migrate legacy "paper" theme to "minimal"
+    if (saved === 'paper') {
+      currentTheme = 'minimal';
+      applyTheme('minimal');
+    } else if (saved && themes.some(t => t.id === saved)) {
+      currentTheme = saved as Theme;
+      applyTheme(saved as Theme);
     } else {
       // Check system preference
       if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
@@ -48,6 +53,22 @@
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('theme', theme);
     currentTheme = theme;
+
+    // Screen reader announcement
+    announceThemeChange(theme);
+  }
+
+  function announceThemeChange(theme: Theme) {
+    const themeName = themes.find(t => t.id === theme)?.label || theme;
+    const announcement = document.createElement('div');
+    announcement.setAttribute('role', 'status');
+    announcement.setAttribute('aria-live', 'polite');
+    announcement.className = 'sr-only';
+    announcement.textContent = `Theme changed to ${themeName}`;
+    document.body.appendChild(announcement);
+
+    // Remove after announcement
+    setTimeout(() => announcement.remove(), 1000);
   }
   
   function cycleTheme() {
@@ -194,5 +215,18 @@
   .option-check {
     font-size: var(--font-size-xs);
     color: var(--color-accent);
+  }
+
+  /* Screen reader only - for accessibility announcements */
+  :global(.sr-only) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
   }
 </style>

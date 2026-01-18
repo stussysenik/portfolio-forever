@@ -5,6 +5,8 @@
         import { siteConfig, socialLinks, profile } from "$lib/data/content";
         import { layoutConfig } from "$lib/data/layout-config";
         import CommandPalette from "$lib/components/CommandPalette.svelte";
+        import ThemeSwitcher from "$lib/components/ThemeSwitcher.svelte";
+        import FontSwitcher from "$lib/components/FontSwitcher.svelte";
 
         // Navigation - ordered by importance
         const mainNav = [
@@ -177,6 +179,11 @@
                                 available
                         </span>
                 {/if}
+                <span class="terminal-sep">·</span>
+                <div class="terminal-controls">
+                        <ThemeSwitcher />
+                        <FontSwitcher />
+                </div>
         </div>
 </footer>
 
@@ -632,6 +639,12 @@
                 50% {
                         opacity: 0.4;
                 }
+        }
+
+        .terminal-controls {
+                display: flex;
+                align-items: center;
+                gap: var(--space-xs);
         }
 
         @media (max-width: 767px) {

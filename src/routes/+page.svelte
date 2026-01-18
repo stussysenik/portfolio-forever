@@ -189,6 +189,9 @@
 <!-- Footer separator -->
 <footer class="page-footer">
         <div class="footer-content">
+                <div class="copyright">
+                        © 2026 Made with <span class="heart">💙</span> in BedStuy
+                </div>
                 <span class="footer-eof">/* EOF */</span>
         </div>
 </footer>
@@ -571,23 +574,52 @@
 
         .footer-content {
                 display: flex;
-                justify-content: space-between;
+                flex-direction: column;
                 align-items: center;
+                gap: var(--space-md);
                 font-family: var(--font-mono);
                 font-size: var(--font-size-xs);
                 color: var(--color-text-subtle);
-                opacity: 0.6;
+        }
+
+        .copyright {
+                font-size: var(--font-size-sm);
+                color: var(--color-text-secondary);
+                font-weight: 400;
+                text-align: center;
+        }
+
+        .heart {
+                color: #3B82F6;
+                display: inline-block;
+                animation: heartbeat 2s ease-in-out infinite;
+        }
+
+        @keyframes heartbeat {
+                0%, 100% {
+                        transform: scale(1);
+                }
+                10% {
+                        transform: scale(1.15);
+                }
+                20% {
+                        transform: scale(1);
+                }
         }
 
         .footer-eof {
                 color: var(--color-accent);
+                opacity: 0.6;
         }
 
         /* Mobile adjustments */
         @media (max-width: 600px) {
                 .footer-content {
-                        flex-direction: column;
                         gap: var(--space-sm);
+                }
+
+                .copyright {
+                        font-size: var(--font-size-xs);
                 }
         }
 </style>
