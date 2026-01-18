@@ -24,3 +24,6 @@ vite.config.ts.timestamp-*
 .env*.local
 playwright-report/
 test-results/
+
+# Claude Code local state
+.claude/
