@@ -48,12 +48,13 @@ bun run dev
 
 ```bash
 bun run dev                                        # Start dev server first
-npx playwright test tests/ui-polish.spec.ts        # 32 UI polish tests
-npx playwright test                                # All tests
-npx playwright test --project=chromium             # Single browser
+bunx playwright test tests/ui-polish.spec.ts       # UI polish tests
+bunx playwright test tests/responsive/             # Mobile responsive tests
+bunx playwright test                               # All 317 tests (8 files)
+bunx playwright test --project=chromium            # Single browser
 ```
 
-Tests cover: route health, nav hierarchy, hero responsiveness, command palette, works content, identity ordering, CV disciplines, gifts page, cross-breakpoint smoke.
+Tests cover: route health, nav hierarchy, hero responsiveness, command palette, works content, identity ordering, CV disciplines, gifts page, cross-breakpoint smoke, mobile /works loading & network (skeleton transitions, iframe suppression, preview images, 3G/4G throttling, viewport layouts, accessibility, performance).
 
 ## Structure
 
