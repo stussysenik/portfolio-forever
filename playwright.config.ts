@@ -52,8 +52,8 @@ const config: PlaywrightTestConfig = defineConfig({
 
         // Shared settings for all tests
         use: {
-                // Base URL to use in actions like `await page.goto('/')`
-                baseURL: "http://localhost:3000",
+                // Base URL — portless serves at portfolio.localhost:1355
+                baseURL: process.env.PLAYWRIGHT_BASE_URL || "http://portfolio.localhost:1355",
 
                 // Collect trace when retrying the failed test
                 trace: "on-first-retry",
@@ -168,14 +168,14 @@ const config: PlaywrightTestConfig = defineConfig({
                 },
         ],
 
-        // Run your local dev server before starting the tests
-        // NOTE: Web server is disabled - assume dev server is already running
+        // Dev server — run `bun run dev` before tests (portless serves at portfolio.localhost:1355)
+        // NOTE: webServer auto-start disabled because Node.js can't resolve .localhost TLD
+        // (browsers resolve it fine per RFC 6761, but Node's DNS doesn't)
         // webServer: {
         //         command: "bun run dev",
-        //         url: "http://localhost:3000",
+        //         url: "http://portfolio.localhost:1355",
         //         reuseExistingServer: true,
         //         timeout: 120 * 1000,
-        //         // Wait for server to be ready
         //         stdout: "pipe",
         //         stderr: "pipe",
         // },

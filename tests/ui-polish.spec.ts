@@ -30,7 +30,7 @@ test.describe('Route health', () => {
 // NAV HIERARCHY
 // ===========================================
 test.describe('Nav hierarchy', () => {
-	test('Desktop: "find me elsewhere" label visible before social links', async ({ browser }) => {
+	test('Desktop: @ toggle visible, social links behind dropdown', async ({ browser }) => {
 		const context = await browser.newContext({
 			viewport: { width: 1280, height: 800 },
 		});
@@ -38,14 +38,18 @@ test.describe('Nav hierarchy', () => {
 		await page.goto(BASE_URL);
 		await page.waitForLoadState('networkidle');
 
-		const label = page.locator('.social-label');
-		await expect(label).toBeVisible();
-		await expect(label).toHaveText('find me elsewhere');
+		// @ toggle should be visible on desktop
+		const toggle = page.locator('.social-toggle');
+		await expect(toggle).toBeVisible();
+
+		// Social links hidden by default
+		const socialLinks = page.locator('.social-links');
+		await expect(socialLinks).toBeHidden();
 
 		await context.close();
 	});
 
-	test('Mobile: "find me elsewhere" label hidden, @ toggle visible', async ({ browser }) => {
+	test('Mobile: @ toggle visible, social links behind dropdown', async ({ browser }) => {
 		const context = await browser.newContext({
 			viewport: { width: 375, height: 812 },
 		});
@@ -53,13 +57,13 @@ test.describe('Nav hierarchy', () => {
 		await page.goto(BASE_URL);
 		await page.waitForLoadState('networkidle');
 
-		// Social label should be hidden on mobile
-		const label = page.locator('.social-label');
-		await expect(label).toBeHidden();
-
 		// @ toggle button should be visible
 		const toggle = page.locator('.social-toggle');
 		await expect(toggle).toBeVisible();
+
+		// Social links hidden by default
+		const socialLinks = page.locator('.social-links');
+		await expect(socialLinks).toBeHidden();
 
 		await context.close();
 	});

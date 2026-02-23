@@ -213,9 +213,9 @@ test.describe('Responsiveness', () => {
                 // Header should be visible
                 await expect(page.locator('.header')).toBeVisible();
 
-                // Social links should be visible on desktop
-                const socialNav = page.locator('.social');
-                await expect(socialNav).toBeVisible();
+                // Social toggle (@) should be visible on desktop
+                const socialToggle = page.locator('.social-toggle');
+                await expect(socialToggle).toBeVisible();
 
                 // Hero with donut should be visible
                 await expect(page.locator('.hero')).toBeVisible();
