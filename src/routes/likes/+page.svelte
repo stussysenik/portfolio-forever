@@ -52,10 +52,8 @@
 
 <style>
         .likes-wrapper {
-                min-height: 60vh;
                 display: flex;
                 flex-direction: column;
-                justify-content: center;
         }
 
         .section {

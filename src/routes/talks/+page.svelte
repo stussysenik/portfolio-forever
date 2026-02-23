@@ -67,10 +67,8 @@
         .talks-wrapper {
                 max-width: 900px;
                 margin: 0 auto;
-                min-height: 50vh;
                 display: flex;
                 flex-direction: column;
-                justify-content: center;
         }
 
         .two-column {

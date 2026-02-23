@@ -229,6 +229,7 @@
   .cv-container {
     max-width: 900px;
     margin: 0 auto;
+    padding-top: var(--space-lg);
   }
 
   /* Header */
