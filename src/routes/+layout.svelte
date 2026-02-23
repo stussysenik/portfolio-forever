@@ -306,8 +306,8 @@
                 bottom: 0;
                 left: 0;
                 right: 0;
-                height: 1.5px;
-                background: var(--color-text);
+                height: 2px;
+                background: var(--color-electric-green);
                 transform: scaleX(0);
                 transform-origin: right;
                 transition: transform var(--duration-fast) var(--easing);
@@ -329,6 +329,12 @@
                 display: flex;
                 align-items: center;
                 gap: var(--space-sm);
+        }
+
+        @media (min-width: 768px) {
+                .header-nav-group {
+                        gap: var(--space-lg);
+                }
         }
 
         .social-toggle {
@@ -354,17 +360,9 @@
                 border-color: var(--color-accent);
         }
 
-        /* Toggle visibility - localized to the component logic */
-        @media (min-width: 1025px) {
-                .social-toggle {
-                        display: none;
-                }
-        }
-
-        /* Social dropdown */
-        /* Social links - desktop: inline, mobile: dropdown */
+        /* Social links — always behind @ toggle (all viewports) */
         .social-links {
-                display: none; /* Hidden on mobile by default */
+                display: none;
         }
 
         .social-label {
@@ -387,116 +385,67 @@
                 color: var(--color-accent);
         }
 
-        /* Mobile/Tablet Dropdown Styles (Up to 1024px) */
-        @media (max-width: 1024px) {
-                .social-links.mobile-expanded {
-                        display: flex;
-                        flex-direction: column;
-                        position: absolute;
-                        top: 100%;
-                        right: 0;
-                        margin-top: var(--space-xs);
-                        background: var(--color-bg);
-                        border: 1px solid var(--border-color);
-                        border-radius: var(--radius-md);
-                        padding: var(--space-xs);
-                        z-index: 200;
-                        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-                        gap: 2px;
-                        min-width: 140px;
-                }
-
-                .social-links.mobile-expanded a {
-                        display: block;
-                        width: 100%;
-                }
+        /* Dropdown — all viewports */
+        .social-links.mobile-expanded {
+                display: flex;
+                flex-direction: column;
+                position: absolute;
+                top: 100%;
+                right: 0;
+                margin-top: var(--space-xs);
+                background: var(--color-bg);
+                border: 1px solid var(--border-color);
+                border-radius: var(--radius-md);
+                padding: var(--space-xs);
+                z-index: 200;
+                box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+                gap: 2px;
+                min-width: 140px;
         }
 
-        /* Desktop: always visible, inline with separator */
-        @media (min-width: 1025px) {
-                .social-links {
-                        display: flex;
-                        flex-direction: row;
-                        align-items: center;
-                        position: static;
-                        background: transparent;
-                        border: none;
-                        border-left: 1px solid var(--border-color-subtle);
-                        border-radius: 0;
-                        padding: 0;
-                        padding-left: var(--space-sm);
-                        margin-left: var(--space-sm);
-                        box-shadow: none;
-                        gap: var(--space-2xs);
-                        min-width: 0;
-                }
+        .social-links.mobile-expanded a {
+                display: block;
+                width: 100%;
+        }
 
-                .social-label {
-                        display: inline;
-                        font-family: var(--font-mono);
-                        font-size: var(--font-size-3xs);
-                        text-transform: uppercase;
-                        letter-spacing: var(--letter-spacing-wider);
-                        color: var(--color-text-subtle);
-                        opacity: 0.5;
-                        margin-right: var(--space-2xs);
-                }
+        /* Brand gradient hover effects in dropdown */
+        .social-links a[data-brand]:hover {
+                background: transparent;
+                background-clip: text;
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                color: transparent;
+        }
 
-                .social-links a {
-                        padding: var(--space-2xs) var(--space-xs);
-                        font-size: var(--font-size-2xs);
-                        font-weight: 400;
-                        color: var(--color-text-subtle);
-                }
-
-                .social-links a:hover {
-                        background: transparent;
-                        /* Base hover handled by brand specific now, or fallback handled generally */
-                }
-
-                /* Brand Gradients - Desktop hover effects */
-                .social-links a[data-brand] {
-                        /* Prepare for gradient text */
-                        background-clip: padding-box; /* Default */
-                }
-
-                .social-links a[data-brand]:hover {
-                        background-clip: text;
-                        -webkit-background-clip: text;
-                        -webkit-text-fill-color: transparent;
-                        color: transparent;
-                }
-
-                /* Specific Brand Maps */
-                .social-links a[data-brand="soundcloud"]:hover {
-                        background-image: linear-gradient(135deg, #ff5500, #ff8800);
-                }
-                .social-links a[data-brand="imdb"]:hover {
-                        background-image: linear-gradient(135deg, #F5C518, #E2B616);
-                }
-                .social-links a[data-brand="github"]:hover {
-                        /* GitHub dark brand — visible on light backgrounds */
-                        background-image: linear-gradient(135deg, #24292f, #57606a);
-                }
-                :global([data-theme="terminal"]) .social-links a[data-brand="github"]:hover {
-                        /* Light gradient for dark terminal background */
-                        background-image: linear-gradient(135deg, #f0f6fc, #8b949e);
-                }
-                .social-links a[data-brand="linkedin"]:hover {
-                        background-image: linear-gradient(135deg, #0077b5, #00a0dc);
-                }
-                .social-links a[data-brand="instagram"]:hover {
-                        /* Official Insta Gradient approximation */
-                        background-image: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
-                }
-                .social-links a[data-brand="x"]:hover {
-                         /* Silver aura */
-                        background-image: linear-gradient(135deg, #E0E0E0, #707070);
-                }
-                .social-links a[data-brand="email"]:hover {
-                        /* Electric Blue/Teal */
-                        background-image: linear-gradient(135deg, #2AFADF, #4C83FF);
-                }
+        .social-links a[data-brand="soundcloud"]:hover {
+                background-image: linear-gradient(135deg, #ff5500, #ff8800);
+        }
+        .social-links a[data-brand="imdb"]:hover {
+                background-image: linear-gradient(135deg, #F5C518, #E2B616);
+        }
+        .social-links a[data-brand="github"]:hover {
+                background-image: linear-gradient(135deg, #24292f, #57606a);
+        }
+        :global([data-theme="terminal"]) .social-links a[data-brand="github"]:hover {
+                background-image: linear-gradient(135deg, #f0f6fc, #8b949e);
+        }
+        .social-links a[data-brand="linkedin"]:hover {
+                background-image: linear-gradient(135deg, #0077b5, #00a0dc);
+        }
+        .social-links a[data-brand="instagram"]:hover {
+                background-image: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+        }
+        .social-links a[data-brand="x"]:hover {
+                /* X brand — bold black */
+                background-image: linear-gradient(135deg, #000000, #333333);
+        }
+        :global([data-theme="terminal"]) .social-links a[data-brand="x"]:hover {
+                /* Invert for dark mode */
+                background-image: linear-gradient(135deg, #ffffff, #cccccc);
+        }
+        .social-links a[data-brand="email"]:hover {
+                /* Accent blue — matching the donut accent color */
+                background-image: linear-gradient(135deg, #2563EB, #1D4ED8);
         }
 
         /* Mobile responsive adjustments */
