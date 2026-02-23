@@ -327,20 +327,66 @@
                 opacity: 0.9;
         }
 
+        /* Colored highlight backgrounds — matching the featured palette */
         .entry[data-highlight="1"] {
-                color: var(--color-design);
+                background: hsl(50, 100%, 88%);
+                padding: var(--space-sm);
+                border-radius: var(--radius-sm);
         }
 
         .entry[data-highlight="2"] {
-                color: var(--color-technology);
+                background: hsl(140, 60%, 88%);
+                padding: var(--space-sm);
+                border-radius: var(--radius-sm);
         }
 
         .entry[data-highlight="3"] {
-                color: var(--color-art);
+                background: var(--color-electric-green);
+                color: #000;
+                padding: var(--space-sm);
+                border-radius: var(--radius-sm);
         }
 
         .entry[data-highlight="4"] {
-                color: var(--color-film);
+                background: var(--color-orange);
+                color: #000;
+                padding: var(--space-sm);
+                border-radius: var(--radius-sm);
+        }
+
+        .entry[data-highlight="5"] {
+                background: var(--color-ocean);
+                color: #000;
+                padding: var(--space-sm);
+                border-radius: var(--radius-sm);
+        }
+
+        .entry[data-highlight="6"] {
+                background: var(--color-gold);
+                color: #000;
+                padding: var(--space-sm);
+                border-radius: var(--radius-sm);
+        }
+
+        .entry[data-highlight="7"] {
+                background: var(--color-pink);
+                color: #000;
+                padding: var(--space-sm);
+                border-radius: var(--radius-sm);
+        }
+
+        .entry[data-highlight="8"] {
+                background: var(--color-cloud);
+                color: #000;
+                padding: var(--space-sm);
+                border-radius: var(--radius-sm);
+        }
+
+        .entry[data-highlight="9"] {
+                background: var(--color-red);
+                color: #fff;
+                padding: var(--space-sm);
+                border-radius: var(--radius-sm);
         }
 
         .entry-date {
