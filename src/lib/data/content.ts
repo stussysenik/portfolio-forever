@@ -269,7 +269,7 @@ export const profile: Profile = {
                 },
                 { lang: "ja", text: "クリエイティブ・テクノロジスト" },
         ],
-        shortBio: "Building at the intersection of science, design, cinema, computation and code.",
+        shortBio: "Building at the intersection of science, design, cinema, computation and code",
         longBio: `I'm a formally trained Software Engineer turned Artist & self-taught Designer with over 8 years of experience crafting delight through impactful interfaces, experiences & artifacts.
 
 My practice focuses on the application of computational techniques as a tool to augment the design & art direction process. I'm a creator at heart & I'm deeply passionate about:
@@ -314,7 +314,7 @@ export const works: Entry[] = [
                 links: [
                         {
                                 label: "personal software",
-                                url: "https://mymind-clone.vercel.app",
+                                url: "https://curate-your-own-network.stussysenik.com",
                         },
                 ],
                 featured: "orange",
@@ -413,13 +413,13 @@ export const works: Entry[] = [
                 featured: "pink",
                 category: "AR/XR",
         },
-        {
-                year: 2025,
-                month: 12,
-                title: "two-dimensional CAD editor in the browser",
-                links: [{ label: "link", url: "https://1985-cad.vercel.app" }],
-                category: "technology",
-        },
+        // {
+        //         year: 2025,
+        //         month: 12,
+        //         title: "two-dimensional CAD editor in the browser",
+        //         links: [{ label: "link", url: "https://1985-cad.vercel.app" }],
+        //         category: "technology",
+        // },
         {
                 year: 2024,
                 month: 11,

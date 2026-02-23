@@ -14,7 +14,7 @@
   ).sort();
 
   let activeTag: string | null = null;
-  let activeView: 'list' | 'grid' = 'grid';
+  let activeView: 'list' | 'grid' = 'list';
 
 
   function toggleTag(tag: string) {
@@ -76,20 +76,26 @@
   </header>
 
   <!-- Notes List - Clean cards with consistent rhythm -->
-  <section class="notes-list" class:notes-grid={activeView === 'grid'}>
-    {#each filteredNotes as note (note.slug || note._id)}
-      <a href="/notes/{note.slug}" class="note-card">
-        <time class="note-date" datetime={note.publishedAt}>
-          {formatDate(note.publishedAt)}
-        </time>
-        <h2 class="note-title">{note.title}</h2>
-        {#if note.excerpt}
-          <p class="note-excerpt">{note.excerpt}</p>
-        {/if}
-        <span class="note-cta">read →</span>
-      </a>
-    {/each}
-  </section>
+  {#if filteredNotes.length === 0}
+    <div class="empty-state">
+      <p class="empty-message">No notes yet — check back soon.</p>
+    </div>
+  {:else}
+    <section class="notes-list" class:notes-grid={activeView === 'grid'}>
+      {#each filteredNotes as note (note.slug || note._id)}
+        <a href="/blog/{note.slug}" class="note-card">
+          <time class="note-date" datetime={note.publishedAt}>
+            {formatDate(note.publishedAt)}
+          </time>
+          <h2 class="note-title">{note.title}</h2>
+          {#if note.excerpt}
+            <p class="note-excerpt">{note.excerpt}</p>
+          {/if}
+          <span class="note-cta">read →</span>
+        </a>
+      {/each}
+    </section>
+  {/if}
 
   <p class="page-description">
     EXPL. atomic notes on graphics programming, creative technology, and technical opinions.
@@ -128,12 +134,12 @@
   .notes-page {
     max-width: 640px;
     margin: 0 auto;
-    padding: var(--space-2xl) var(--space-lg);
+    padding: var(--space-lg) var(--space-lg);
   }
 
   /* === PAGE HEADER === */
   .page-header {
-    margin-bottom: var(--space-3xl);
+    margin-bottom: var(--space-xl);
   }
 
   .header-meta {
@@ -211,6 +217,18 @@
     line-height: var(--line-height-relaxed);
     max-width: 48ch;
     margin: var(--space-2xl) 0 0 0;
+  }
+
+  /* === EMPTY STATE === */
+  .empty-state {
+    padding: var(--space-3xl) 0;
+    text-align: center;
+  }
+
+  .empty-message {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
   }
 
   /* === NOTES LIST === */
@@ -337,8 +355,8 @@
 
   /* === FOOTER === */
   .page-footer {
-    margin-top: var(--space-4xl);
-    padding-top: var(--space-2xl);
+    margin-top: var(--space-2xl);
+    padding-top: var(--space-xl);
     border-top: 1px solid var(--border-color-subtle);
     display: flex;
     flex-direction: column;

@@ -2,22 +2,10 @@
         import { profile } from "$lib/data/content";
 
         const categories = [
-                // {
-                //   title: 'List philosophy',
-                //   items: [
-                //     'Dieter Rams designs',
-                //   ]
-                // },
                 {
                         title: "Things I have broken",
-                        items: ["so many fucking cameras 🤮"],
+                        items: ["so many fucking cameras"],
                 },
-                // {
-                //   title: 'Things I have lost',
-                //   items: [
-                //    ''
-                //   ]
-                // },
                 {
                         title: "Wishlist",
                         items: ["Range Rover"],
@@ -28,33 +16,6 @@
                                 "like all the things... I know I will do it is not a challenge for me",
                         ],
                 },
-                // {
-                //   title: 'Objects',
-                //   items: [
-                //     'Dieter Rams designs',
-                //     'Mechanical Keyboards (HHKB)',
-                //     'Fountain Pens',
-                //     'Analog Cameras',
-                //   ]
-                // },
-                // {
-                //   title: 'Digital',
-                //   items: [
-                //     'Minimal interfaces',
-                //     'Unix philosophy',
-                //     'Rust & Zig',
-                //     'Typography',
-                //   ]
-                // },
-                // {
-                //   title: 'Media',
-                //   items: [
-                //     'Sci-Fi literature',
-                //     'Electronic music',
-                //     'Brutalist architecture',
-                //     'Indie films',
-                //   ]
-                // }
         ];
 </script>
 
@@ -62,37 +23,50 @@
         <title>Likes • {profile.name}</title>
 </svelte:head>
 
-<section class="section">
-        <header class="section-header">
-                <span class="section-marker">◆</span>
-                <h1 class="section-title">THINGS I LIKE</h1>
-                <span class="section-meta">curated list</span>
-        </header>
+<div class="likes-wrapper">
+        <section class="section">
+                <header class="section-header">
+                        <span class="section-marker">◆</span>
+                        <h1 class="section-title">THINGS I LIKE</h1>
+                        <span class="section-meta">curated list</span>
+                </header>
 
-        <div class="likes-grid">
-                {#each categories as category}
-                        <div class="category">
-                                <h2 class="category-title">{category.title}</h2>
-                                <ul class="item-list">
-                                        {#each category.items as item}
-                                                <li class="item">{item}</li>
-                                        {/each}
-                                </ul>
-                        </div>
-                {/each}
+                <div class="likes-grid">
+                        {#each categories as category}
+                                <div class="category">
+                                        <h2 class="category-title">{category.title}</h2>
+                                        <ul class="item-list">
+                                                {#each category.items as item}
+                                                        <li class="item">{item}</li>
+                                                {/each}
+                                        </ul>
+                                </div>
+                        {/each}
+                </div>
+        </section>
+
+        <div class="gifts-callout">
+                <a href="/gifts">Send books, postcards, or art supplies →</a>
         </div>
-</section>
+</div>
 
 <style>
+        .likes-wrapper {
+                min-height: 60vh;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+        }
+
         .section {
-                margin-bottom: var(--section-gap);
+                margin-bottom: var(--space-xl);
         }
 
         .section-header {
                 display: flex;
                 align-items: baseline;
                 gap: var(--space-sm);
-                margin-bottom: var(--space-xl);
+                margin-bottom: var(--space-lg);
                 padding-bottom: var(--space-sm);
                 border-bottom: var(--border-width) solid var(--border-color);
         }
@@ -121,7 +95,7 @@
         .likes-grid {
                 display: grid;
                 grid-template-columns: 1fr;
-                gap: var(--space-xl);
+                gap: var(--space-2xl);
         }
 
         @media (min-width: 768px) {
@@ -146,6 +120,11 @@
                 padding-bottom: var(--space-xs);
                 border-bottom: var(--border-width) dashed
                         var(--border-color-subtle);
+                transition: color var(--duration-fast) var(--easing);
+        }
+
+        .category:hover .category-title {
+                color: var(--color-text-secondary);
         }
 
         .item-list {
@@ -160,10 +139,31 @@
         .item {
                 font-size: var(--font-size-sm);
                 color: var(--color-text);
-                transition: color var(--duration-fast);
+                transition: color var(--duration-fast), transform var(--duration-fast);
+                cursor: default;
         }
 
         .item:hover {
                 color: var(--color-accent);
+                transform: translateX(2px);
+        }
+
+        .gifts-callout {
+                margin-top: var(--space-xl);
+                padding-top: var(--space-lg);
+                border-top: var(--border-width) dashed var(--border-color-subtle);
+                text-align: center;
+        }
+
+        .gifts-callout a {
+                font-family: var(--font-mono);
+                font-size: var(--font-size-sm);
+                color: var(--color-accent);
+                text-decoration: none;
+                transition: color var(--duration-fast) var(--easing);
+        }
+
+        .gifts-callout a:hover {
+                color: var(--color-accent-hover);
         }
 </style>

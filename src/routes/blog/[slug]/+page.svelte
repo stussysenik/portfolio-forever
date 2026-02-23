@@ -43,7 +43,7 @@
   <article class="note-article">
     <!-- Breadcrumb - Minimal, functional -->
     <nav class="breadcrumb">
-      <a href="/notes">← notes</a>
+      <a href="/blog">← blog</a>
     </nav>
 
     <!-- Article Header - Clear hierarchy -->
@@ -55,7 +55,7 @@
       {#if note.tags && note.tags.length > 0}
         <div class="article-tags">
           {#each note.tags as tag}
-            <a href="/notes?tag={tag}" class="article-tag">#{tag}</a>
+            <a href="/blog?tag={tag}" class="article-tag">#{tag}</a>
           {/each}
         </div>
       {/if}
@@ -73,7 +73,7 @@
     <!-- Article Footer - Clear separation -->
     <footer class="article-footer">
       <div class="footer-nav">
-        <a href="/notes" class="footer-link">← all notes</a>
+        <a href="/blog" class="footer-link">← all posts</a>
         <span class="footer-sep">·</span>
         <a href="#top" class="footer-link">↑ top</a>
       </div>
@@ -83,7 +83,7 @@
   <div class="not-found">
     <h1>Note not found</h1>
     <p>This note doesn't exist.</p>
-    <a href="/notes">← back to notes</a>
+    <a href="/blog">← back to blog</a>
   </div>
 {/if}
 
