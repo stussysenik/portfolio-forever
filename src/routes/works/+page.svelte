@@ -34,7 +34,17 @@
         let isMobile = false;
 
         onMount(() => {
+                window.scrollTo(0, 0);
                 isMobile = window.innerWidth < 768;
+
+                // Mobile placeholders don't fire load events — mark them loaded immediately
+                if (isMobile) {
+                        projects.forEach((project, i) => {
+                                if (!project.preview) {
+                                        handleLoad(i);
+                                }
+                        });
+                }
 
                 // Check for preview images that already loaded before event binding
                 document.querySelectorAll('.preview-image').forEach((img, _) => {
