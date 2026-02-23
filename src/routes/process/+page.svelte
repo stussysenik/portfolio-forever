@@ -232,8 +232,8 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 70vh; 
-    padding: var(--space-md);
+    min-height: 70vh;
+    padding: var(--space-3xl) var(--space-md) var(--space-md);
     width: 100%;
   }
 

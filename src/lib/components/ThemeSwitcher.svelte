@@ -155,7 +155,7 @@
   
   .theme-dropdown {
     position: absolute;
-    top: calc(100% + var(--space-xs));
+    bottom: calc(100% + var(--space-xs));
     right: 0;
     min-width: 140px;
     background: var(--color-surface);
@@ -170,7 +170,7 @@
   @keyframes dropdown-in {
     from {
       opacity: 0;
-      transform: translateY(-4px);
+      transform: translateY(4px);
     }
     to {
       opacity: 1;

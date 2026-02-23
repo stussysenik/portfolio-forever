@@ -65,48 +65,45 @@
   --letter-spacing-widest: 0.15em;
 
   /* === Theme: Minimal (Default) === */
-  --color-bg: #FAFAF9;
-  --color-bg-alt: #F5F5F4;
-  --color-surface: #FFFFFF;
-  --color-surface-raised: #FFFFFF;
+  /* 60% — Background/neutral: --color-bg, --color-bg-alt, --color-surface */
+  --color-bg: oklch(0.985 0.002 80); /* #FAFAF9 */
+  --color-bg-alt: oklch(0.970 0.002 80); /* #F5F5F4 */
+  --color-surface: oklch(1.000 0 0); /* #FFFFFF */
+  --color-surface-raised: oklch(1.000 0 0); /* #FFFFFF */
 
-  /* Refined text hierarchy - fewer, clearer steps */
-  --color-text: #1A1A1A;
-  --color-text-secondary: #525252;
-  --color-text-muted: #737373;
-  --color-text-subtle: #A3A3A3;
+  /* 30% — Text/secondary: --color-text, --color-text-secondary, --border-color */
+  --color-text: oklch(0.145 0.005 285); /* #1A1A1A */
+  --color-text-secondary: oklch(0.365 0.005 285); /* #525252 */
+  --color-text-muted: oklch(0.485 0.005 285); /* #737373 */
+  --color-text-subtle: oklch(0.670 0.005 285); /* #A3A3A3 */
 
-  /* Refined blue accent */
-  --color-accent: #2563EB;
-  --color-accent-hover: #1D4ED8;
-  --color-accent-subtle: #DBEAFE;
-  --color-success: hsl(155, 65%, 38%);
-  --color-warning: hsl(40, 90%, 50%);
-  --color-danger: hsl(0, 70%, 50%);
+  /* 10% — Accent/signal: --color-accent, --color-success, category colors */
+  --color-accent: oklch(0.546 0.245 264); /* #2563EB */
+  --color-accent-hover: oklch(0.488 0.243 264); /* #1D4ED8 */
+  --color-accent-subtle: oklch(0.932 0.042 264); /* #DBEAFE */
+  --color-success: oklch(0.560 0.140 160); /* hsl(155, 65%, 38%) */
+  --color-warning: oklch(0.780 0.160 80); /* hsl(40, 90%, 50%) */
+  --color-danger: oklch(0.560 0.200 25); /* hsl(0, 70%, 50%) */
 
   /* Category Colors - muted, sophisticated */
-  --color-design: hsl(340, 55%, 52%);
-  --color-technology: hsl(220, 75%, 52%);
-  --color-art: hsl(45, 85%, 48%);
-  --color-film: hsl(275, 50%, 52%);
-  --color-electric-green: #44D62C;
-  /* Pantone 802 C */
-  --color-orange: #F97242;
-  /* Pantone 2026 C */
+  --color-design: oklch(0.580 0.180 350); /* hsl(340, 55%, 52%) */
+  --color-technology: oklch(0.540 0.200 260); /* hsl(220, 75%, 52%) */
+  --color-art: oklch(0.720 0.160 85); /* hsl(45, 85%, 48%) */
+  --color-film: oklch(0.540 0.160 300); /* hsl(275, 50%, 52%) */
+  --color-electric-green: #44D62C; /* Pantone 802 C */
+  --color-orange: #F97242; /* Pantone 2026 C */
   --color-ocean: #B3EBF2;
   --color-gold: #D2AF26;
   --color-pink: #FFC5D3;
-  --color-cloud: #F0EEE9;
-  /* Pantone Cloud Dancer */
-  --color-red: #691424;
-  /* Pantone Sceptre Red */
+  --color-cloud: #F0EEE9; /* Pantone Cloud Dancer */
+  --color-red: #691424; /* Pantone Sceptre Red */
 
   /* === Borders & Effects === */
   --border-width: 1px;
   --border-width-thick: 1.5px;
-  --border-color: #E5E5E5;
-  --border-color-strong: #A3A3A3;
-  --border-color-subtle: #F5F5F4;
+  --border-color: oklch(0.910 0.002 80); /* #E5E5E5 */
+  --border-color-strong: oklch(0.670 0.005 285); /* #A3A3A3 */
+  --border-color-subtle: oklch(0.970 0.002 80); /* #F5F5F4 */
   --radius-sm: 4px;
   --radius-md: 8px;
   --radius-lg: 12px;
@@ -143,7 +140,7 @@
   :root {
     --grid-columns: 8;
     --container-padding: var(--space-2xl);
-    --section-gap: var(--space-5xl);
+    --section-gap: var(--space-3xl); /* was --space-5xl (128px), now 64px */
   }
 }
 
@@ -158,7 +155,7 @@
 @media (min-width: 1440px) {
   :root {
     --container-padding: var(--space-4xl);
-    --section-gap: var(--space-6xl);
+    --section-gap: var(--space-4xl); /* was --space-6xl (192px), now 96px */
   }
 }
 
@@ -319,7 +316,7 @@ html {
 body {
   min-height: 100vh;
   min-height: 100dvh;
-  padding: var(--container-padding);
+  padding: 0 var(--container-padding);
   padding-bottom: calc(var(--container-padding) + 3rem);
   /* Space for terminal bar */
   max-width: var(--container-max);
@@ -1384,4 +1381,21 @@ a:focus-visible {
 [style*="--stagger"] {
   animation-delay: calc(var(--stagger, 0) * 50ms);
   animation-fill-mode: backwards;
+}
+
+/* ---- LAYER 13: Debug Grid Overlay (Ctrl+Shift+Alt+D) ---- */
+[data-debug-grid] *:not(script):not(style) {
+  outline: 1px solid oklch(0.65 0.25 25 / 0.3);
+}
+
+[data-debug-grid]::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  background:
+    repeating-linear-gradient(90deg, oklch(0.65 0.25 25 / 0.08) 0 1px, transparent 1px var(--grid-gap)),
+    repeating-linear-gradient(oklch(0.65 0.25 25 / 0.04) 0 1px, transparent 1px 8px);
+  background-size: calc(100% / var(--grid-columns)) 100%, 100% 8px;
 }
