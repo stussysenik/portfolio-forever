@@ -14,15 +14,21 @@
         const commands: Command[] = [
                 // Navigation
                 {
-                        keys: "g w",
-                        label: "Go to Works",
+                        keys: "g h",
+                        label: "Go Home",
                         action: () => goto("/"),
                         category: "navigation",
                 },
                 {
-                        keys: "g g",
-                        label: "Go to Gallery",
-                        action: () => goto("/gallery"),
+                        keys: "g w",
+                        label: "Go to Works",
+                        action: () => goto("/works"),
+                        category: "navigation",
+                },
+                {
+                        keys: "g t",
+                        label: "Go to Talks",
+                        action: () => goto("/talks"),
                         category: "navigation",
                 },
                 {
@@ -32,15 +38,9 @@
                         category: "navigation",
                 },
                 {
-                        keys: "g l",
-                        label: "Go to Labs",
-                        action: () => goto("/labs"),
-                        category: "navigation",
-                },
-                {
                         keys: "g n",
-                        label: "Go to Notes",
-                        action: () => goto("/notes"),
+                        label: "Go to Blog",
+                        action: () => goto("/blog"),
                         category: "navigation",
                 },
                 {
@@ -56,15 +56,15 @@
                         category: "navigation",
                 },
                 {
-                        keys: "g t",
+                        keys: "g m",
                         label: "Go to Terminal",
                         action: () => goto("/terminal"),
                         category: "navigation",
                 },
                 {
-                        keys: "g o",
-                        label: "Go to OS",
-                        action: () => goto("/os"),
+                        keys: "g g",
+                        label: "Go to Gifts",
+                        action: () => goto("/gifts"),
                         category: "navigation",
                 },
         ];
@@ -255,10 +255,10 @@
                 top: 50%;
                 left: 50%;
                 transform: translate(-50%, -50%);
-                width: min(90vw, 480px);
+                width: min(90vw, 560px);
                 max-height: 70vh;
-                background: #ffffff;
-                border: 1px solid #e0e0e0;
+                background: var(--color-surface);
+                border: 1px solid var(--border-color);
                 border-radius: var(--radius-lg);
                 box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
                 z-index: 2001;
@@ -279,20 +279,20 @@
 
         .palette-header {
                 padding: var(--space-lg) var(--space-xl);
-                border-bottom: 1px solid #f0f0f0;
+                border-bottom: 1px solid var(--border-color-subtle);
         }
 
         .palette-title {
                 font-size: var(--font-size-lg);
                 font-weight: var(--font-weight-medium);
-                color: #1a1a1a;
+                color: var(--color-text);
                 margin: 0 0 var(--space-xs) 0;
         }
 
         .palette-hint {
                 font-family: var(--font-mono);
                 font-size: var(--font-size-xs);
-                color: #888888;
+                color: var(--color-text-muted);
         }
 
         .palette-content {
@@ -308,28 +308,32 @@
         .group-title {
                 font-size: var(--font-size-md);
                 font-weight: var(--font-weight-medium);
-                color: #1a1a1a;
+                color: var(--color-text);
                 margin: 0 0 var(--space-md) 0;
                 padding-bottom: var(--space-xs);
-                border-bottom: 1px solid #f0f0f0;
+                border-bottom: 1px solid var(--border-color-subtle);
         }
 
         .command-list {
                 list-style: none;
                 padding: 0;
                 margin: 0;
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: var(--space-xs) var(--space-lg);
+        }
+
+        @media (max-width: 480px) {
+                .command-list {
+                        grid-template-columns: 1fr;
+                }
         }
 
         .command-item {
                 display: flex;
                 align-items: center;
-                justify-content: center;
+                justify-content: flex-start;
                 padding: var(--space-sm) 0;
-                border-bottom: 1px solid #f8f8f8;
-        }
-
-        .command-item:last-child {
-                border-bottom: none;
         }
 
         .command-keys-container {
@@ -340,8 +344,8 @@
         .command-keys {
                 font-family: var(--font-mono);
                 font-size: var(--font-size-xs);
-                color: #ffffff;
-                background: #61afef;
+                color: var(--color-surface);
+                background: var(--color-accent);
                 padding: var(--space-2xs) var(--space-sm);
                 border-radius: var(--radius-sm);
                 min-width: 4em;
@@ -351,15 +355,15 @@
 
         .command-label {
                 font-size: var(--font-size-sm);
-                color: #333333;
+                color: var(--color-text-secondary);
                 font-weight: 500;
         }
 
         .palette-footer {
                 padding: var(--space-md) var(--space-xl);
-                border-top: 1px solid #f0f0f0;
+                border-top: 1px solid var(--border-color-subtle);
                 font-size: var(--font-size-xs);
-                color: #999999;
+                color: var(--color-text-subtle);
                 text-align: center;
         }
 

@@ -7,15 +7,18 @@
         import CommandPalette from "$lib/components/CommandPalette.svelte";
         import ThemeSwitcher from "$lib/components/ThemeSwitcher.svelte";
         import FontSwitcher from "$lib/components/FontSwitcher.svelte";
+        import { overlapDetector } from "$lib/utils/overlap-detector";
 
         // Navigation - ordered by importance
         const mainNav = [
-                { href: "/", label: "works" },
+                { href: "/process", label: "process" },
+                { href: "/works", label: "works" },
+                { href: "/talks", label: "talks" },
                 { href: "/likes", label: "likes" },
-                { href: "/notes", label: "notes" },
+                { href: "/blog", label: "blog" },
+                { href: "/gifts", label: "gifts" },
                 { href: "/cv", label: "cv" },
                 { href: "/terminal", label: "terminal" },
-                { href: "/process", label: "process" },
         ];
 
         $: currentPath = $page.url.pathname;
@@ -27,8 +30,15 @@
                 socialExpanded = !socialExpanded;
         }
 
-        function handleGlobalSlash(e: KeyboardEvent) {
+        function handleGlobalKeydown(e: KeyboardEvent) {
                 if (typeof document === "undefined") return;
+
+                // Overlap detector: Ctrl+Option+Shift+D
+                if (e.ctrlKey && e.shiftKey && e.altKey && e.code === 'KeyD') {
+                        e.preventDefault();
+                        overlapDetector.toggle();
+                        return;
+                }
 
                 // Check if user is typing in an input
                 const active = document.activeElement;
@@ -84,7 +94,7 @@
 
 </script>
 
-<svelte:window on:keydown={handleGlobalSlash} />
+<svelte:window on:keydown={handleGlobalKeydown} />
 <svelte:body class:scroll-lock={currentPath === '/process'} />
 
 <svelte:head>
@@ -141,6 +151,7 @@
                         </button>
 
                         <nav class="social-links" class:mobile-expanded={socialExpanded} aria-label="Social">
+                                <span class="social-label">find me elsewhere</span>
                                 {#each socialLinks as link}
                                         <a href={link.url} target="_blank" rel="noopener" data-brand={link.label}>{link.label}</a>
                                 {/each}
@@ -156,7 +167,7 @@
 
 <footer class="terminal">
         <div class="terminal-left">
-                <span class="terminal-edition">© 2026</span>
+                <span class="terminal-edition">Made with 💙 by STÜSSY SENIK @2026</span>
                 <span class="terminal-sep">·</span>
                 <span class="terminal-path">{currentPath}</span>
         </div>
@@ -202,19 +213,23 @@
                 border-bottom: 1px solid color-mix(in srgb, var(--border-color-subtle), transparent 50%);
         }
 
+        /* Fallback for browsers without backdrop-filter */
+        @supports not (backdrop-filter: blur(12px)) {
+                .top-frame {
+                        background: var(--color-bg);
+                }
+        }
+
         .header {
-                /* Minimal padding: text height (approx 24px) + small space */
-                padding: var(--space-xs) 0;
-                border-bottom: none; /* Handled by top-frame for cleaner glass edge */
+                padding: var(--space-sm) 0;
+                padding-bottom: 0;
+                margin-bottom: 0;
+                border-bottom: none;
         }
 
         .main-content {
-               /* Clear fixed header + banner (~ 30px banner + 70px header + spacing) */
-               /* Clear fixed header + banner (~ 30px banner + 50px header + spacing) */
-               /* Refined spacing for slimmer header */
-               padding-top: 100px; 
-               /* Clear floating terminal */
-               padding-bottom: 140px;
+               padding-top: var(--space-3xl);
+               padding-bottom: 80px;
         }
 
         .header-inner {
@@ -267,12 +282,13 @@
 
         .nav-link {
                 font-size: var(--font-size-sm);
-                font-weight: var(--font-weight-normal);
-                color: var(--color-text-muted);
+                font-weight: var(--font-weight-medium);
+                color: var(--color-text-secondary);
                 text-transform: lowercase;
                 padding: var(--space-xs) 0;
                 position: relative;
                 transition: color var(--duration-fast) var(--easing);
+                text-shadow: 0 0 8px var(--color-bg);
         }
 
         .nav-link:hover {
@@ -281,6 +297,7 @@
 
         .nav-link.active {
                 color: var(--color-text);
+                font-weight: var(--font-weight-semibold);
         }
 
         .nav-link::after {
@@ -307,13 +324,11 @@
         }
 
         /* Nav group - contains nav + @ toggle inline */
-        /* Nav group - contains nav + @ toggle inline */
         .header-nav-group {
                 position: relative; /* Anchor for dropdown */
                 display: flex;
                 align-items: center;
                 gap: var(--space-sm);
-                margin-left: auto;
         }
 
         .social-toggle {
@@ -350,6 +365,10 @@
         /* Social links - desktop: inline, mobile: dropdown */
         .social-links {
                 display: none; /* Hidden on mobile by default */
+        }
+
+        .social-label {
+                display: none;
         }
 
         .social-links a {
@@ -405,16 +424,29 @@
                         border-left: 1px solid var(--border-color-subtle);
                         border-radius: 0;
                         padding: 0;
-                        padding-left: var(--space-lg);
-                        margin-left: var(--space-2xl);
+                        padding-left: var(--space-sm);
+                        margin-left: var(--space-sm);
                         box-shadow: none;
-                        gap: var(--space-xs);
+                        gap: var(--space-2xs);
                         min-width: 0;
+                }
+
+                .social-label {
+                        display: inline;
+                        font-family: var(--font-mono);
+                        font-size: var(--font-size-3xs);
+                        text-transform: uppercase;
+                        letter-spacing: var(--letter-spacing-wider);
+                        color: var(--color-text-subtle);
+                        opacity: 0.5;
+                        margin-right: var(--space-2xs);
                 }
 
                 .social-links a {
                         padding: var(--space-2xs) var(--space-xs);
                         font-size: var(--font-size-2xs);
+                        font-weight: 400;
+                        color: var(--color-text-subtle);
                 }
 
                 .social-links a:hover {
@@ -443,8 +475,12 @@
                         background-image: linear-gradient(135deg, #F5C518, #E2B616);
                 }
                 .social-links a[data-brand="github"]:hover {
-                        /* White to Grey to keep visibility on dark */
-                        background-image: linear-gradient(135deg, #ffffff, #999999);
+                        /* GitHub dark brand — visible on light backgrounds */
+                        background-image: linear-gradient(135deg, #24292f, #57606a);
+                }
+                :global([data-theme="terminal"]) .social-links a[data-brand="github"]:hover {
+                        /* Light gradient for dark terminal background */
+                        background-image: linear-gradient(135deg, #f0f6fc, #8b949e);
                 }
                 .social-links a[data-brand="linkedin"]:hover {
                         background-image: linear-gradient(135deg, #0077b5, #00a0dc);
@@ -479,6 +515,23 @@
                 }
         }
 
+        /* Mobile nav: horizontal scroll at 375px */
+        @media (max-width: 767px) {
+                .nav {
+                        overflow-x: auto;
+                        -webkit-overflow-scrolling: touch;
+                        scrollbar-width: none; /* Firefox */
+                        -ms-overflow-style: none; /* IE */
+                        max-width: calc(100vw - 120px); /* Reserve space for name + @ button */
+                }
+                .nav::-webkit-scrollbar { display: none; }
+
+                .nav-link {
+                        font-size: var(--font-size-xs);
+                        white-space: nowrap;
+                }
+        }
+
         /* Tight spacing for small screens (iPhone SE, etc) */
         @media (max-width: 380px) {
                  .header-inner {
@@ -489,6 +542,9 @@
                 }
                 .nav {
                         gap: var(--space-2xs);
+                }
+                .nav-link {
+                        font-size: var(--font-size-2xs);
                 }
         }
 
@@ -522,6 +578,11 @@
                 display: flex;
                 align-items: center;
                 gap: var(--space-sm);
+                min-width: 0;
+        }
+
+        .terminal-right {
+                padding-right: var(--space-xs);
         }
 
         .terminal-edition {
@@ -645,6 +706,8 @@
                 display: flex;
                 align-items: center;
                 gap: var(--space-xs);
+                flex-shrink: 0;
+                overflow: visible;
         }
 
         @media (max-width: 767px) {
@@ -654,17 +717,26 @@
                         right: var(--space-sm);
                         flex-wrap: wrap;
                         gap: var(--space-sm);
-                        justify-content: center; /* Center content on mobile */
+                        justify-content: center;
+                        padding: var(--space-sm) var(--space-md);
+                }
+
+                .terminal-right {
+                        padding-right: 0;
+                }
+
+                .terminal-controls {
+                        gap: var(--space-sm);
                 }
 
                 .terminal-hint {
-                        display: block; /* Show hint on mobile */
-                        font-size: var(--font-size-2xs); /* Make it smaller */
+                        display: block;
+                        font-size: var(--font-size-2xs);
                         opacity: 0.7;
                 }
-                
+
                 .main-content {
-                        padding-top: 120px; /* Refined for slimmer banner on mobile */
+                        padding-top: var(--space-3xl);
                 }
         }
 
