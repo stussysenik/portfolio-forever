@@ -1,4 +1,19 @@
+<div align="center">
+
 # Portfolio Forever
+
+### Personal portfolio with ASCII aesthetics
+
+![SvelteKit](https://img.shields.io/badge/SvelteKit-5-FF3E00?style=flat-square&logo=svelte&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=flat-square&logo=typescript)
+![Sanity](https://img.shields.io/badge/Sanity-CMS-F03E2F?style=flat-square&logo=sanity)
+![Vercel](https://img.shields.io/badge/Vercel-Deployed-black?style=flat-square&logo=vercel)
+
+[Live Site](https://portfolio-forever.vercel.app)
+
+</div>
+
+---
 
 Personal portfolio built with SvelteKit 5, Sanity CMS, and a terminal-inspired design system. ASCII aesthetics, intentional typography, and obsessive attention to spacing.
 
