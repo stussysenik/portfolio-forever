@@ -71,6 +71,20 @@ bunx playwright test --project=chromium            # Single browser
 
 Tests cover: route health, nav hierarchy, hero responsiveness, command palette, works content, identity ordering, CV disciplines, gifts page, cross-breakpoint smoke, mobile /works loading & network (skeleton transitions, iframe suppression, preview images, 3G/4G throttling, viewport layouts, accessibility, performance).
 
+## Screenshots
+
+| Home | Works |
+|------|-------|
+| ![Home](./static/screenshots/home.png) | ![Works](./static/screenshots/works.png) |
+
+| CV | Likes |
+|----|-------|
+| ![CV](./static/screenshots/cv.png) | ![Likes](./static/screenshots/likes.png) |
+
+| Gifts |
+|-------|
+| ![Gifts](./static/screenshots/gifts.png) |
+
 ## Structure
 
 ```

@@ -9,7 +9,7 @@
     { id: 'terminal', label: 'Terminal', icon: '▣', description: 'Developer dark mode' },
   ];
   
-  let currentTheme: Theme = 'minimal';
+  let currentTheme: Theme = 'terminal';
   let isOpen = false;
   
   onMount(() => {
@@ -24,10 +24,7 @@
       currentTheme = saved as Theme;
       applyTheme(saved as Theme);
     } else {
-      // Check system preference
-      if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        // Let CSS handle it via media query
-      }
+      applyTheme('terminal');
     }
     
     // Listen for keyboard shortcut

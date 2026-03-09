@@ -2,6 +2,7 @@
         import { onMount } from "svelte";
         import "../app.css";
         import { page } from "$app/stores";
+        import { afterNavigate } from "$app/navigation";
         import { siteConfig, socialLinks, profile } from "$lib/data/content";
         import { layoutConfig } from "$lib/data/layout-config";
         import CommandPalette from "$lib/components/CommandPalette.svelte";
@@ -22,6 +23,11 @@
         ];
 
         $: currentPath = $page.url.pathname;
+
+        // Scroll to top on every navigation — use scrollTop directly to bypass smooth-scroll CSS
+        afterNavigate(() => {
+                document.documentElement.scrollTop = 0;
+        });
 
         // Social links toggle for mobile
         let socialExpanded = false;

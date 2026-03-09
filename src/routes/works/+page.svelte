@@ -31,21 +31,7 @@
                 loaded = { ...loaded, [index]: true };
         }
 
-        let isMobile = false;
-
         onMount(() => {
-                window.scrollTo(0, 0);
-                isMobile = window.innerWidth < 768;
-
-                // Mobile placeholders don't fire load events — mark them loaded immediately
-                if (isMobile) {
-                        projects.forEach((project, i) => {
-                                if (!project.preview) {
-                                        handleLoad(i);
-                                }
-                        });
-                }
-
                 // Check for preview images that already loaded before event binding
                 document.querySelectorAll('.preview-image').forEach((img, _) => {
                         if ((img as HTMLImageElement).complete) {
@@ -80,13 +66,6 @@
                                         {#if project.preview}
                                                 <a href={project.url} target="_blank" rel="noopener noreferrer" class="preview-link">
                                                         <img src={project.preview} alt={project.title} class="preview-image" on:load={() => handleLoad(i)} />
-                                                </a>
-                                        {:else if isMobile}
-                                                <a href={project.url} target="_blank" rel="noopener noreferrer" class="mobile-tap-area">
-                                                        <div class="mobile-placeholder">
-                                                                <span class="mobile-title">{project.title}</span>
-                                                                <span class="mobile-cta">tap to open</span>
-                                                        </div>
                                                 </a>
                                         {:else}
                                                 <iframe
@@ -286,41 +265,6 @@
                 opacity: 0;
                 pointer-events: none;
                 transition: opacity var(--duration-slow) var(--easing);
-        }
-
-        /* Mobile placeholder */
-        .mobile-tap-area {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                position: absolute;
-                inset: 0;
-                text-decoration: none;
-                background: var(--color-bg-alt);
-        }
-
-        .mobile-placeholder {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                gap: var(--space-sm);
-                text-align: center;
-                padding: var(--space-lg);
-        }
-
-        .mobile-title {
-                font-family: var(--font-mono);
-                font-size: var(--font-size-sm);
-                font-weight: 500;
-                color: var(--color-text);
-        }
-
-        .mobile-cta {
-                font-family: var(--font-mono);
-                font-size: var(--font-size-2xs);
-                color: var(--color-text-subtle);
-                text-transform: uppercase;
-                letter-spacing: var(--letter-spacing-wider);
         }
 
         /* Meta */

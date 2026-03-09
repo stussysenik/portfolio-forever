@@ -1,6 +1,6 @@
 <script lang="ts">
   import { cvData, type CVEntry } from '$lib/data/cv';
-  import { tools, skills, type Tool } from '$lib/data/content';
+  import { tools, /* skills, */ type Tool } from '$lib/data/content';
 
   function formatDateRange(start: string, end?: string): string {
     const startDate = new Date(start);
@@ -14,20 +14,20 @@
     return `${startStr} → ${endStr}`;
   }
 
-  function getProficiencyBar(proficiency: number): string {
+  /* function getProficiencyBar(proficiency: number): string {
     const filled = Math.round(proficiency * 10);
     const empty = 10 - filled;
     return '█'.repeat(filled) + '░'.repeat(empty);
-  }
+  } */
 
   // Group entries by type
   const experience = cvData.workExperience;
   const education = cvData.education;
 
-  // Group skills by category
+  /* // Group skills by category
   const designSkills = skills.filter(s => s.category === 'design');
   const techSkills = skills.filter(s => s.category === 'technology');
-  const artSkills = skills.filter(s => s.category === 'art');
+  const artSkills = skills.filter(s => s.category === 'art'); */
 
   // Group tools by category
   const toolsByCategory: Record<string, Tool[]> = {
@@ -143,7 +143,7 @@
     </ul>
   </section>
 
-  <!-- Disciplines / Skills -->
+  <!-- ARCHIVED: Disciplines / Skills
   <section class="cv-section">
     <h2 class="cv-section-title">◆ DISCIPLINES</h2>
     <div class="skills-grouped">
@@ -154,7 +154,6 @@
             <div class="skill-row">
               <span class="skill-name">{skill.name}</span>
               <span class="skill-bar">{getProficiencyBar(skill.proficiency)}</span>
-              <!-- <span class="skill-value">{Math.round(skill.proficiency * 100)}%</span> -->
             </div>
           {/each}
         </div>
@@ -166,7 +165,6 @@
             <div class="skill-row">
               <span class="skill-name">{skill.name}</span>
               <span class="skill-bar">{getProficiencyBar(skill.proficiency)}</span>
-              <!-- <span class="skill-value">{Math.round(skill.proficiency * 100)}%</span> -->
             </div>
           {/each}
         </div>
@@ -178,13 +176,13 @@
             <div class="skill-row">
               <span class="skill-name">{skill.name}</span>
               <span class="skill-bar">{getProficiencyBar(skill.proficiency)}</span>
-              <!-- <span class="skill-value">{Math.round(skill.proficiency * 100)}%</span> -->
             </div>
           {/each}
         </div>
       </div>
     </div>
   </section>
+  -->
 
   <!-- Languages -->
   <section class="cv-section">
