@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount, afterUpdate, tick } from 'svelte';
+  import { onMount, onDestroy, tick } from 'svelte';
   import { goto } from '$app/navigation';
   import { profile } from '$lib/data/content';
   import {
@@ -14,7 +14,11 @@
   let matrixCanvas: HTMLCanvasElement;
   let matrixAnimId: number;
 
-  const state = createShellState();
+  let state = createShellState();
+  let cwdDisplay = state.cwd;
+  let animationRunning = false;
+  let userIsNearBottom = true;
+  let expandedIframes: Set<number> = new Set();
 
   interface HistoryEntry {
     type: 'input' | 'output';
@@ -30,18 +34,37 @@
   let tabSuggestions: string[] = [];
   let activeAnimation: 'matrix' | 'pipes' | null = null;
 
+  const MAX_HISTORY = 500;
+  const SCROLL_THRESHOLD = 50;
+
+  function checkScrollPosition() {
+    if (outputEl) {
+      const { scrollTop, scrollHeight, clientHeight } = outputEl;
+      userIsNearBottom = scrollHeight - scrollTop - clientHeight < SCROLL_THRESHOLD;
+    }
+  }
+
+  async function scrollToBottom() {
+    await tick();
+    if (outputEl && userIsNearBottom) {
+      outputEl.scrollTop = outputEl.scrollHeight;
+    }
+  }
+
   function showWelcome() {
     terminalHistory = [
       ...terminalHistory,
       { type: 'output', content: `<span class="t-accent">Portfolio Terminal</span> <span class="t-muted">v2.0.0</span>` },
       { type: 'output', content: `<span class="t-muted">Type</span> <span class="t-accent">help</span> <span class="t-muted">to see available commands, or try</span> <span class="t-accent">neofetch</span><span class="t-muted">.</span>` },
     ];
+    scrollToBottom();
   }
 
   function processOutput(lines: OutputLine[]) {
+    const newEntries: HistoryEntry[] = [];
+
     for (const line of lines) {
       if (line.type === 'text') {
-        // Handle special commands
         if (line.content === '__CLEAR__') {
           terminalHistory = [];
           activeAnimation = null;
@@ -60,27 +83,29 @@
           const theme = line.content.replace('__THEME__', '');
           document.documentElement.setAttribute('data-theme', theme);
           localStorage.setItem('preferred-theme', theme);
-          terminalHistory = [...terminalHistory, {
+          newEntries.push({
             type: 'output',
             content: `<span class="t-success">Theme switched to ${theme}.</span>`,
-          }];
+          });
           continue;
         }
-        terminalHistory = [...terminalHistory, { type: 'output', content: line.content }];
+        newEntries.push({ type: 'output', content: line.content });
       } else if (line.type === 'iframe') {
-        terminalHistory = [...terminalHistory, {
-          type: 'output',
-          lines: [line],
-        }];
+        newEntries.push({ type: 'output', lines: [line] });
       } else if (line.type === 'image') {
-        terminalHistory = [...terminalHistory, {
-          type: 'output',
-          lines: [line],
-        }];
+        newEntries.push({ type: 'output', lines: [line] });
       } else if (line.type === 'animation') {
         activeAnimation = line.id;
       }
     }
+
+    if (newEntries.length > 0) {
+      terminalHistory = [...terminalHistory, ...newEntries];
+      if (terminalHistory.length > MAX_HISTORY) {
+        terminalHistory = terminalHistory.slice(-MAX_HISTORY);
+      }
+    }
+    scrollToBottom();
   }
 
   function handleKeydown(e: KeyboardEvent) {
@@ -98,10 +123,13 @@
         commandHistory.push(command);
         historyIndex = commandHistory.length;
         const output = executeCommand(command, state);
+        cwdDisplay = state.cwd;
         processOutput(output);
       }
 
       currentInput = '';
+      historyIndex = -1;
+      scrollToBottom();
     } else if (e.key === 'Tab') {
       e.preventDefault();
       const completions = getCompletions(currentInput, state);
@@ -119,45 +147,62 @@
       }
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
-      if (historyIndex > 0) {
-        historyIndex--;
+      if (commandHistory.length > 0) {
+        if (historyIndex === -1) {
+          historyIndex = commandHistory.length - 1;
+        } else if (historyIndex > 0) {
+          historyIndex--;
+        }
         currentInput = commandHistory[historyIndex];
       }
     } else if (e.key === 'ArrowDown') {
       e.preventDefault();
-      if (historyIndex < commandHistory.length - 1) {
+      if (historyIndex >= 0 && historyIndex < commandHistory.length - 1) {
         historyIndex++;
         currentInput = commandHistory[historyIndex];
       } else {
-        historyIndex = commandHistory.length;
+        historyIndex = -1;
         currentInput = '';
       }
     } else if (e.key === 'c' && e.ctrlKey) {
-      // Ctrl+C: cancel current input or stop animation
       if (activeAnimation) {
         stopAnimation();
       } else {
         terminalHistory = [...terminalHistory, {
           type: 'input',
           content: currentInput + '^C',
-          path: state.cwd,
+          path: cwdDisplay,
         }];
         currentInput = '';
+        scrollToBottom();
       }
     } else if (e.key === 'l' && e.ctrlKey) {
       e.preventDefault();
       terminalHistory = [];
-      activeAnimation = null;
+      stopAnimation();
     }
   }
 
   function stopAnimation() {
-    activeAnimation = null;
     if (matrixAnimId) cancelAnimationFrame(matrixAnimId);
+    matrixAnimId = 0;
+    activeAnimation = null;
+    animationRunning = false;
   }
 
   function closeIframe(index: number) {
+    expandedIframes.delete(index);
+    expandedIframes = expandedIframes;
     terminalHistory = terminalHistory.filter((_, i) => i !== index);
+  }
+
+  function toggleIframeExpand(index: number) {
+    if (expandedIframes.has(index)) {
+      expandedIframes.delete(index);
+    } else {
+      expandedIframes.add(index);
+    }
+    expandedIframes = expandedIframes;
   }
 
   // Matrix rain animation
@@ -255,16 +300,14 @@
     inputElement?.focus();
   });
 
-  afterUpdate(async () => {
-    await tick();
-    if (outputEl) {
-      outputEl.scrollTop = outputEl.scrollHeight;
-    }
-    // Start animation if canvas is ready
-    if (activeAnimation && matrixCanvas) {
-      if (activeAnimation === 'matrix') startMatrix(matrixCanvas);
-      else if (activeAnimation === 'pipes') startPipes(matrixCanvas);
-    }
+  $: if (activeAnimation && matrixCanvas && !animationRunning) {
+    animationRunning = true;
+    if (activeAnimation === 'matrix') startMatrix(matrixCanvas);
+    else if (activeAnimation === 'pipes') startPipes(matrixCanvas);
+  }
+
+  onDestroy(() => {
+    if (matrixAnimId) cancelAnimationFrame(matrixAnimId);
   });
 
   function focusInput() {
@@ -304,7 +347,7 @@
     </div>
   {/if}
 
-  <div class="output" bind:this={outputEl}>
+  <div class="output" bind:this={outputEl} on:scroll={checkScrollPosition}>
     {#each terminalHistory as entry, i}
       <div class="line" class:input-line={entry.type === 'input'}>
         {#if entry.type === 'input'}
@@ -314,7 +357,7 @@
         {#if entry.lines}
           {#each entry.lines as line}
             {#if line.type === 'iframe'}
-              <div class="inline-browser">
+              <div class="inline-browser" class:expanded={expandedIframes.has(i)}>
                 <div class="browser-chrome">
                   <div class="browser-dots">
                     <span class="dot red"></span>
@@ -322,6 +365,9 @@
                     <span class="dot green"></span>
                   </div>
                   <div class="browser-url">{line.url}</div>
+                  <button class="browser-expand" on:click|stopPropagation={() => toggleIframeExpand(i)}>
+                    {expandedIframes.has(i) ? '⊖' : '⊕'}
+                  </button>
                   <button class="browser-close" on:click|stopPropagation={() => closeIframe(i)}>×</button>
                 </div>
                 <div class="iframe-wrap">
@@ -355,7 +401,7 @@
       </div>
     {/if}
     <div class="input-line active">
-      <span class="prompt">➜ <span class="prompt-path">{state.cwd}</span></span>
+      <span class="prompt">➜ <span class="prompt-path">{cwdDisplay}</span></span>
       <input
         bind:this={inputElement}
         bind:value={currentInput}
@@ -372,7 +418,7 @@
   <div class="tmux-bar">
     <span class="tmux-session"><span class="t-accent">●</span> main</span>
     <span class="tmux-sep">│</span>
-    <span class="tmux-path">{state.cwd}</span>
+    <span class="tmux-path">{cwdDisplay}</span>
     <span class="tmux-right">
       <span class="tmux-info">{state.history.length} cmds</span>
       <span class="tmux-sep">│</span>
@@ -518,18 +564,45 @@
     white-space: nowrap;
   }
 
+  .browser-expand,
   .browser-close {
     background: none;
     border: none;
     color: var(--color-text-muted);
-    font-size: 18px;
     cursor: pointer;
     padding: 0 4px;
     line-height: 1;
   }
 
+  .browser-expand {
+    font-size: 16px;
+  }
+
+  .browser-expand:hover {
+    color: var(--color-accent);
+  }
+
+  .browser-close {
+    font-size: 18px;
+  }
+
   .browser-close:hover {
     color: #f7768e;
+  }
+
+  .inline-browser.expanded {
+    max-width: 100%;
+  }
+
+  .inline-browser.expanded .iframe-wrap {
+    height: 70vh;
+  }
+
+  .inline-browser.expanded iframe {
+    width: 100%;
+    height: 100%;
+    transform: none;
+    pointer-events: auto;
   }
 
   .inline-browser .iframe-wrap {

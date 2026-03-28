@@ -26,7 +26,7 @@ export const filesystem: FSDir = {
       size: '0.4K',
       modified: 'Jan 2026',
       content: `<span class="t-info">Stüssy Senik</span>
-<span class="t-muted">Creative Technologist & DevEx Engineer</span>
+<span class="t-muted">Design Engineer & Creative Producer</span>
 
 Building at the intersection of science, design,
 cinema, computation and code.

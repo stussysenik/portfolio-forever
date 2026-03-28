@@ -50,6 +50,10 @@ function pad(str: string, len: number): string {
   return str.padEnd(len);
 }
 
+function escapeHtml(str: string): string {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
 // ── Fortunes ──────────────────────────────────────────────
 
 const fortunes = [
@@ -198,13 +202,13 @@ const commands: Record<string, CommandDef> = {
   whoami: {
     tier: 1,
     desc: 'Display current user',
-    fn: () => [text(`<span class="t-info">stussysenik</span> <span class="t-muted">— Creative Technologist, Bed-Stuy BK</span>`)],
+    fn: () => [text(`<span class="t-info">stussysenik</span> <span class="t-muted">— Design Engineer & Creative Producer, Bed-Stuy BK</span>`)],
   },
 
   echo: {
     tier: 1,
     desc: 'Echo text to terminal',
-    fn: (args) => [text(args.join(' '))],
+    fn: (args) => [text(escapeHtml(args.join(' ')))],
   },
 
   date: {
@@ -235,7 +239,7 @@ const commands: Record<string, CommandDef> = {
       const info = [
         `<span class="t-info">stussysenik</span><span class="t-muted">@</span><span class="t-info">portfolio</span>`,
         `<span class="t-muted">─────────────────────</span>`,
-        `<span class="t-accent">Role</span>     <span class="t-muted">Creative Technologist</span>`,
+        `<span class="t-accent">Role</span>     <span class="t-muted">Design Engineer & Creative Producer</span>`,
         `<span class="t-accent">Stack</span>    <span class="t-muted">SvelteKit · TypeScript · AR/XR</span>`,
         `<span class="t-accent">Location</span> <span class="t-muted">Bed-Stuy, Brooklyn</span>`,
         `<span class="t-accent">Uptime</span>   <span class="t-muted">${uptimeDays} days (since Jan 2026)</span>`,
@@ -436,6 +440,36 @@ const commands: Record<string, CommandDef> = {
     },
   },
 
+  browse: {
+    tier: 2,
+    desc: 'Browse a URL in terminal',
+    fn: (args, state) => {
+      if (!args[0]) return [text('<span class="t-muted">Usage: browse &lt;url&gt; or browse &lt;project&gt;</span>')];
+      return commands.open.fn(args, state);
+    },
+  },
+
+  wget: {
+    tier: 2,
+    desc: 'Download page info',
+    fn: (args) => {
+      if (!args[0]) return [text('<span class="t-muted">Usage: wget &lt;url&gt;</span>')];
+      const url = args[0];
+      const timestamp = new Date().toISOString();
+      return [text([
+        `<span class="t-muted">--${timestamp}--</span>`,
+        `<span class="t-muted">Resolving ${url}...</span> <span class="t-success">connected.</span>`,
+        `<span class="t-muted">HTTP request sent, awaiting response...</span> <span class="t-success">200 OK</span>`,
+        `<span class="t-muted">Length:</span> <span class="t-info">unspecified</span> <span class="t-muted">[text/html]</span>`,
+        `<span class="t-muted">Saving to:</span> <span class="t-accent">'index.html'</span>`,
+        ``,
+        `<span class="t-success">index.html saved.</span> <span class="t-muted">(portfolio terminal doesn't actually download files)</span>`,
+        ``,
+        `<span class="t-muted">Try:</span> <span class="t-accent">open ${url}</span> <span class="t-muted">to view it inline instead.</span>`,
+      ].join('\n'))];
+    },
+  },
+
   img: {
     tier: 2,
     desc: 'Display an image inline',
@@ -611,7 +645,7 @@ __/ =| o |=-~~\\  /~~\\  /~~\\  /~~\\ ____Y___________|__
 
 {
   <span class="t-accent">"name"</span>: <span class="t-success">"Stüssy Senik"</span>,
-  <span class="t-accent">"role"</span>: <span class="t-success">"Creative Technologist"</span>,
+  <span class="t-accent">"role"</span>: <span class="t-success">"Design Engineer & Creative Producer"</span>,
   <span class="t-accent">"location"</span>: <span class="t-success">"Bed-Stuy, Brooklyn"</span>,
   <span class="t-accent">"status"</span>: <span class="t-success">"available"</span>,
   <span class="t-accent">"repos"</span>: <span class="t-warning">54</span>,
@@ -685,5 +719,5 @@ export function getCompletions(input: string, state: ShellState): string[] {
       return child.type === 'dir' ? `${base}/` : base;
     });
 
-  return matches;
+  return matches.slice(0, 20);
 }

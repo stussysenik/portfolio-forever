@@ -100,7 +100,7 @@ test.describe("Homepage - Core Functionality", () => {
                 // Should have tagline
                 const tagline = hero.locator(".hero-tagline");
                 await expect(tagline).toBeVisible();
-                await expect(tagline).toContainText("minimalism");
+                await expect(tagline).toContainText("Engineer");
 
                 // Should have bio
                 const bio = hero.locator(".hero-bio");

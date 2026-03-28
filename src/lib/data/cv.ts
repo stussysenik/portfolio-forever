@@ -41,7 +41,7 @@ export const cvData: PersonSchema = {
 	'@context': 'https://schema.org',
 	'@type': 'Person',
 	name: 'MENGXUAN "SENIK" ZOU',
-	jobTitle: 'DevEx & Experience Design Engineer',
+	jobTitle: 'Design Engineer & Creative Producer',
 	url: 'https://www.stussysenik.com',
 	sameAs: [
 		'https://github.com/stussysenik',
