@@ -7,21 +7,24 @@
                 url: string;
                 category?: string;
                 preview?: string;
+                /** Viewport multiplier — render iframe at N× card size for desktop-quality thumbnails (default 2.5) */
+                viewport?: number;
+                /** Camera focal point: CSS transform-origin value */
+                cam?: string;
         }
 
         const projects: Project[] = [
                 { title: "mymind.com clone", url: "https://curate-your-own-network.stussysenik.com", category: "personal software", preview: "/previews/curate-your-own-network.png" },
-                { title: "iPod emulator", url: "https://ipod-music.vercel.app", category: "tool" },
-                { title: "spinning wheel AR filter", url: "https://spinning-wheel-filter.vercel.app", category: "AR/XR" },
-                { title: "uyr-problem", url: "https://uyr-problem.vercel.app", category: "tool" },
-                { title: "infinite checklist", url: "https://infinite-checklist.vercel.app", category: "tool" },
-                { title: "typewriter", url: "https://clean-writer.vercel.app", category: "tool" },
-                { title: "creative block", url: "https://creative-block.vercel.app", category: "art" },
-                { title: "AR b-boy filter", url: "https://bboy-filter.vercel.app", category: "AR/XR" },
-                // { title: "2D CAD editor", url: "https://1985-cad.vercel.app", category: "technology" },
-                { title: "PH-213 physics", url: "https://ph213.vercel.app", category: "science" },
-                { title: "DVD corner", url: "https://dvd-video-animation.vercel.app", category: "art" },
-                { title: "WAVELENGTH RADIO", url: "https://wavelength-radio.vercel.app", category: "music" },
+                { title: "iPod emulator", url: "https://ipod-music.vercel.app", category: "tool", viewport: 2.0, cam: "center 30%" },
+                { title: "spinning wheel AR filter", url: "https://spinning-wheel-filter.vercel.app", category: "AR/XR", viewport: 2.5, cam: "center center" },
+                { title: "uyr-problem", url: "https://uyr-problem.vercel.app", category: "tool", viewport: 2.5, cam: "top center" },
+                { title: "infinite checklist", url: "https://infinite-checklist.vercel.app", category: "tool", viewport: 2.5, cam: "top center" },
+                { title: "typewriter", url: "https://clean-writer.vercel.app", category: "tool", viewport: 2.5, cam: "top left" },
+                { title: "creative block", url: "https://creative-block.vercel.app", category: "art", viewport: 2.5, cam: "center center" },
+                { title: "AR b-boy filter", url: "https://bboy-filter.vercel.app", category: "AR/XR", viewport: 2.5, cam: "center center" },
+                { title: "PH-213 physics", url: "https://ph213.vercel.app", category: "science", viewport: 2.5, cam: "top center" },
+                { title: "DVD corner", url: "https://dvd-video-animation.vercel.app", category: "art", viewport: 2.5, cam: "center center" },
+                { title: "WAVELENGTH RADIO", url: "https://wavelength-radio.vercel.app", category: "music", viewport: 2.0, cam: "center center" },
         ];
 
         // Track iframe load states
@@ -75,6 +78,7 @@
                                                         sandbox="allow-scripts allow-same-origin"
                                                         on:load={() => handleLoad(i)}
                                                         tabindex="-1"
+                                                        style="--vp: {project.viewport ?? 2.5}; --cam: {project.cam ?? 'top left'};"
                                                 ></iframe>
                                                 <a href={project.url} target="_blank" rel="noopener noreferrer" class="project-overlay">
                                                         <span class="overlay-cta">Visit →</span>
@@ -174,8 +178,10 @@
                 position: absolute;
                 top: 0;
                 left: 0;
-                width: 100%;
-                height: 100%;
+                width: calc(var(--vp, 2.5) * 100%);
+                height: calc(var(--vp, 2.5) * 100%);
+                transform: scale(calc(1 / var(--vp, 2.5)));
+                transform-origin: var(--cam, top left);
                 border: none;
                 pointer-events: none;
         }

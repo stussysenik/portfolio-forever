@@ -10,8 +10,9 @@
         import FontSwitcher from "$lib/components/FontSwitcher.svelte";
         import { overlapDetector } from "$lib/utils/overlap-detector";
 
-        // Navigation - ordered by importance
+        // Navigation - terminal first, then by importance
         const mainNav = [
+                { href: "/terminal", label: "terminal" },
                 { href: "/process", label: "process" },
                 { href: "/works", label: "works" },
                 { href: "/talks", label: "talks" },
@@ -19,7 +20,6 @@
                 { href: "/blog", label: "blog" },
                 { href: "/gifts", label: "gifts" },
                 { href: "/cv", label: "cv" },
-                { href: "/terminal", label: "terminal" },
         ];
 
         $: currentPath = $page.url.pathname;
@@ -173,7 +173,7 @@
 
 <footer class="terminal">
         <div class="terminal-left">
-                <span class="terminal-edition">Made with 💙 by STÜSSY SENIK @2026</span>
+                <span class="terminal-edition">Made with 💙 in Bed-Stuy by STÜSSY SENIK · 2026</span>
                 <span class="terminal-sep">·</span>
                 <span class="terminal-path">{currentPath}</span>
         </div>
@@ -432,7 +432,7 @@
         .social-links a[data-brand="github"]:hover {
                 background-image: linear-gradient(135deg, #24292f, #57606a);
         }
-        :global([data-theme="terminal"]) .social-links a[data-brand="github"]:hover {
+        :global([data-theme="darkroom"]) .social-links a[data-brand="github"]:hover {
                 background-image: linear-gradient(135deg, #f0f6fc, #8b949e);
         }
         .social-links a[data-brand="linkedin"]:hover {
@@ -445,7 +445,7 @@
                 /* X brand — bold black */
                 background-image: linear-gradient(135deg, #000000, #333333);
         }
-        :global([data-theme="terminal"]) .social-links a[data-brand="x"]:hover {
+        :global([data-theme="darkroom"]) .social-links a[data-brand="x"]:hover {
                 /* Invert for dark mode */
                 background-image: linear-gradient(135deg, #ffffff, #cccccc);
         }
@@ -670,10 +670,20 @@
                         bottom: var(--space-sm);
                         left: var(--space-sm);
                         right: var(--space-sm);
-                        flex-wrap: wrap;
-                        gap: var(--space-sm);
-                        justify-content: center;
-                        padding: var(--space-sm) var(--space-md);
+                        flex-wrap: nowrap;
+                        gap: var(--space-xs);
+                        justify-content: space-between;
+                        padding: var(--space-xs) var(--space-sm);
+                }
+
+                /* Hide edition text on mobile — path + controls are enough */
+                .terminal-edition {
+                        display: none;
+                }
+
+                /* Hide the separator after edition */
+                .terminal-left .terminal-sep {
+                        display: none;
                 }
 
                 .terminal-right {
@@ -681,13 +691,22 @@
                 }
 
                 .terminal-controls {
-                        gap: var(--space-sm);
+                        gap: var(--space-xs);
                 }
 
-                .terminal-hint {
-                        display: block;
-                        font-size: var(--font-size-2xs);
-                        opacity: 0.7;
+                /* Hide CMD hint on mobile — shortcut still works */
+                .terminal-hint-btn {
+                        display: none;
+                }
+
+                /* Also hide "available" status + its separator on mobile */
+                .terminal-status {
+                        display: none;
+                }
+
+                /* Hide separators in terminal-right on mobile */
+                .terminal-right > .terminal-sep {
+                        display: none;
                 }
 
                 .main-content {

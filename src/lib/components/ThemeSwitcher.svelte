@@ -1,30 +1,34 @@
 <script lang="ts">
   import { onMount } from 'svelte';
 
-  type Theme = 'accessible' | 'minimal' | 'terminal';
+  type Theme = 'minimal' | 'studio' | 'darkroom' | 'accessible';
 
   const themes: { id: Theme; label: string; icon: string; description: string }[] = [
-    { id: 'accessible', label: 'Accessible', icon: '◎', description: 'High contrast WCAG AAA' },
-    { id: 'minimal', label: 'Minimal', icon: '○', description: 'Clean and refined' },
-    { id: 'terminal', label: 'Terminal', icon: '▣', description: 'Developer dark mode' },
+    { id: 'minimal',    label: 'Minimal',    icon: '○', description: 'Warm & colorful' },
+    { id: 'studio',     label: 'Studio',     icon: '◇', description: 'Achromatic precision' },
+    { id: 'darkroom',   label: 'Darkroom',   icon: '◼', description: 'Reference dark' },
+    { id: 'accessible', label: 'Accessible', icon: '◎', description: 'WCAG AAA' },
   ];
-  
-  let currentTheme: Theme = 'terminal';
+
+  let currentTheme: Theme = 'minimal';
   let isOpen = false;
   
   onMount(() => {
     // Load saved theme with migration for legacy themes
     const saved = localStorage.getItem('theme');
 
-    // Migrate legacy "paper" theme to "minimal"
+    // Migrate legacy theme names
     if (saved === 'paper') {
       currentTheme = 'minimal';
       applyTheme('minimal');
+    } else if (saved === 'terminal') {
+      currentTheme = 'darkroom';
+      applyTheme('darkroom');
     } else if (saved && themes.some(t => t.id === saved)) {
       currentTheme = saved as Theme;
       applyTheme(saved as Theme);
     } else {
-      applyTheme('terminal');
+      applyTheme('minimal');
     }
     
     // Listen for keyboard shortcut

@@ -707,19 +707,15 @@
     }
   }
 
-  /* Dark mode adjustments for skill group labels */
-  @media (prefers-color-scheme: dark) {
-    .skill-group-label.badge--design {
-      background: hsl(330, 50%, 15%);
-    }
-
-    .skill-group-label.badge--technology {
-      background: hsl(210, 60%, 15%);
-    }
-
-    .skill-group-label.badge--art {
-      background: hsl(45, 60%, 15%);
-      color: var(--color-art);
-    }
+  /* Dark mode adjustments for skill group labels — scoped to darkroom theme */
+  :global([data-theme="darkroom"]) .skill-group-label.badge--design {
+    background: hsl(330, 50%, 15%);
+  }
+  :global([data-theme="darkroom"]) .skill-group-label.badge--technology {
+    background: hsl(210, 60%, 15%);
+  }
+  :global([data-theme="darkroom"]) .skill-group-label.badge--art {
+    background: hsl(45, 60%, 15%);
+    color: var(--color-art);
   }
 </style>
