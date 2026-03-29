@@ -202,6 +202,7 @@
 
         .donut-display {
                 overflow: hidden;
+                max-width: 100%;
                 will-change: transform;
         }
 
