@@ -44,12 +44,12 @@
 
         onMount(() => {
                 const client = getConvexClient();
-                client.onUpdate(api.works.getVisibleWorks, {}, (data) => {
+                const unsub1 = client.onUpdate(api.works.getVisibleWorks, {}, (data) => {
                         if (data && data.length > 0) {
                                 projects = data;
                         }
                 });
-                client.onUpdate(api.thumbnails.getConfig, { section: 'works' }, (data) => {
+                const unsub2 = client.onUpdate(api.thumbnails.getConfig, { section: 'works' }, (data) => {
                         thumbnailConfig = data;
                 });
 
@@ -59,6 +59,8 @@
                                 if (index !== -1) handleLoad(index);
                         }
                 });
+
+                return () => { unsub1(); unsub2(); };
         });
 </script>
 

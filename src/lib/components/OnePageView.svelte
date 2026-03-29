@@ -53,6 +53,7 @@
   // Viewport tracking for parallax (only apply transforms to visible sections)
   let inViewport = new Set<string>(["hero"]);
   let sectionOffsets: Record<string, number> = {};
+  let _resizeHandler: (() => void) | null = null;
 
   // Scroll spy via IntersectionObserver
   onMount(() => {
@@ -109,6 +110,7 @@
       }
     };
     window.addEventListener('resize', recacheOffsets);
+    _resizeHandler = recacheOffsets;
 
     // Handle initial hash
     const hash = window.location.hash.slice(1);
@@ -120,6 +122,7 @@
   onDestroy(() => {
     observer?.disconnect();
     lazyObs?.disconnect();
+    if (_resizeHandler) window.removeEventListener('resize', _resizeHandler);
   });
 
   function scrollToSection(id: string) {

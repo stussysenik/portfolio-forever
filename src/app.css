@@ -26,7 +26,7 @@
   /* Section rhythm for breathing */
   --section-gap: var(--space-3xl);
 
-  /* === Fluid Typography — Golden Ratio Scale (φ = 1.618) === */
+  /* === Fluid Typography — Modular Scale (golden ratio inspired) === */
   --font-size-3xs: clamp(0.5rem, 0.46rem + 0.13vw, 0.563rem);
   --font-size-2xs: clamp(0.563rem, 0.52rem + 0.18vw, 0.688rem);
   --font-size-xs: clamp(0.688rem, 0.64rem + 0.2vw, 0.813rem);

@@ -24,12 +24,13 @@
 
         onMount(() => {
                 const client = getConvexClient();
-                client.onUpdate(api.talks.getVisibleTalks, {}, (data) => {
+                const unsub = client.onUpdate(api.talks.getVisibleTalks, {}, (data) => {
                         if (data && data.length > 0) {
                                 talks = data.filter((e: any) => e.entryType === 'talk');
                                 interviews = data.filter((e: any) => e.entryType === 'interview');
                         }
                 });
+                return () => unsub();
         });
 </script>
 
