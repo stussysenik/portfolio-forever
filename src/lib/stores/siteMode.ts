@@ -1,4 +1,5 @@
-import { writable, derived } from "svelte/store";
+import { writable, derived, get } from "svelte/store";
+import { goto } from "$app/navigation";
 
 export type SiteMode = "one-page" | "multi-page" | "reader";
 
@@ -13,3 +14,12 @@ export const isReaderMode = derived(
 	[readerMode, readerOverride],
 	([$readerMode, $override]) => $override ?? $readerMode
 );
+
+export function redirectIfOnePage(sectionId: string) {
+	const mode = get(siteMode);
+	if (mode === "one-page" || mode === "reader") {
+		goto(`/#${sectionId}`, { replaceState: true });
+		return true;
+	}
+	return false;
+}
