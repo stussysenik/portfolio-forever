@@ -8,6 +8,8 @@
 
 	let title = "The Promise";
 	let manifesto = "I build and design a lot of things with free value in mind. In return, you could send me kind gifts in the form of art supplies or film medium.";
+	let callToAction = "";
+	let contactEmail = "";
 
 	onMount(() => {
 		const client = getConvexClient();
@@ -15,6 +17,8 @@
 			if (data) {
 				title = data.title || title;
 				manifesto = data.manifesto || manifesto;
+				callToAction = data.callToAction || "";
+				contactEmail = data.contactEmail || "";
 			}
 		});
 		return () => unsub();
@@ -34,6 +38,11 @@
 
 		<div class="letter-body">
 			<p class="manifesto">{manifesto}</p>
+			{#if contactEmail}
+				<p class="gifts-contact">
+					<a href="mailto:{contactEmail}">{callToAction || `Send to ${contactEmail}`}</a>
+				</p>
+			{/if}
 		</div>
 	</article>
 </div>
@@ -97,5 +106,22 @@
 		color: var(--color-text);
 		margin: 0;
 		text-align: center;
+	}
+
+	.gifts-contact {
+		text-align: center;
+		margin-top: var(--space-lg);
+	}
+
+	.gifts-contact a {
+		font-family: var(--font-mono);
+		font-size: var(--font-size-sm);
+		color: var(--color-accent);
+		text-decoration: none;
+		transition: color var(--duration-fast) var(--easing);
+	}
+
+	.gifts-contact a:hover {
+		color: var(--color-accent-hover);
 	}
 </style>

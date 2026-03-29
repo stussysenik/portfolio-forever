@@ -67,9 +67,16 @@
 <div class="cv-container" {id}>
   <!-- Header / Identity -->
   <header class="cv-header">
-    <h1 class="cv-name">{profile.name}</h1>
-    <p class="cv-title">{profile.jobTitle}</p>
-    <p class="cv-location">NYC / Prague · itsmxzou@gmail.com</p>
+    <div class="cv-header-top">
+      <div>
+        <h1 class="cv-name">{profile.name}</h1>
+        <p class="cv-title">{profile.jobTitle}</p>
+        <p class="cv-location">NYC / Prague · itsmxzou@gmail.com</p>
+      </div>
+      <button class="cv-download-btn" on:click={() => window.print()} aria-label="Download CV as PDF">
+        Download PDF
+      </button>
+    </div>
     <div class="cv-domains">
       <span class="cv-domain-item"><a href="https://stussysenik.com" target="_blank" rel="noopener noreferrer">stussysenik.com</a> <span class="cv-domain-desc">— dev + creative</span></span>
       <span class="cv-domain-item"><a href="https://mengxuanzou.com" target="_blank" rel="noopener noreferrer">mengxuanzou.com</a> <span class="cv-domain-desc">— filmmaking</span></span>
@@ -204,6 +211,35 @@
     margin-bottom: var(--space-2xl);
     padding-bottom: var(--space-lg);
     border-bottom: 2px solid var(--border-color);
+  }
+
+  .cv-header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--space-md);
+  }
+
+  .cv-download-btn {
+    padding: 8px 20px;
+    font-family: var(--font-mono);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    color: var(--color-bg);
+    background: var(--color-accent);
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: opacity var(--duration-fast) var(--easing);
+  }
+
+  .cv-download-btn:hover {
+    opacity: 0.85;
+  }
+
+  @media print {
+    .cv-download-btn { display: none; }
   }
 
   .cv-name {

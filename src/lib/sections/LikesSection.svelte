@@ -1,32 +1,26 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { profile } from "$lib/data/content";
+	import { getConvexClient } from '$lib/convex';
+	import { api } from '$convex/_generated/api';
 
 	export let id = "likes";
 
-	/* const categories = [
-		{
-			title: "Things I have broken",
-			items: ["so many fucking cameras"],
-		},
-		{
-			title: "Wishlist",
-			items: ["Range Rover"],
-		},
-		{
-			title: "Bottled wishes/goals for the year",
-			items: [
-				"like all the things... I know I will do it is not a challenge for me",
-			],
-		},
-	]; */
-
+	// Static fallback
 	const words = ["everything", "peace", "freedom", "love", "adventure", "magic", "growth", "balance", "courage", "abundance"];
-	const categories = [
-		{
-			title: "BOTTLED WISHES/GOALS FOR THIS YEAR",
-			items: [words[Math.floor(Math.random() * words.length)]],
-		},
+	let categories: { title: string; items: string[] }[] = [
+		{ title: "BOTTLED WISHES/GOALS FOR THIS YEAR", items: [words[Math.floor(Math.random() * words.length)]] },
 	];
+
+	onMount(() => {
+		const client = getConvexClient();
+		const unsub = client.onUpdate(api.likes.getVisibleLikes, {}, (data) => {
+			if (data && data.length > 0) {
+				categories = data.map((c: any) => ({ title: c.title, items: c.items }));
+			}
+		});
+		return () => unsub();
+	});
 </script>
 
 <svelte:head>

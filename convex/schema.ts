@@ -115,4 +115,36 @@ export default defineSchema({
 		enabled: v.boolean(),
 		category: v.string(),
 	}).index("by_key", ["key"]),
+
+	// Likes — editable categories with items
+	likesCategories: defineTable({
+		title: v.string(),
+		items: v.array(v.string()),
+		order: v.number(),
+		visible: v.boolean(),
+	}).index("by_order", ["order"]),
+
+	// Gifts — editable manifesto content
+	giftsConfig: defineTable({
+		title: v.string(),
+		manifesto: v.string(),
+		callToAction: v.optional(v.string()),
+		contactEmail: v.optional(v.string()),
+		visible: v.boolean(),
+	}),
+
+	// Thumbnail display settings per section
+	thumbnailConfig: defineTable({
+		section: v.string(), // 'works' | 'academia' | 'likes'
+		displayMode: v.union(
+			v.literal("grid"),
+			v.literal("list"),
+			v.literal("carousel"),
+			v.literal("masonry"),
+		),
+		columns: v.optional(v.number()),
+		showPreview: v.boolean(),
+		previewOnHover: v.boolean(),
+		aspectRatio: v.optional(v.string()), // '16:9', '4:3', '1:1'
+	}).index("by_section", ["section"]),
 });
