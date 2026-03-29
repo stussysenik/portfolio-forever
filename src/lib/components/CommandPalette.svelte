@@ -1,6 +1,7 @@
 <script lang="ts">
         import { onMount, onDestroy } from "svelte";
         import { goto } from "$app/navigation";
+        import { readerOverride } from "$lib/stores/siteMode";
 
         interface Command {
                 keys: string;
@@ -66,6 +67,15 @@
                         label: "Go to Gifts",
                         action: () => goto("/gifts"),
                         category: "navigation",
+                },
+                // Actions
+                {
+                        keys: "r",
+                        label: "Toggle Reader Mode",
+                        action: () => {
+                                readerOverride.update((c) => c === null ? true : !c);
+                        },
+                        category: "action",
                 },
         ];
 
