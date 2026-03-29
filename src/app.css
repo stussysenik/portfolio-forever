@@ -1494,3 +1494,13 @@ a:focus-visible {
   animation-duration: 0s !important;
   transition-duration: 0s !important;
 }
+
+/* ─── Parallax Transitions ─── */
+.section-wrapper {
+  will-change: transform;
+}
+
+.parallax-spacer {
+  height: var(--space-4xl);
+  pointer-events: none;
+}

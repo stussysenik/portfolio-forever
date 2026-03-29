@@ -41,6 +41,9 @@
   let sectionElements: Record<string, HTMLElement> = {};
   let observer: IntersectionObserver | undefined;
   let ticking = false;
+  let scrollY = 0;
+  let parallaxEnabled = true;
+  let parallaxSpeed = 0.5;
 
   // Lazy loading: track which sections are near viewport
   let visibleSections = new Set<string>(["hero"]); // Hero always rendered
@@ -122,6 +125,16 @@
     }
   }
 
+  function handleScroll() {
+    if (!parallaxEnabled || $isReaderMode) return;
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => {
+      scrollY = window.scrollY;
+      ticking = false;
+    });
+  }
+
   // Props for specific sections
   function getSectionProps(id: string): Record<string, any> {
     const props: Record<string, any> = { id };
@@ -135,7 +148,7 @@
   }
 </script>
 
-<svelte:window on:keydown={handleKeydown} />
+<svelte:window on:keydown={handleKeydown} on:scroll={handleScroll} />
 
 <div class="one-page" class:reader-mode={$isReaderMode}>
   <!-- Section nav (scroll spy) -->
@@ -156,7 +169,13 @@
 
   <!-- Sections -->
   {#each sectionOrder as id (id)}
-    <section class="section-wrapper" {id}>
+    <section
+      class="section-wrapper"
+      {id}
+      style:transform={parallaxEnabled && !$isReaderMode
+        ? `translateY(${(scrollY - (sectionElements[id]?.offsetTop ?? 0)) * parallaxSpeed * 0.1}px)`
+        : undefined}
+    >
       {#if visibleSections.has(id)}
         <svelte:component this={componentMap[id]} {...getSectionProps(id)} />
       {:else}
