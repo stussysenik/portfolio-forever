@@ -4,7 +4,6 @@
                 sortedTalks as staticTalks,
                 sortedInterviews as staticInterviews,
                 profile,
-                formatDate as staticFormatDate,
                 getHighlight,
         } from "$lib/data/content";
         import { getConvexClient } from '$lib/convex';

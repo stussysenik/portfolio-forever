@@ -40,6 +40,7 @@
   let activeSection = "hero";
   let sectionElements: Record<string, HTMLElement> = {};
   let observer: IntersectionObserver | undefined;
+  let lazyObs: IntersectionObserver | undefined;
   let ticking = false;
   let scrollY = 0;
   let parallaxEnabled = true;
@@ -51,13 +52,13 @@
   // Scroll spy via IntersectionObserver
   onMount(() => {
     // Lazy load observer: render sections when ~1 viewport away
-    const lazyObserver = new IntersectionObserver(
+    lazyObs = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
           if (entry.isIntersecting) {
             visibleSections.add(entry.target.id);
             visibleSections = visibleSections; // trigger reactivity
-            lazyObserver.unobserve(entry.target); // once visible, always rendered
+            lazyObs!.unobserve(entry.target); // once visible, always rendered
           }
         }
       },
@@ -67,7 +68,7 @@
     // Observe placeholder elements for lazy loading
     for (const id of sectionOrder) {
       const el = document.getElementById(id);
-      if (el) lazyObserver.observe(el);
+      if (el) lazyObs.observe(el);
     }
 
     observer = new IntersectionObserver(
@@ -101,6 +102,7 @@
 
   onDestroy(() => {
     observer?.disconnect();
+    lazyObs?.disconnect();
   });
 
   function scrollToSection(id: string) {

@@ -20,4 +20,3 @@ export const sections: SectionMeta[] = [
 	{ id: "os", label: "OS", route: "/os" },
 ];
 
-export const sectionMap = new Map(sections.map((s) => [s.id, s]));
