@@ -1,5 +1,5 @@
 <script lang="ts">
-        import { onMount } from "svelte";
+        import { onMount, onDestroy } from "svelte";
         import "../app.css";
         import { page } from "$app/stores";
         import { afterNavigate, onNavigate } from "$app/navigation";
@@ -54,7 +54,7 @@
                 // Load site config from Convex
                 try {
                         const client = getConvexClient();
-                        client.onUpdate(api.siteConfig.get, {}, (config: any) => {
+                        unsubSiteConfig = client.onUpdate(api.siteConfig.get, {}, (config: any) => {
                                 if (config?.mode) {
                                         siteMode.set(config.mode);
                                 }
@@ -75,6 +75,10 @@
         $: if (typeof document !== "undefined") {
                 document.body.classList.toggle("reader-mode", $isReaderMode);
         }
+
+        // Cleanup
+        let unsubSiteConfig: (() => void) | undefined;
+        onDestroy(() => unsubSiteConfig?.());
 
         // Social links toggle for mobile
         let socialExpanded = false;

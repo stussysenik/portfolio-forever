@@ -1,6 +1,21 @@
 <script lang="ts">
+  import { onMount } from "svelte";
+  import { client } from "$lib/sanity/client";
+  import { POSTS_QUERY } from "$lib/sanity/queries";
+
   export let posts: any[] = [];
   export let id = "blog";
+
+  // Fetch posts client-side when rendered in one-page mode (no server data)
+  onMount(async () => {
+    if (posts.length === 0) {
+      try {
+        posts = await client.fetch(POSTS_QUERY);
+      } catch (e) {
+        console.warn("Failed to fetch blog posts:", e);
+      }
+    }
+  });
 
   // Map Sanity posts to note-like structure and sort by date
   $: sortedNotes = [...(posts || [])]

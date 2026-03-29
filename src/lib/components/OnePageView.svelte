@@ -194,7 +194,7 @@
 
   .section-nav {
     position: sticky;
-    top: 0;
+    top: var(--header-height, 3.5rem);
     z-index: 50;
     display: flex;
     gap: var(--space-2xs);
