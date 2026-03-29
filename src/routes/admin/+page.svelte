@@ -27,6 +27,8 @@
 	let likesCategories: any[] = [];
 	let giftsConfig: any = null;
 	let thumbnailConfigs: any[] = [];
+	let siteConfigData: any = null;
+	let featureFlags: any[] = [];
 	let loading = true;
 	let saving = false;
 	let editingId: string | null = null;
@@ -113,7 +115,13 @@
 		const unsub7 = client.onUpdate(api.thumbnails.getAllConfigs, {}, (data) => {
 			if (data) thumbnailConfigs = data;
 		});
-		return () => { unsub1(); unsub2(); unsub3(); unsub4(); unsub5(); unsub6(); unsub7(); };
+		const unsub8 = client.onUpdate(api.siteConfig.get, {}, (data) => {
+			siteConfigData = data;
+		});
+		const unsub9 = client.onUpdate(api.siteConfig.getFeatureFlags, {}, (data) => {
+			if (data) featureFlags = data;
+		});
+		return () => { unsub1(); unsub2(); unsub3(); unsub4(); unsub5(); unsub6(); unsub7(); unsub8(); unsub9(); };
 	});
 
 	// ── Helpers ──
@@ -563,6 +571,92 @@
 		}
 		toast.success('Thumbnail config saved');
 	}
+
+	// ── Site Config ──
+	async function setSiteMode(mode: 'one-page' | 'multi-page' | 'reader') {
+		await client.mutation(api.siteConfig.upsert, { mode });
+		toast.success(`Site mode: ${mode}`);
+	}
+
+	async function setParallaxSpeed(speed: number) {
+		await client.mutation(api.siteConfig.upsert, { parallaxSpeed: speed });
+		toast.success(`Parallax speed: ${speed}`);
+	}
+
+	async function setSectionOrder(order: string[]) {
+		await client.mutation(api.siteConfig.upsert, { sectionOrder: order });
+		toast.success('Section order updated');
+	}
+
+	// ── Feature Flags ──
+	async function toggleFeatureFlag(key: string, enabled: boolean, category: string) {
+		await client.mutation(api.siteConfig.setFeatureFlag, { key, enabled, category });
+		toast.success(`${key}: ${enabled ? 'ON' : 'OFF'}`);
+	}
+
+	// ── JSON Export ──
+	function exportSiteConfig() {
+		const config = {
+			siteConfig: siteConfigData,
+			featureFlags,
+			thumbnailConfigs,
+			exportedAt: new Date().toISOString(),
+		};
+		const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = `site-config-${new Date().toISOString().split('T')[0]}.json`;
+		a.click();
+		URL.revokeObjectURL(url);
+		toast.success('Config exported');
+	}
+
+	// ── Section Reorder Helpers ──
+	const allSections = [
+		{ id: "hero", label: "Home" },
+		{ id: "works", label: "Works" },
+		{ id: "talks", label: "Talks" },
+		{ id: "terminal", label: "Terminal" },
+		{ id: "cv", label: "CV" },
+		{ id: "academia", label: "Re:mix" },
+		{ id: "blog", label: "Blog" },
+		{ id: "process", label: "Process" },
+		{ id: "gallery", label: "Gallery" },
+		{ id: "likes", label: "Likes" },
+		{ id: "minor", label: "Minor" },
+		{ id: "gifts", label: "Gifts" },
+		{ id: "os", label: "OS" },
+	];
+
+	$: currentOrder = siteConfigData?.sectionOrder || allSections.map(s => s.id);
+
+	function moveSectionInOrder(sectionId: string, direction: number) {
+		const order = [...currentOrder];
+		const idx = order.indexOf(sectionId);
+		const swapIdx = idx + direction;
+		if (swapIdx < 0 || swapIdx >= order.length) return;
+		[order[idx], order[swapIdx]] = [order[swapIdx], order[idx]];
+		setSectionOrder(order);
+	}
+
+	// Default feature flags for the site
+	const DEFAULT_FLAGS = [
+		{ key: 'ascii-donut', category: 'visual', label: 'ASCII Donut' },
+		{ key: 'parallax', category: 'visual', label: 'Parallax Transitions' },
+		{ key: 'view-transitions', category: 'visual', label: 'View Transitions' },
+		{ key: 'wip-banner', category: 'layout', label: 'WIP Banner' },
+		{ key: 'elevator', category: 'visual', label: 'Elevator (Back to Top)' },
+		{ key: 'terminal-matrix', category: 'visual', label: 'Terminal Matrix Animation' },
+		{ key: 'os-desktop', category: 'visual', label: 'OS Desktop Simulator' },
+		{ key: 'social-links', category: 'layout', label: 'Social Links Dropdown' },
+		{ key: 'command-palette', category: 'layout', label: 'Command Palette' },
+	];
+
+	function getFlagState(key: string): boolean {
+		const flag = featureFlags.find((f: any) => f.key === key);
+		return flag ? flag.enabled : true; // default enabled
+	}
 </script>
 
 <svelte:head>
@@ -602,6 +696,7 @@
 		</div>
 		<div class="admin-actions">
 			<button class="btn btn-accent" on:click={exportPDF}>Export PDF</button>
+			<button class="btn" on:click={exportSiteConfig}>Export JSON</button>
 			<a href="/cv" class="btn" target="_blank">CV →</a>
 			<a href="/works" class="btn" target="_blank">Works →</a>
 			<a href="/academia" class="btn" target="_blank">Academia →</a>
@@ -614,6 +709,82 @@
 	{#if loading}
 		<div class="loading">Loading CV data from Convex...</div>
 	{:else}
+
+	<!-- ── Site Configuration ── -->
+	<section class="admin-section">
+		<h2 class="section-label">Site Configuration</h2>
+		<div class="card">
+			<div class="field-row">
+				<span class="field-label">Site Mode</span>
+				<div class="mode-switcher">
+					{#each ['multi-page', 'one-page', 'reader'] as mode}
+						<button
+							class="mode-btn"
+							class:active={siteConfigData?.mode === mode || (!siteConfigData?.mode && mode === 'multi-page')}
+							on:click={() => setSiteMode(mode)}
+						>
+							{mode}
+						</button>
+					{/each}
+				</div>
+			</div>
+			<div class="field-row">
+				<span class="field-label">Parallax Speed</span>
+				<div class="slider-row">
+					<input
+						type="range"
+						min="0"
+						max="1"
+						step="0.1"
+						value={siteConfigData?.parallaxSpeed ?? 0.5}
+						on:change={(e) => setParallaxSpeed(parseFloat(e.currentTarget.value))}
+						class="slider"
+					/>
+					<span class="slider-value">{siteConfigData?.parallaxSpeed ?? 0.5}</span>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<!-- ── Section Order ── -->
+	<section class="admin-section">
+		<h2 class="section-label">Section Order</h2>
+		<div class="card">
+			{#each currentOrder as sectionId, idx}
+				{@const meta = allSections.find(s => s.id === sectionId)}
+				{#if meta}
+					<div class="section-order-row">
+						<div class="reorder-btns">
+							<button class="btn-icon" on:click={() => moveSectionInOrder(sectionId, -1)} disabled={idx === 0}>↑</button>
+							<button class="btn-icon" on:click={() => moveSectionInOrder(sectionId, 1)} disabled={idx === currentOrder.length - 1}>↓</button>
+						</div>
+						<span class="section-order-label">{meta.label}</span>
+						<span class="section-order-id">{sectionId}</span>
+					</div>
+				{/if}
+			{/each}
+		</div>
+	</section>
+
+	<!-- ── Feature Flags ── -->
+	<section class="admin-section">
+		<h2 class="section-label">Feature Flags</h2>
+		<div class="card">
+			{#each DEFAULT_FLAGS as flag}
+				<div class="flag-row">
+					<span class="flag-label">{flag.label}</span>
+					<span class="flag-category">{flag.category}</span>
+					<button
+						class="flag-toggle"
+						class:flag-on={getFlagState(flag.key)}
+						on:click={() => toggleFeatureFlag(flag.key, !getFlagState(flag.key), flag.category)}
+					>
+						{getFlagState(flag.key) ? 'ON' : 'OFF'}
+					</button>
+				</div>
+			{/each}
+		</div>
+	</section>
 
 	<!-- ── Profile ── -->
 	{#if profile}
@@ -1617,5 +1788,123 @@
 			gap: var(--space-sm);
 			align-items: flex-start;
 		}
+	}
+
+	/* ── Site Config ── */
+	.mode-switcher {
+		display: flex;
+		gap: var(--space-xs);
+	}
+
+	.mode-btn {
+		padding: var(--space-xs) var(--space-md);
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+		border: 1px solid var(--border-color);
+		border-radius: var(--radius-sm);
+		background: transparent;
+		color: var(--color-text-muted);
+		cursor: pointer;
+		transition: all var(--duration-fast) var(--easing);
+	}
+
+	.mode-btn.active {
+		background: var(--color-accent);
+		color: var(--color-bg);
+		border-color: var(--color-accent);
+	}
+
+	.mode-btn:hover:not(.active) {
+		border-color: var(--color-text-muted);
+		color: var(--color-text);
+	}
+
+	.slider-row {
+		display: flex;
+		align-items: center;
+		gap: var(--space-sm);
+		flex: 1;
+	}
+
+	.slider {
+		flex: 1;
+		accent-color: var(--color-accent);
+	}
+
+	.slider-value {
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+		color: var(--color-text-muted);
+		min-width: 3ch;
+	}
+
+	/* ── Section Order ── */
+	.section-order-row {
+		display: flex;
+		align-items: center;
+		gap: var(--space-sm);
+		padding: var(--space-xs) 0;
+		border-bottom: 1px solid var(--border-color-subtle);
+	}
+
+	.section-order-row:last-child {
+		border-bottom: none;
+	}
+
+	.section-order-label {
+		font-weight: 500;
+		flex: 1;
+	}
+
+	.section-order-id {
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+		color: var(--color-text-subtle);
+	}
+
+	/* ── Feature Flags ── */
+	.flag-row {
+		display: flex;
+		align-items: center;
+		gap: var(--space-sm);
+		padding: var(--space-xs) 0;
+		border-bottom: 1px solid var(--border-color-subtle);
+	}
+
+	.flag-row:last-child {
+		border-bottom: none;
+	}
+
+	.flag-label {
+		flex: 1;
+		font-size: var(--font-size-sm);
+	}
+
+	.flag-category {
+		font-family: var(--font-mono);
+		font-size: var(--font-size-2xs);
+		color: var(--color-text-subtle);
+		text-transform: uppercase;
+		letter-spacing: var(--letter-spacing-wide);
+	}
+
+	.flag-toggle {
+		padding: var(--space-2xs) var(--space-sm);
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+		font-weight: 600;
+		border: 1px solid var(--border-color);
+		border-radius: var(--radius-sm);
+		background: transparent;
+		color: var(--color-text-muted);
+		cursor: pointer;
+		min-width: 4ch;
+		transition: all var(--duration-fast) var(--easing);
+	}
+
+	.flag-toggle.flag-on {
+		background: var(--color-success, #22c55e);
+		color: #fff;
+		border-color: var(--color-success, #22c55e);
 	}
 </style>
