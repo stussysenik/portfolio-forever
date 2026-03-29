@@ -1,6 +1,4 @@
 <script lang="ts">
-  import type { SanityPost } from '$lib/sanity/types';
-
   export let posts: any[] = [];
   export let id = "blog";
 
@@ -178,7 +176,6 @@
     font-family: var(--font-mono);
     font-size: var(--font-size-2xs);
     color: var(--color-text-subtle);
-    color: var(--color-text-subtle);
     background: transparent;
     border: none;
     padding: var(--space-2xs) var(--space-xs);
@@ -295,14 +292,6 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-  }
-
-  .notes-grid .note-card:hover {
-    padding-left: var(--space-xl); /* Match padding on hover */
-    border-left: 1px solid var(--border-color-subtle);
-    border-color: var(--color-accent);
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-md);
   }
 
   .notes-grid .note-card:hover {
