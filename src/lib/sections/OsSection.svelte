@@ -105,20 +105,20 @@
 
 </script>
 
-{#if !embedded}
 <svelte:head>
-  <title>OS Mode</title>
-  <meta name="theme-color" content="#3b82f6" />
-  <style>
-    body {
-        margin: 0;
-        overflow: hidden;
-        background-color: transparent;
-        background-image: none;
-    }
-  </style>
+  {#if !embedded}
+    <title>OS Mode</title>
+    <meta name="theme-color" content="#3b82f6" />
+    <style>
+      body {
+          margin: 0;
+          overflow: hidden;
+          background-color: transparent;
+          background-image: none;
+      }
+    </style>
+  {/if}
 </svelte:head>
-{/if}
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
