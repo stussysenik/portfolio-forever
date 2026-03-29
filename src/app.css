@@ -126,6 +126,15 @@
   --easing: cubic-bezier(0.25, 0.1, 0.25, 1);
   --easing-out: cubic-bezier(0.16, 1, 0.3, 1);
   --easing-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* === Z-Index System === */
+  --z-base: 0;
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-fixed: 1000;
+  --z-modal: 2000;
+  --z-popover: 2001;
+  --z-tooltip: 9999;
 }
 
 /* ---- THEME: Studio (Achromatic Light) ---- */
@@ -334,7 +343,7 @@ html {
   text-rendering: optimizeLegibility;
   font-feature-settings: 'kern' 1, 'liga' 1, 'calt' 1;
   scroll-behavior: smooth;
-  overflow-x: hidden;
+  overflow-x: clip;
   /* Prevent horizontal scroll */
   width: 100%;
 
@@ -352,8 +361,8 @@ body {
   /* Space for terminal bar */
   max-width: var(--container-max);
   margin: 0 auto;
-  overflow-x: hidden;
-  /* Double safety */
+  overflow-x: clip;
+  /* Prevent horizontal scroll without creating scroll context */
   width: 100%;
   position: relative;
 }
@@ -830,17 +839,27 @@ a:focus-visible {
 .entry[data-highlight="9"] { --hl: 105,20,36;    --hl-color: #ff8a95; --hl-solid: var(--color-red); }
 
 /* Minimal (default): solid colored backgrounds */
+/* --hl-text is set inline via getHighlightTextColor() for WCAG AA contrast */
 .entry[data-highlight] {
   background: var(--hl-solid);
-  color: #000;
+  color: var(--hl-text, #000);
 }
-.entry[data-highlight="9"] { color: #fff; }
+.entry[data-highlight] .entry-date,
+.entry[data-highlight] .entry-title,
+.entry[data-highlight] .entry-links a {
+  color: inherit;
+}
 
 /* Darkroom: 15% opacity wash + colored text + colored border */
 [data-theme="darkroom"] .entry[data-highlight] {
   background: rgba(var(--hl), 0.15);
   color: var(--hl-color);
   border: 1px solid rgba(var(--hl), 0.35);
+}
+[data-theme="darkroom"] .entry[data-highlight] .entry-date,
+[data-theme="darkroom"] .entry[data-highlight] .entry-title,
+[data-theme="darkroom"] .entry[data-highlight] .entry-links a {
+  color: inherit;
 }
 
 /* Studio: 8% gradient wash + 3px left border accent */
@@ -849,6 +868,11 @@ a:focus-visible {
   border-left: 3px solid rgb(var(--hl));
   color: #111;
 }
+[data-theme="studio"] .entry[data-highlight] .entry-date,
+[data-theme="studio"] .entry[data-highlight] .entry-title,
+[data-theme="studio"] .entry[data-highlight] .entry-links a {
+  color: inherit;
+}
 
 /* Accessible: uniform high-contrast treatment */
 [data-theme="accessible"] .entry[data-highlight] {
@@ -856,6 +880,11 @@ a:focus-visible {
   color: #000000;
   border: 2px solid #000000;
   font-weight: 700;
+}
+[data-theme="accessible"] .entry[data-highlight] .entry-date,
+[data-theme="accessible"] .entry[data-highlight] .entry-title,
+[data-theme="accessible"] .entry[data-highlight] .entry-links a {
+  color: inherit;
 }
 
 .entry[data-highlight]:hover {
@@ -1356,4 +1385,112 @@ a:focus-visible {
     repeating-linear-gradient(90deg, oklch(0.65 0.25 25 / 0.08) 0 1px, transparent 1px var(--grid-gap)),
     repeating-linear-gradient(oklch(0.65 0.25 25 / 0.04) 0 1px, transparent 1px 8px);
   background-size: calc(100% / var(--grid-columns)) 100%, 100% 8px;
+}
+
+/* ---- ACCESSIBILITY: Reduced Motion ---- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---- ACCESSIBILITY: Focus Visible ---- */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* ---- ACCESSIBILITY: View Transitions ---- */
+@keyframes fade-in { from { opacity: 0; } }
+@keyframes fade-out { to { opacity: 0; } }
+@keyframes slide-from-right { from { transform: translateX(20px); } }
+@keyframes slide-to-left { to { transform: translateX(-20px); } }
+
+::view-transition-old(root) {
+  animation: 90ms var(--easing) fade-out, 200ms var(--easing) slide-to-left;
+}
+::view-transition-new(root) {
+  animation: 150ms var(--easing) fade-in 60ms, 200ms var(--easing) slide-from-right;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+}
+
+/* ─── Reader Mode ─── */
+.reader-mode {
+  --reader-max-width: 680px;
+  --reader-font-size: 1.125rem;
+  --reader-line-height: 1.75;
+}
+
+.reader-mode .section-wrapper {
+  max-width: var(--reader-max-width);
+  margin-inline: auto;
+  padding-inline: var(--space-lg);
+  font-size: var(--reader-font-size);
+  line-height: var(--reader-line-height);
+}
+
+/* Hide decorative elements in reader mode */
+.reader-mode canvas,
+.reader-mode .ascii-donut,
+.reader-mode .hero-visual,
+.reader-mode .animation-overlay,
+.reader-mode .pixel-canvas,
+.reader-mode .geometric-bg,
+.reader-mode .parallax-spacer,
+.reader-mode iframe,
+.reader-mode .project-embed,
+.reader-mode .inline-browser,
+.reader-mode .tmux-bar,
+.reader-mode video,
+.reader-mode .elevator {
+  display: none !important;
+}
+
+/* Simplify layout in reader mode */
+.reader-mode .hero {
+  display: block;
+}
+
+.reader-mode .hero-content {
+  max-width: 100%;
+}
+
+/* Clean typography for reader mode */
+.reader-mode h1,
+.reader-mode h2,
+.reader-mode h3 {
+  font-family: var(--font-sans);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-tight);
+}
+
+.reader-mode p,
+.reader-mode li {
+  font-family: var(--font-sans);
+  line-height: var(--reader-line-height);
+  color: var(--color-text);
+}
+
+/* Subtle section dividers in reader mode */
+.reader-mode .section-wrapper + .section-wrapper {
+  border-top: 1px solid var(--border-color-subtle);
+  padding-top: var(--space-2xl);
+  margin-top: var(--space-2xl);
+}
+
+/* Remove all animations in reader mode */
+.reader-mode * {
+  animation-duration: 0s !important;
+  transition-duration: 0s !important;
 }
