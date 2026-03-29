@@ -6,6 +6,7 @@
         import { siteConfig, socialLinks, profile } from "$lib/data/content";
         import { layoutConfig } from "$lib/data/layout-config";
         import CommandPalette from "$lib/components/CommandPalette.svelte";
+        import PixelCanvas from "$lib/components/PixelCanvas.svelte";
         import ThemeSwitcher from "$lib/components/ThemeSwitcher.svelte";
         import FontSwitcher from "$lib/components/FontSwitcher.svelte";
         import Toast from "$lib/components/Toast.svelte";
@@ -181,6 +182,7 @@
 
 <!-- Command Palette (global) -->
 <CommandPalette />
+<PixelCanvas />
 <Toast />
 
 <div class="top-frame">
