@@ -14,6 +14,20 @@ export const isReaderMode = derived(
 	([$mode, $override]) => $override ?? ($mode === "reader")
 );
 
+// Full site config from Convex (section order, parallax, etc.)
+export const siteConfig = writable<{
+	sectionOrder?: string[];
+	parallaxSpeed?: number;
+} | null>(null);
+
+// Feature flags from Convex
+export const featureFlags = writable<Map<string, boolean>>(new Map());
+
+export function isFeatureEnabled(key: string): boolean {
+	const flags = get(featureFlags);
+	return flags.get(key) ?? true; // default enabled
+}
+
 export function redirectIfOnePage(sectionId: string) {
 	const mode = get(siteMode);
 	if (mode === "one-page" || mode === "reader") {

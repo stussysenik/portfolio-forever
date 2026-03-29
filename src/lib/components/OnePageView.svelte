@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount, onDestroy } from "svelte";
   import { sections } from "$lib/sections/index";
-  import { isReaderMode } from "$lib/stores/siteMode";
+  import { isReaderMode, siteConfig } from "$lib/stores/siteMode";
 
   import HeroSection from "$lib/sections/HeroSection.svelte";
   import WorksSection from "$lib/sections/WorksSection.svelte";
@@ -17,8 +17,11 @@
   import GiftsSection from "$lib/sections/GiftsSection.svelte";
   import OsSection from "$lib/sections/OsSection.svelte";
 
-  export let sectionOrder: string[] = sections.map((s) => s.id);
   export let blogPosts: any[] = [];
+
+  // Read section order and parallax from siteConfig store, with fallback
+  $: sectionOrder = $siteConfig?.sectionOrder || sections.map((s) => s.id);
+  $: parallaxSpeed = $siteConfig?.parallaxSpeed ?? 0.5;
 
   // Map section IDs to components
   const componentMap: Record<string, any> = {
@@ -44,10 +47,12 @@
   let ticking = false;
   let scrollY = 0;
   let parallaxEnabled = true;
-  let parallaxSpeed = 0.5;
 
   // Lazy loading: track which sections are near viewport
   let visibleSections = new Set<string>(["hero"]); // Hero always rendered
+  // Viewport tracking for parallax (only apply transforms to visible sections)
+  let inViewport = new Set<string>(["hero"]);
+  let sectionOffsets: Record<string, number> = {};
 
   // Scroll spy via IntersectionObserver
   onMount(() => {
@@ -76,22 +81,34 @@
         for (const entry of entries) {
           if (entry.isIntersecting) {
             activeSection = entry.target.id;
-            // Update URL hash without scrolling
+            inViewport.add(entry.target.id);
             history.replaceState(null, "", `/#${activeSection}`);
+          } else {
+            inViewport.delete(entry.target.id);
           }
         }
+        inViewport = inViewport;
       },
       { rootMargin: "-40% 0px -60% 0px" }
     );
 
-    // Observe all section wrappers
+    // Observe all section wrappers + cache offsets
     for (const id of sectionOrder) {
       const el = document.getElementById(id);
       if (el) {
         sectionElements[id] = el;
+        sectionOffsets[id] = el.offsetTop;
         observer.observe(el);
       }
     }
+
+    // Recache offsets on resize
+    const recacheOffsets = () => {
+      for (const [id, el] of Object.entries(sectionElements)) {
+        sectionOffsets[id] = el.offsetTop;
+      }
+    };
+    window.addEventListener('resize', recacheOffsets);
 
     // Handle initial hash
     const hash = window.location.hash.slice(1);
@@ -173,9 +190,10 @@
   {#each sectionOrder as id (id)}
     <section
       class="section-wrapper"
+      class:parallaxing={parallaxEnabled && !$isReaderMode && inViewport.has(id)}
       {id}
-      style:transform={parallaxEnabled && !$isReaderMode
-        ? `translateY(${(scrollY - (sectionElements[id]?.offsetTop ?? 0)) * parallaxSpeed * 0.1}px)`
+      style:transform={parallaxEnabled && !$isReaderMode && inViewport.has(id)
+        ? `translateY(${(scrollY - (sectionOffsets[id] ?? 0)) * parallaxSpeed * 0.1}px)`
         : undefined}
     >
       {#if visibleSections.has(id)}
@@ -233,6 +251,10 @@
   .section-wrapper {
     min-height: 50vh;
     padding-block: var(--space-2xl);
+  }
+
+  .section-wrapper.parallaxing {
+    will-change: transform;
   }
 
   /* Reader mode hides the section nav */

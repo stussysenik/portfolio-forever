@@ -11,7 +11,7 @@
         import Toast from "$lib/components/Toast.svelte";
         import { overlapDetector } from "$lib/utils/overlap-detector";
         import { initPostHog, trackPageView } from "$lib/posthog";
-        import { siteMode, readerOverride, isReaderMode } from "$lib/stores/siteMode";
+        import { siteMode, readerOverride, isReaderMode, siteConfig as siteConfigStore, featureFlags } from "$lib/stores/siteMode";
         import { getConvexClient } from "$lib/convex";
         import { api } from "$convex/_generated/api";
 
@@ -57,6 +57,20 @@
                         unsubSiteConfig = client.onUpdate(api.siteConfig.get, {}, (config: any) => {
                                 if (config?.mode) {
                                         siteMode.set(config.mode);
+                                }
+                                if (config) {
+                                        siteConfigStore.set({
+                                                sectionOrder: config.sectionOrder,
+                                                parallaxSpeed: config.parallaxSpeed,
+                                        });
+                                }
+                        });
+                        // Subscribe to feature flags
+                        client.onUpdate(api.siteConfig.getFeatureFlags, {}, (flags: any[]) => {
+                                if (flags) {
+                                        const map = new Map<string, boolean>();
+                                        for (const f of flags) map.set(f.key, f.enabled);
+                                        featureFlags.set(map);
                                 }
                         });
                 } catch (e) {
