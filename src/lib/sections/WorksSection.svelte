@@ -32,6 +32,11 @@
 
         let projects: Project[] = staticProjects;
         let loaded: Record<number, boolean> = {};
+        let thumbnailConfig: any = null;
+
+        $: displayMode = thumbnailConfig?.displayMode ?? 'grid';
+        $: gridCols = thumbnailConfig?.columns ?? 2;
+        $: showPreview = thumbnailConfig?.showPreview ?? true;
 
         function handleLoad(index: number) {
                 loaded = { ...loaded, [index]: true };
@@ -43,6 +48,9 @@
                         if (data && data.length > 0) {
                                 projects = data;
                         }
+                });
+                client.onUpdate(api.thumbnails.getConfig, { section: 'works' }, (data) => {
+                        thumbnailConfig = data;
                 });
 
                 document.querySelectorAll('.preview-image').forEach((img, _) => {
@@ -66,9 +74,10 @@
                 <span class="section-meta">live embeds · {projects.length} projects</span>
         </header>
 
-        <div class="projects-grid">
+        <div class="projects-grid" class:list-mode={displayMode === 'list'} style="--grid-cols: {gridCols};">
                 {#each projects as project, i}
                         <div class="project-card">
+                                {#if showPreview}
                                 <div class="project-embed" class:loaded={loaded[i]}>
                                         {#if !loaded[i]}
                                                 <div class="skeleton">
@@ -77,7 +86,7 @@
                                         {/if}
                                         {#if project.preview}
                                                 <a href={project.url} target="_blank" rel="noopener noreferrer" class="preview-link">
-                                                        <img src={project.preview} alt={project.title} class="preview-image" on:load={() => handleLoad(i)} />
+                                                        <img src={project.preview} alt={project.title} class="preview-image" loading="lazy" on:load={() => handleLoad(i)} />
                                                 </a>
                                         {:else}
                                                 <iframe
@@ -94,8 +103,13 @@
                                                 </a>
                                         {/if}
                                 </div>
+                                {/if}
                                 <div class="project-meta">
-                                        <span class="project-title">{project.title}</span>
+                                        {#if !showPreview}
+                                                <a href={project.url} target="_blank" rel="noopener noreferrer" class="project-title">{project.title}</a>
+                                        {:else}
+                                                <span class="project-title">{project.title}</span>
+                                        {/if}
                                         {#if project.category}
                                                 <span class="project-category">{project.category}</span>
                                         {/if}
@@ -149,8 +163,23 @@
 
         @media (min-width: 768px) {
                 .projects-grid {
-                        grid-template-columns: repeat(2, 1fr);
+                        grid-template-columns: repeat(var(--grid-cols, 2), 1fr);
                 }
+        }
+
+        /* List mode: single column, horizontal cards */
+        .projects-grid.list-mode {
+                grid-template-columns: 1fr;
+        }
+
+        .list-mode .project-card {
+                flex-direction: row;
+                align-items: center;
+        }
+
+        .list-mode .project-embed {
+                max-width: 200px;
+                flex-shrink: 0;
         }
 
         /* Card */
@@ -177,6 +206,7 @@
                 background: var(--color-surface);
                 box-shadow: var(--shadow-sm);
                 transition: box-shadow var(--duration-normal) var(--easing);
+                contain: layout style paint;
         }
 
         .project-card:hover .project-embed {

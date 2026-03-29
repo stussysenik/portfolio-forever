@@ -8,16 +8,22 @@
 
   let entries: any[] = [];
   let loading = true;
+  let thumbnailConfig: any = null;
+
+  $: displayMode = thumbnailConfig?.displayMode ?? 'grid';
 
   onMount(() => {
     const client = getConvexClient();
-    const unsubscribe = client.onUpdate(api.academia.getVisibleAcademia, {}, (data) => {
+    const unsub1 = client.onUpdate(api.academia.getVisibleAcademia, {}, (data) => {
       if (data) {
         entries = data;
         loading = false;
       }
     });
-    return () => unsubscribe();
+    const unsub2 = client.onUpdate(api.thumbnails.getConfig, { section: 'academia' }, (data) => {
+      thumbnailConfig = data;
+    });
+    return () => { unsub1(); unsub2(); };
   });
 </script>
 
@@ -51,7 +57,7 @@
       <p class="academia-empty">No entries yet. Add research papers from the <a href="/admin">admin panel</a>.</p>
     {:else}
       {#each entries as entry}
-        <div class="paper">
+        <div class="paper" class:compact={displayMode === 'list'}>
           {#if entry.muxPlaybackId}
             <div class="paper-video">
               <MuxVideo playbackId={entry.muxPlaybackId} title={entry.title} />
@@ -168,6 +174,13 @@
     gap: var(--space-md);
     margin-bottom: var(--space-xl);
     align-items: flex-start;
+  }
+
+  /* Compact/list mode: hide thumbnails */
+  .paper.compact :global(.paper-video),
+  .paper.compact .paper-thumb,
+  .paper.compact .paper-thumb-placeholder {
+    display: none;
   }
 
   .paper-thumb {

@@ -115,3 +115,38 @@ export const seedAcademia = mutation({
 		return `Seeded ${papers.length} academic papers`;
 	},
 });
+
+export const seedLikes = mutation({
+	handler: async (ctx) => {
+		const existing = await ctx.db.query("likesCategories").first();
+		if (existing) return "Likes already seeded";
+
+		const categories = [
+			{ title: "THINGS I LIKE", items: ["music", "film", "design", "code", "community radio", "open source", "cooking", "breakdancing"] },
+			{ title: "BOTTLED WISHES/GOALS FOR THIS YEAR", items: ["balance", "courage", "adventure", "growth", "freedom", "abundance"] },
+			{ title: "THINGS I HAVE BROKEN", items: ["cameras", "hard drives", "headphones", "deadlines"] },
+			{ title: "WISHLIST", items: ["Hasselblad 500C", "field recorder", "Risograph printer", "a month of silence"] },
+		];
+
+		for (let i = 0; i < categories.length; i++) {
+			await ctx.db.insert("likesCategories", { ...categories[i], order: i, visible: true });
+		}
+		return `Seeded ${categories.length} likes categories`;
+	},
+});
+
+export const seedGifts = mutation({
+	handler: async (ctx) => {
+		const existing = await ctx.db.query("giftsConfig").first();
+		if (existing) return "Gifts already seeded";
+
+		await ctx.db.insert("giftsConfig", {
+			title: "The Promise",
+			manifesto: "I build and design a lot of things with free value in mind. In return, you could send me kind gifts in the form of art supplies or film medium.",
+			contactEmail: "itsmxzou@gmail.com",
+			callToAction: "Send books, postcards, or art supplies →",
+			visible: true,
+		});
+		return "Seeded gifts config";
+	},
+});

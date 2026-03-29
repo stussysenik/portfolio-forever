@@ -237,14 +237,6 @@ export const cvData: PersonSchema = {
 			startDate: '2025-09',
 			description: 'Attendu — recognized as the top product launch of the day',
 		},
-		{
-			id: 'award-2',
-			type: 'award',
-			title: '@certified at copyright',
-			organization: 'Nobel Prize for Googling',
-			startDate: '2048-08',
-			description: 'for breathing fresh air',
-		},
 	],
 };
 
