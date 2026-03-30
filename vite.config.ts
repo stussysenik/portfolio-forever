@@ -9,6 +9,9 @@ export default defineConfig({
                         "$convex": path.resolve("./convex"),
                 },
         },
+        optimizeDeps: {
+                exclude: ["fengari-web"],
+        },
         server: {
                 fs: {
                         allow: ["convex"],

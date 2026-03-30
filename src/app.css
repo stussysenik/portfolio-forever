@@ -84,6 +84,11 @@
   --color-success: oklch(0.560 0.140 160); /* hsl(155, 65%, 38%) */
   --color-warning: oklch(0.780 0.160 80); /* hsl(40, 90%, 50%) */
   --color-danger: oklch(0.560 0.200 25); /* hsl(0, 70%, 50%) */
+  --color-error: var(--color-danger); /* alias for admin references */
+
+  /* Admin-specific tokens (used in /admin route) */
+  --color-admin-github-bg: oklch(0.205 0.005 285); /* #24292f */
+  --color-admin-github-hover: oklch(0.160 0.005 285); /* #1b1f23 */
 
   /* Category Colors - muted, sophisticated */
   --color-design: oklch(0.580 0.180 350); /* hsl(340, 55%, 52%) */
