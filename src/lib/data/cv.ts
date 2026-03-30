@@ -41,7 +41,7 @@ export const cvData: PersonSchema = {
 	'@context': 'https://schema.org',
 	'@type': 'Person',
 	name: 'MENGXUAN "SENIK" ZOU',
-	jobTitle: 'DevEx & Experience Design Engineer',
+	jobTitle: 'Design Engineer & Creative Producer',
 	url: 'https://www.stussysenik.com',
 	sameAs: [
 		'https://github.com/stussysenik',
@@ -236,14 +236,6 @@ export const cvData: PersonSchema = {
 			organization: 'Product Hunt',
 			startDate: '2025-09',
 			description: 'Attendu — recognized as the top product launch of the day',
-		},
-		{
-			id: 'award-2',
-			type: 'award',
-			title: '@certified at copyright',
-			organization: 'Nobel Prize for Googling',
-			startDate: '2048-08',
-			description: 'for breathing fresh air',
 		},
 	],
 };

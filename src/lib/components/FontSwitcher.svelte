@@ -1,28 +1,30 @@
 <script lang="ts">
   import { onMount } from 'svelte';
 
-  type Font = 'inter' | 'crimson' | 'jetbrains' | 'fira' | 'space';
+  type Font = 'inter' | 'rubik' | 'helvetica' | 'crimson' | 'times' | 'ibm-plex' | 'jetbrains' | 'fira' | 'space';
 
-  const fonts: { id: Font; name: string; category: string; preview: string }[] = [
-    { id: 'inter', name: 'Inter', category: 'Sans-serif', preview: 'The quick brown fox' },
-    { id: 'crimson', name: 'Crimson Pro', category: 'Serif', preview: 'The quick brown fox' },
-    { id: 'jetbrains', name: 'JetBrains Mono', category: 'Monospace', preview: 'The quick brown fox' },
-    { id: 'fira', name: 'Fira Code', category: 'Monospace', preview: 'The quick brown fox' },
-    { id: 'space', name: 'Space Grotesk', category: 'Display', preview: 'The quick brown fox' },
+  const fonts: { id: Font; name: string; category: string; family: string }[] = [
+    { id: 'inter',      name: 'Inter',           category: 'Sans-serif', family: "'Inter', sans-serif" },
+    { id: 'rubik',      name: 'Rubik',           category: 'Geometric',  family: "'Rubik', sans-serif" },
+    { id: 'helvetica',  name: 'Helvetica',       category: 'System',     family: "'Helvetica Neue', 'Helvetica', 'Arial', sans-serif" },
+    { id: 'crimson',    name: 'Crimson Pro',     category: 'Serif',      family: "'Crimson Pro', Georgia, serif" },
+    { id: 'times',      name: 'Times New Roman', category: 'Classic',    family: "'Times New Roman', 'Times', serif" },
+    { id: 'ibm-plex',   name: 'IBM Plex Mono',   category: 'Mono',       family: "'IBM Plex Mono', monospace" },
+    { id: 'jetbrains',  name: 'JetBrains Mono',  category: 'Monospace',  family: "'JetBrains Mono', monospace" },
+    { id: 'fira',       name: 'Fira Code',       category: 'Monospace',  family: "'Fira Code', monospace" },
+    { id: 'space',      name: 'Space Grotesk',   category: 'Display',    family: "'Space Grotesk', sans-serif" },
   ];
 
   let currentFont: Font = 'inter';
   let isOpen = false;
 
   onMount(() => {
-    // Load saved font preference
     const saved = localStorage.getItem('preferred-font') as Font | null;
     if (saved && fonts.some(f => f.id === saved)) {
       currentFont = saved;
-      applyFont(saved, false); // Don't announce on initial load
+      applyFont(saved, false);
     }
 
-    // Listen for keyboard shortcut
     const handleKeydown = (e: KeyboardEvent) => {
       if (e.key === 'f' && !e.metaKey && !e.ctrlKey && !isInputFocused()) {
         e.preventDefault();
@@ -45,11 +47,7 @@
     document.documentElement.setAttribute('data-font', font);
     localStorage.setItem('preferred-font', font);
     currentFont = font;
-
-    // Screen reader announcement
-    if (announce) {
-      announceFontChange(font);
-    }
+    if (announce) announceFontChange(font);
   }
 
   function announceFontChange(font: Font) {
@@ -60,8 +58,6 @@
     announcement.className = 'sr-only';
     announcement.textContent = `Font changed to ${fontName}`;
     document.body.appendChild(announcement);
-
-    // Remove after announcement
     setTimeout(() => announcement.remove(), 1000);
   }
 
@@ -71,9 +67,7 @@
   }
 
   function handleKeydown(e: KeyboardEvent) {
-    if (e.key === 'Escape') {
-      isOpen = false;
-    }
+    if (e.key === 'Escape') isOpen = false;
   }
 </script>
 
@@ -94,27 +88,29 @@
     <div class="font-dropdown" role="menu">
       <div class="dropdown-header">
         <span class="header-title">Choose Font</span>
+        <span class="header-count">{fonts.length} typefaces</span>
       </div>
-      {#each fonts as font}
-        <button
-          class="font-option"
-          class:active={currentFont === font.id}
-          on:click={() => selectFont(font.id)}
-          role="menuitem"
-          data-font-preview={font.id}
-        >
-          <div class="option-content">
-            <span class="option-name">{font.name}</span>
-            <span class="option-category">{font.category}</span>
-          </div>
-          <div class="option-preview" style="font-family: var(--font-{font.id}, {font.name});">
-            {font.preview}
-          </div>
-          {#if currentFont === font.id}
-            <span class="option-check">✓</span>
-          {/if}
-        </button>
-      {/each}
+      <div class="font-grid">
+        {#each fonts as font}
+          <button
+            class="font-cell"
+            class:active={currentFont === font.id}
+            on:click={() => selectFont(font.id)}
+            role="menuitem"
+          >
+            <div class="cell-header">
+              <span class="cell-name">{font.name}</span>
+              {#if currentFont === font.id}
+                <span class="cell-check">✓</span>
+              {/if}
+            </div>
+            <span class="cell-category">{font.category}</span>
+            <div class="cell-preview" style="font-family: {font.family};">
+              Aa Bb Cc
+            </div>
+          </button>
+        {/each}
+      </div>
     </div>
   {/if}
 </div>
@@ -155,31 +151,28 @@
     position: absolute;
     bottom: calc(100% + var(--space-xs));
     right: 0;
-    min-width: 240px;
+    width: 480px;
     background: var(--color-surface);
     border: var(--border-width) solid var(--border-color);
     border-radius: var(--radius-md);
-    box-shadow: var(--shadow-md);
-    padding: var(--space-xs);
+    box-shadow: var(--shadow-lg);
+    padding: var(--space-sm);
     z-index: 100;
     animation: dropdown-in var(--duration-fast) var(--easing-out);
   }
 
   @keyframes dropdown-in {
-    from {
-      opacity: 0;
-      transform: translateY(4px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 
   .dropdown-header {
-    padding: var(--space-sm) var(--space-md);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: var(--space-xs) var(--space-sm);
+    margin-bottom: var(--space-sm);
     border-bottom: var(--border-width) solid var(--border-color-subtle);
-    margin-bottom: var(--space-xs);
   }
 
   .header-title {
@@ -190,63 +183,93 @@
     letter-spacing: var(--letter-spacing-wide);
   }
 
-  .font-option {
+  .header-count {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-2xs);
+    color: var(--color-text-subtle);
+  }
+
+  .font-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+
+  .font-cell {
     display: flex;
     flex-direction: column;
-    gap: var(--space-xs);
-    width: 100%;
-    padding: var(--space-md);
-    background: transparent;
-    border: none;
+    gap: 2px;
+    padding: var(--space-sm);
+    background: var(--color-bg-alt);
+    border: 1.5px solid transparent;
     border-radius: var(--radius-sm);
     cursor: pointer;
     text-align: left;
-    position: relative;
-    transition: background var(--duration-fast) var(--easing);
+    transition:
+      border-color var(--duration-fast) var(--easing),
+      background var(--duration-fast) var(--easing);
   }
 
-  .font-option:hover {
-    background: var(--color-bg-alt);
+  .font-cell:hover {
+    background: var(--color-surface);
+    border-color: var(--border-color);
   }
 
-  .font-option.active {
-    background: var(--color-accent-subtle);
+  .font-cell.active {
+    border-color: var(--color-accent);
+    background: var(--color-surface);
   }
 
-  .option-content {
+  .cell-header {
     display: flex;
     justify-content: space-between;
-    align-items: baseline;
+    align-items: center;
+    min-height: 1.2em;
   }
 
-  .option-name {
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-medium);
+  .cell-name {
+    font-size: 11px;
+    font-weight: 600;
     color: var(--color-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
-  .option-category {
-    font-size: var(--font-size-xs);
-    color: var(--color-text-muted);
-  }
-
-  .option-preview {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-secondary);
-    padding: var(--space-xs);
-    background: var(--color-bg-alt);
-    border-radius: var(--radius-sm);
-  }
-
-  .option-check {
-    position: absolute;
-    top: var(--space-sm);
-    right: var(--space-sm);
-    font-size: var(--font-size-xs);
+  .cell-check {
+    font-size: 10px;
     color: var(--color-accent);
+    flex-shrink: 0;
   }
 
-  /* Screen reader only - for accessibility announcements */
+  .cell-category {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--color-text-subtle);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .cell-preview {
+    font-size: 16px;
+    color: var(--color-text);
+    padding: var(--space-xs) 0;
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+
+  /* Responsive: stack to 2-col on narrow dropdowns near screen edge */
+  @media (max-width: 520px) {
+    .font-dropdown {
+      width: calc(100vw - 2 * var(--space-sm));
+      right: calc(-1 * var(--space-sm));
+    }
+
+    .font-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
   :global(.sr-only) {
     position: absolute;
     width: 1px;

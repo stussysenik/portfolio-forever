@@ -1,17 +1,36 @@
 <script lang="ts">
-        import { onMount } from "svelte";
+        import { onMount, onDestroy } from "svelte";
         import "../app.css";
         import { page } from "$app/stores";
-        import { afterNavigate } from "$app/navigation";
+        import { afterNavigate, onNavigate } from "$app/navigation";
         import { siteConfig, socialLinks, profile } from "$lib/data/content";
         import { layoutConfig } from "$lib/data/layout-config";
         import CommandPalette from "$lib/components/CommandPalette.svelte";
+        import PixelCanvas from "$lib/components/PixelCanvas.svelte";
         import ThemeSwitcher from "$lib/components/ThemeSwitcher.svelte";
         import FontSwitcher from "$lib/components/FontSwitcher.svelte";
+        import Toast from "$lib/components/Toast.svelte";
         import { overlapDetector } from "$lib/utils/overlap-detector";
+        import { initPostHog, trackPageView } from "$lib/posthog";
+        import { siteMode, readerOverride, isReaderMode, siteConfig as siteConfigStore, featureFlags } from "$lib/stores/siteMode";
+        import { getConvexClient } from "$lib/convex";
+        import { api } from "$convex/_generated/api";
 
-        // Navigation - ordered by importance
+        // View Transitions API — smooth page-to-page animations
+        onNavigate((navigation) => {
+                if (!document.startViewTransition) return;
+                return new Promise((resolve) => {
+                        document.startViewTransition(async () => {
+                                resolve();
+                                await navigation.complete;
+                        });
+                });
+        });
+
+        // Navigation - academia + terminal first, then by importance
         const mainNav = [
+                { href: "/academia", label: "re:mix" },
+                { href: "/terminal", label: "terminal" },
                 { href: "/process", label: "process" },
                 { href: "/works", label: "works" },
                 { href: "/talks", label: "talks" },
@@ -19,15 +38,62 @@
                 { href: "/blog", label: "blog" },
                 { href: "/gifts", label: "gifts" },
                 { href: "/cv", label: "cv" },
-                { href: "/terminal", label: "terminal" },
         ];
 
         $: currentPath = $page.url.pathname;
 
-        // Scroll to top on every navigation — use scrollTop directly to bypass smooth-scroll CSS
+        // Scroll to top on every navigation + track page view
         afterNavigate(() => {
                 document.documentElement.scrollTop = 0;
+                trackPageView(window.location.href);
         });
+
+        // Init PostHog + Convex siteConfig on mount
+        onMount(() => {
+                initPostHog();
+
+                // Load site config from Convex
+                try {
+                        const client = getConvexClient();
+                        unsubSiteConfig = client.onUpdate(api.siteConfig.get, {}, (config: any) => {
+                                if (config?.mode) {
+                                        siteMode.set(config.mode);
+                                }
+                                if (config) {
+                                        siteConfigStore.set({
+                                                sectionOrder: config.sectionOrder,
+                                                parallaxSpeed: config.parallaxSpeed,
+                                        });
+                                }
+                        });
+                        // Subscribe to feature flags
+                        client.onUpdate(api.siteConfig.getFeatureFlags, {}, (flags: any[]) => {
+                                if (flags) {
+                                        const map = new Map<string, boolean>();
+                                        for (const f of flags) map.set(f.key, f.enabled);
+                                        featureFlags.set(map);
+                                }
+                        });
+                } catch (e) {
+                        // Convex not available — default to multi-page
+                        console.warn("Convex siteConfig not available, using multi-page mode");
+                }
+
+                // Check URL param for reader mode
+                const url = new URL(window.location.href);
+                if (url.searchParams.get("reader") === "true") {
+                        readerOverride.set(true);
+                }
+        });
+
+        // Apply reader mode class to body
+        $: if (typeof document !== "undefined") {
+                document.body.classList.toggle("reader-mode", $isReaderMode);
+        }
+
+        // Cleanup
+        let unsubSiteConfig: (() => void) | undefined;
+        onDestroy(() => unsubSiteConfig?.());
 
         // Social links toggle for mobile
         let socialExpanded = false;
@@ -53,6 +119,12 @@
                         active?.tagName === "TEXTAREA" ||
                         active?.getAttribute("contenteditable") === "true"
                 ) {
+                        return;
+                }
+
+                // 'r' key toggles reader mode
+                if (e.key === "r") {
+                        readerOverride.update((current) => (current === null ? true : !current));
                         return;
                 }
 
@@ -110,6 +182,8 @@
 
 <!-- Command Palette (global) -->
 <CommandPalette />
+<PixelCanvas />
+<Toast />
 
 <div class="top-frame">
 <!-- WIP BANNER - First visible element, before everything -->
@@ -173,22 +247,11 @@
 
 <footer class="terminal">
         <div class="terminal-left">
-                <span class="terminal-edition">Made with 💙 by STÜSSY SENIK @2026</span>
+                <span class="terminal-edition">Made with 💙 in Bed-Stuy by STÜSSY SENIK · 2026</span>
                 <span class="terminal-sep">·</span>
                 <span class="terminal-path">{currentPath}</span>
         </div>
         <div class="terminal-right">
-                <button
-                        class="terminal-hint-btn"
-                        on:click={() =>
-                                window.dispatchEvent(
-                                        new KeyboardEvent("keydown", {
-                                                key: "?",
-                                        }),
-                                )}
-                >
-                        <span class="terminal-hint"><kbd class="hint-key">/</kbd> for CMDs</span>
-                </button>
                 {#if profile.available}
                         <span class="terminal-sep">·</span>
                         <span class="terminal-status">
@@ -240,13 +303,14 @@
 
         .header-inner {
                 display: flex;
-                flex-wrap: nowrap;
+                flex-wrap: wrap;
                 align-items: center;
-                justify-content: center; /* Center everything */
-                gap: var(--space-xl); /* Larger gap for centered look */
-                max-width: var(--container-max); /* Fix variable name */
+                justify-content: space-between;
+                gap: var(--space-xl);
+                width: 100%;
+                max-width: var(--container-max);
                 margin: 0 auto;
-                padding: 0 var(--container-padding);
+                padding: 0 calc(var(--container-padding) + var(--space-md));
         }
 
         @media (min-width: 768px) {
@@ -274,7 +338,8 @@
 
         .nav {
                 display: flex;
-                flex-wrap: nowrap;
+                flex-wrap: wrap;
+                justify-content: center;
                 gap: var(--space-xs);
         }
 
@@ -432,7 +497,7 @@
         .social-links a[data-brand="github"]:hover {
                 background-image: linear-gradient(135deg, #24292f, #57606a);
         }
-        :global([data-theme="terminal"]) .social-links a[data-brand="github"]:hover {
+        :global([data-theme="darkroom"]) .social-links a[data-brand="github"]:hover {
                 background-image: linear-gradient(135deg, #f0f6fc, #8b949e);
         }
         .social-links a[data-brand="linkedin"]:hover {
@@ -445,7 +510,7 @@
                 /* X brand — bold black */
                 background-image: linear-gradient(135deg, #000000, #333333);
         }
-        :global([data-theme="terminal"]) .social-links a[data-brand="x"]:hover {
+        :global([data-theme="darkroom"]) .social-links a[data-brand="x"]:hover {
                 /* Invert for dark mode */
                 background-image: linear-gradient(135deg, #ffffff, #cccccc);
         }
@@ -470,20 +535,18 @@
                 }
         }
 
-        /* Mobile nav: horizontal scroll at 375px */
+        /* Mobile nav: wrap + scroll fallback */
         @media (max-width: 767px) {
                 .nav {
                         overflow-x: auto;
                         -webkit-overflow-scrolling: touch;
                         scrollbar-width: none; /* Firefox */
                         -ms-overflow-style: none; /* IE */
-                        max-width: calc(100vw - 120px); /* Reserve space for name + @ button */
                 }
                 .nav::-webkit-scrollbar { display: none; }
 
                 .nav-link {
                         font-size: var(--font-size-xs);
-                        white-space: nowrap;
                 }
         }
 
@@ -542,6 +605,10 @@
 
         .terminal-edition {
                 color: var(--color-text-subtle);
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                min-width: 0;
         }
 
         .terminal-sep {
@@ -551,58 +618,6 @@
 
         .terminal-path {
                 color: var(--color-text-muted);
-        }
-
-	.terminal-hint-btn {
-		appearance: none;
-		background: transparent;
-		border: none;
-		padding: 0;
-		cursor: pointer;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-	}
-
-	.terminal-hint-btn:hover .terminal-hint {
-		color: var(--color-text);
-	}
-
-	        .terminal-hint {
-                display: flex;
-                align-items: center;
-                gap: var(--space-xs);
-                color: var(--color-text-subtle);
-                font-family: var(--font-mono);
-                font-size: var(--font-size-2xs);
-                padding: 0;
-                background: none;
-                border: none;
-                transition: color var(--duration-fast) var(--easing);
-        }
-
-        .hint-key {
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                min-width: 1.6em;
-                height: 1.6em;
-                padding: 0 var(--space-xs);
-                font-family: var(--font-mono);
-                font-size: var(--font-size-2xs);
-                font-weight: 500;
-                color: var(--color-text-muted);
-                background: var(--color-surface);
-                border: 1px solid var(--border-color);
-                border-radius: var(--radius-sm);
-                box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-                transition: all var(--duration-fast) var(--easing);
-        }
-
-        .terminal-hint-btn:hover .hint-key {
-                background: var(--color-accent);
-                color: white;
-                border-color: var(--color-accent);
         }
 
         .terminal-status {
@@ -671,9 +686,19 @@
                         left: var(--space-sm);
                         right: var(--space-sm);
                         flex-wrap: wrap;
-                        gap: var(--space-sm);
-                        justify-content: center;
-                        padding: var(--space-sm) var(--space-md);
+                        gap: var(--space-xs);
+                        justify-content: space-between;
+                        padding: var(--space-xs) var(--space-sm);
+                }
+
+                /* Hide edition text on mobile — path + controls are enough */
+                .terminal-edition {
+                        display: none;
+                }
+
+                /* Hide the separator after edition */
+                .terminal-left .terminal-sep {
+                        display: none;
                 }
 
                 .terminal-right {
@@ -681,13 +706,17 @@
                 }
 
                 .terminal-controls {
-                        gap: var(--space-sm);
+                        gap: var(--space-xs);
                 }
 
-                .terminal-hint {
-                        display: block;
-                        font-size: var(--font-size-2xs);
-                        opacity: 0.7;
+/* Also hide "available" status + its separator on mobile */
+                .terminal-status {
+                        display: none;
+                }
+
+                /* Hide separators in terminal-right on mobile */
+                .terminal-right > .terminal-sep {
+                        display: none;
                 }
 
                 .main-content {

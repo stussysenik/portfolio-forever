@@ -265,11 +265,11 @@ export const profile: Profile = {
                 // },
                 {
                         lang: "de",
-                        text: "DevEx & Experience Design Engineer",
+                        text: "Design Engineer · Creative Producer",
                 },
                 { lang: "ja", text: "クリエイティブ・テクノロジスト" },
         ],
-        shortBio: "Building at the intersection of science, design, cinema, computation and code",
+        shortBio: "Building at the intersection of engineering, creative production, and design — from code to camera",
         longBio: `I'm a formally trained Software Engineer turned Artist & self-taught Designer with over 8 years of experience crafting delight through impactful interfaces, experiences & artifacts.
 
 My practice focuses on the application of computational techniques as a tool to augment the design & art direction process. I'm a creator at heart & I'm deeply passionate about:

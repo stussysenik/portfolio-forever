@@ -4,7 +4,7 @@
    ============================================ */
 
 /* ---- LAYER 0: Fonts ---- */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=JetBrains+Mono:wght@300;400;500&family=Crimson+Pro:wght@300;400;600&family=Fira+Code:wght@300;400;500&family=Space+Grotesk:wght@300;400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=JetBrains+Mono:wght@300;400;500&family=Crimson+Pro:wght@300;400;600&family=Fira+Code:wght@300;400;500&family=Space+Grotesk:wght@300;400;500;700&family=Rubik:wght@300;400;500;700&family=IBM+Plex+Mono:wght@300;400;500;700&display=swap');
 
 /* ---- LAYER 1: Design Tokens ---- */
 :root {
@@ -26,19 +26,19 @@
   /* Section rhythm for breathing */
   --section-gap: var(--space-3xl);
 
-  /* === Fluid Typography (Mobile-First: 320px → 1440px → 3840px) === */
-  --font-size-3xs: clamp(0.5625rem, 0.5rem + 0.15vw, 0.625rem);
-  --font-size-2xs: clamp(0.625rem, 0.58rem + 0.2vw, 0.75rem);
-  --font-size-xs: clamp(0.75rem, 0.7rem + 0.2vw, 0.875rem);
-  --font-size-sm: clamp(0.875rem, 0.82rem + 0.25vw, 1rem);
+  /* === Fluid Typography — Modular Scale (golden ratio inspired) === */
+  --font-size-3xs: clamp(0.5rem, 0.46rem + 0.13vw, 0.563rem);
+  --font-size-2xs: clamp(0.563rem, 0.52rem + 0.18vw, 0.688rem);
+  --font-size-xs: clamp(0.688rem, 0.64rem + 0.2vw, 0.813rem);
+  --font-size-sm: clamp(0.813rem, 0.76rem + 0.25vw, 1rem);
   --font-size-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
-  --font-size-lg: clamp(1.125rem, 1rem + 0.5vw, 1.375rem);
-  --font-size-xl: clamp(1.375rem, 1.15rem + 0.75vw, 1.875rem);
-  --font-size-2xl: clamp(1.75rem, 1.4rem + 1.25vw, 2.5rem);
-  --font-size-3xl: clamp(2.25rem, 1.75rem + 1.75vw, 3.5rem);
-  --font-size-4xl: clamp(3rem, 2.25rem + 2.5vw, 5rem);
-  --font-size-display: clamp(3.5rem, 2.5rem + 4vw, 8rem);
-  --font-size-hero: clamp(4rem, 3rem + 5vw, 10rem);
+  --font-size-lg: clamp(1.125rem, 1rem + 0.5vw, 1.5rem);
+  --font-size-xl: clamp(1.5rem, 1.25rem + 0.85vw, 2.25rem);
+  --font-size-2xl: clamp(2rem, 1.6rem + 1.3vw, 3rem);
+  --font-size-3xl: clamp(2.5rem, 1.95rem + 1.8vw, 4rem);
+  --font-size-4xl: clamp(3.25rem, 2.4rem + 2.6vw, 5.5rem);
+  --font-size-display: clamp(4rem, 2.8rem + 4.2vw, 8rem);
+  --font-size-hero: clamp(5rem, 3.5rem + 5.5vw, 12rem);
 
   /* === Typography === */
   --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', 'Cascadia Code', monospace;
@@ -84,6 +84,11 @@
   --color-success: oklch(0.560 0.140 160); /* hsl(155, 65%, 38%) */
   --color-warning: oklch(0.780 0.160 80); /* hsl(40, 90%, 50%) */
   --color-danger: oklch(0.560 0.200 25); /* hsl(0, 70%, 50%) */
+  --color-error: var(--color-danger); /* alias for admin references */
+
+  /* Admin-specific tokens (used in /admin route) */
+  --color-admin-github-bg: oklch(0.205 0.005 285); /* #24292f */
+  --color-admin-github-hover: oklch(0.160 0.005 285); /* #1b1f23 */
 
   /* Category Colors - muted, sophisticated */
   --color-design: oklch(0.580 0.180 350); /* hsl(340, 55%, 52%) */
@@ -126,6 +131,48 @@
   --easing: cubic-bezier(0.25, 0.1, 0.25, 1);
   --easing-out: cubic-bezier(0.16, 1, 0.3, 1);
   --easing-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* === Z-Index System === */
+  --z-base: 0;
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-fixed: 1000;
+  --z-modal: 2000;
+  --z-popover: 2001;
+  --z-tooltip: 9999;
+}
+
+/* ---- THEME: Studio (Achromatic Light) ---- */
+/* Color science: true achromatic R=G=B. Color = data, never decoration. */
+/* Character profile (Divers): muted. APCA Lc 90+ body text. */
+[data-theme="studio"],
+:root:has([data-theme="studio"]) {
+  /* 60% — Backgrounds: true achromatic (R=G=B, zero chroma) */
+  --color-bg: #FAFAFA;
+  --color-bg-alt: #F5F5F5;
+  --color-surface: #FFFFFF;
+  --color-surface-raised: #FFFFFF;
+
+  /* 30% — Text: pure achromatic grays, APCA verified */
+  --color-text: #111111;             /* APCA Lc 97 on #FAFAFA */
+  --color-text-secondary: #555555;   /* APCA Lc 66 */
+  --color-text-muted: #888888;       /* APCA Lc 42 */
+  --color-text-subtle: #BBBBBB;      /* APCA Lc 22 */
+
+  /* 10% — Accent: functional only, no decorative color */
+  --color-accent: #333333;
+  --color-accent-hover: #111111;
+  --color-accent-subtle: #F0F0F0;
+
+  /* Borders: achromatic */
+  --border-color: #E8E8E8;
+  --border-color-strong: #AAAAAA;
+  --border-color-subtle: #F0F0F0;
+
+  /* Shadows: neutral */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.08);
 }
 
 /* === Responsive Grid Columns === */
@@ -179,30 +226,38 @@
   }
 }
 
-/* ---- THEME: Terminal (Dark) ---- */
-[data-theme="terminal"],
-:root:has([data-theme="terminal"]) {
-  --color-bg: #0D1117;
-  --color-bg-alt: #010409;
-  --color-surface: #161B22;
-  --color-surface-raised: #21262D;
+/* ---- THEME: Darkroom (SMPTE ST 2080-3 Reference Dark) ---- */
+/* Color science: true neutral R=G=B achromatic. ~5 cd/m² surround. */
+/* ARRI/Leica/Hasselblad-grade dark. Cyan for signals. Pantone washes at 20%. */
+/* Character profile (Divers): deep. Zero noise. Content-only. */
+[data-theme="darkroom"],
+:root:has([data-theme="darkroom"]) {
+  /* 60% — Backgrounds: true neutral R=G=B */
+  --color-bg: #141414;              /* ~5 cd/m² target */
+  --color-bg-alt: #0F0F0F;
+  --color-surface: #1C1C1C;
+  --color-surface-raised: #242424;
 
-  --color-text: #E6EDF3;
-  --color-text-secondary: #7D8590;
-  --color-text-muted: #6E7681;
-  --color-text-subtle: #484F58;
+  /* 30% — Text: achromatic, APCA verified */
+  --color-text: #E8E8E8;            /* APCA Lc 89 on #141414 */
+  --color-text-secondary: #A0A0A0;  /* APCA Lc 61 */
+  --color-text-muted: #737373;      /* APCA Lc 38 */
+  --color-text-subtle: #4A4A4A;     /* APCA Lc 18 */
 
+  /* 10% — Accent: cyan for navigation signals */
   --color-accent: #00D9FF;
   --color-accent-hover: #33E0FF;
-  --color-accent-subtle: #0A2E3B;
+  --color-accent-subtle: #0A1E24;
 
-  --border-color: #30363D;
-  --border-color-strong: #484F58;
-  --border-color-subtle: #21262D;
+  /* Borders: achromatic */
+  --border-color: #2A2A2A;
+  --border-color-strong: #4A4A4A;
+  --border-color-subtle: #1C1C1C;
 
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
-  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.6);
+  /* Shadows: deep */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.6);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.7);
 }
 
 /* ---- THEME: Accessible (High Contrast WCAG AAA) ---- */
@@ -231,33 +286,6 @@
   --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.25);
 }
 
-/* Dark mode via system preference (fallback when no theme set) */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) {
-    --color-bg: hsl(220, 20%, 6%);
-    --color-bg-alt: hsl(220, 18%, 9%);
-    --color-surface: hsl(220, 18%, 10%);
-    --color-surface-raised: hsl(220, 16%, 14%);
-
-    --color-text: hsl(60, 10%, 92%);
-    --color-text-secondary: hsl(60, 5%, 72%);
-    --color-text-muted: hsl(60, 3%, 56%);
-    --color-text-subtle: hsl(60, 2%, 42%);
-
-    --color-accent: hsl(220, 90%, 62%);
-    --color-accent-hover: hsl(220, 90%, 72%);
-    --color-accent-subtle: hsl(220, 45%, 14%);
-
-    --border-color: hsl(220, 15%, 18%);
-    --border-color-strong: hsl(220, 12%, 28%);
-    --border-color-subtle: hsl(220, 10%, 12%);
-
-    --shadow-sm: 0 1px 2px hsl(0, 0%, 0%, 0.25);
-    --shadow-md: 0 4px 12px hsl(0, 0%, 0%, 0.35);
-    --shadow-lg: 0 8px 24px hsl(0, 0%, 0%, 0.45);
-  }
-}
-
 /* ---- FONT SWITCHING: Data Attribute-Based Font Selection ---- */
 :root[data-font="inter"] {
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -279,6 +307,23 @@
 
 :root[data-font="space"] {
   --font-sans: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+}
+
+:root[data-font="rubik"] {
+  --font-sans: 'Rubik', system-ui, -apple-system, sans-serif;
+}
+
+:root[data-font="ibm-plex"] {
+  --font-sans: 'IBM Plex Mono', ui-monospace, 'SF Mono', monospace;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', monospace;
+}
+
+:root[data-font="times"] {
+  --font-sans: 'Times New Roman', 'Times', Georgia, serif;
+}
+
+:root[data-font="helvetica"] {
+  --font-sans: 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
 }
 
 /* ---- LAYER 2: Reset & Base ---- */
@@ -303,7 +348,7 @@ html {
   text-rendering: optimizeLegibility;
   font-feature-settings: 'kern' 1, 'liga' 1, 'calt' 1;
   scroll-behavior: smooth;
-  overflow-x: hidden;
+  overflow-x: clip;
   /* Prevent horizontal scroll */
   width: 100%;
 
@@ -321,8 +366,8 @@ body {
   /* Space for terminal bar */
   max-width: var(--container-max);
   margin: 0 auto;
-  overflow-x: hidden;
-  /* Double safety */
+  overflow-x: clip;
+  /* Prevent horizontal scroll without creating scroll context */
   width: 100%;
   position: relative;
 }
@@ -786,105 +831,65 @@ a:focus-visible {
   background: var(--color-surface);
 }
 
-/* Highlight variants */
-.entry[data-highlight="1"] {
-  background: hsl(50, 100%, 88%);
+/* ---- Entry highlight color palette (per-variant custom properties) ---- */
+/* Define color channels once; each theme sets the rendering pattern */
+.entry[data-highlight="1"] { --hl: 255,255,0;   --hl-color: #E8E8E8; --hl-solid: hsl(50, 100%, 88%); }
+.entry[data-highlight="2"] { --hl: 0,200,80;     --hl-color: #E8E8E8; --hl-solid: hsl(140, 60%, 88%); }
+.entry[data-highlight="3"] { --hl: 68,214,44;    --hl-color: var(--color-electric-green); --hl-solid: var(--color-electric-green); }
+.entry[data-highlight="4"] { --hl: 249,114,66;   --hl-color: var(--color-orange); --hl-solid: var(--color-orange); }
+.entry[data-highlight="5"] { --hl: 179,235,242;  --hl-color: var(--color-ocean); --hl-solid: var(--color-ocean); }
+.entry[data-highlight="6"] { --hl: 210,175,38;   --hl-color: var(--color-gold); --hl-solid: var(--color-gold); }
+.entry[data-highlight="7"] { --hl: 255,197,211;  --hl-color: var(--color-pink); --hl-solid: var(--color-pink); }
+.entry[data-highlight="8"] { --hl: 240,238,233;  --hl-color: var(--color-cloud); --hl-solid: var(--color-cloud); }
+.entry[data-highlight="9"] { --hl: 105,20,36;    --hl-color: #ff8a95; --hl-solid: var(--color-red); }
+
+/* Minimal (default): solid colored backgrounds */
+/* --hl-text is set inline via getHighlightTextColor() for WCAG AA contrast */
+.entry[data-highlight] {
+  background: var(--hl-solid);
+  color: var(--hl-text, #000);
+}
+.entry[data-highlight] .entry-date,
+.entry[data-highlight] .entry-title,
+.entry[data-highlight] .entry-links a {
+  color: inherit;
 }
 
-.entry[data-highlight="2"] {
-  background: hsl(140, 60%, 88%);
+/* Darkroom: 15% opacity wash + colored text + colored border */
+[data-theme="darkroom"] .entry[data-highlight] {
+  background: rgba(var(--hl), 0.15);
+  color: var(--hl-color);
+  border: 1px solid rgba(var(--hl), 0.35);
+}
+[data-theme="darkroom"] .entry[data-highlight] .entry-date,
+[data-theme="darkroom"] .entry[data-highlight] .entry-title,
+[data-theme="darkroom"] .entry[data-highlight] .entry-links a {
+  color: inherit;
 }
 
-.entry[data-highlight="3"] {
-  background: var(--color-electric-green);
-  color: #000;
-  /* Ensure readable contrast on bright bg */
+/* Studio: 8% gradient wash + 3px left border accent */
+[data-theme="studio"] .entry[data-highlight] {
+  background: linear-gradient(90deg, rgba(var(--hl), 0.08) 0%, transparent 60%);
+  border-left: 3px solid rgb(var(--hl));
+  color: #111;
+}
+[data-theme="studio"] .entry[data-highlight] .entry-date,
+[data-theme="studio"] .entry[data-highlight] .entry-title,
+[data-theme="studio"] .entry[data-highlight] .entry-links a {
+  color: inherit;
 }
 
-.entry[data-highlight="4"] {
-  background: var(--color-orange);
-  color: #000;
+/* Accessible: uniform high-contrast treatment */
+[data-theme="accessible"] .entry[data-highlight] {
+  background: #FFFFFF;
+  color: #000000;
+  border: 2px solid #000000;
+  font-weight: 700;
 }
-
-.entry[data-highlight="5"] {
-  background: var(--color-ocean);
-  color: #000;
-  /* Light bg needs dark text */
-}
-
-.entry[data-highlight="6"] {
-  background: var(--color-gold);
-  color: #000;
-}
-
-.entry[data-highlight="7"] {
-  background: var(--color-pink);
-  color: #000;
-}
-
-.entry[data-highlight="8"] {
-  background: var(--color-cloud);
-  color: #000;
-}
-
-.entry[data-highlight="9"] {
-  background: var(--color-red);
-  color: #fff;
-}
-
-@media (prefers-color-scheme: dark) {
-  .entry[data-highlight="1"] {
-    background: hsl(50, 80%, 20%);
-  }
-
-  .entry[data-highlight="2"] {
-    background: hsl(140, 50%, 18%);
-  }
-
-  .entry[data-highlight="3"] {
-    background: hsla(120, 100%, 40%, 0.3);
-    color: var(--color-electric-green);
-    border: 1px solid var(--color-electric-green);
-  }
-
-  .entry[data-highlight="4"] {
-    background: hsla(30, 100%, 40%, 0.3);
-    color: var(--color-orange);
-    border: 1px solid var(--color-orange);
-  }
-
-  .entry[data-highlight="5"] {
-    background: hsla(186, 65%, 40%, 0.3);
-    /* Muted ocean for dark mode */
-    color: #B3EBF2;
-    border: 1px solid var(--color-ocean);
-  }
-
-  .entry[data-highlight="6"] {
-    background: hsla(42, 80%, 40%, 0.3);
-    color: var(--color-gold);
-    border: 1px solid var(--color-gold);
-  }
-
-  .entry[data-highlight="7"] {
-    background: hsla(15, 60%, 40%, 0.3);
-    color: hsl(15, 80%, 80%);
-    /* Use a slightly more vibrant pink for text legibility in dark mode */
-    border: 1px solid var(--color-pink);
-  }
-
-  .entry[data-highlight="8"] {
-    background: hsla(40, 10%, 90%, 0.15);
-    color: var(--color-cloud);
-    border: 1px solid var(--color-cloud);
-  }
-
-  .entry[data-highlight="9"] {
-    background: hsla(350, 70%, 25%, 0.5);
-    color: #ff8a95;
-    /* Lightened red for text legibility */
-    border: 1px solid var(--color-red);
-  }
+[data-theme="accessible"] .entry[data-highlight] .entry-date,
+[data-theme="accessible"] .entry[data-highlight] .entry-title,
+[data-theme="accessible"] .entry[data-highlight] .entry-links a {
+  color: inherit;
 }
 
 .entry[data-highlight]:hover {
@@ -987,24 +992,11 @@ a:focus-visible {
   color: var(--color-film);
 }
 
-@media (prefers-color-scheme: dark) {
-  .badge--design {
-    background: hsl(330, 50%, 15%);
-  }
-
-  .badge--technology {
-    background: hsl(210, 60%, 15%);
-  }
-
-  .badge--art {
-    background: hsl(45, 60%, 15%);
-    color: var(--color-art);
-  }
-
-  .badge--film {
-    background: hsl(280, 40%, 15%);
-  }
-}
+/* Badge dark variants — scoped to darkroom theme only */
+[data-theme="darkroom"] .badge--design { background: hsl(330, 50%, 15%); }
+[data-theme="darkroom"] .badge--technology { background: hsl(210, 60%, 15%); }
+[data-theme="darkroom"] .badge--art { background: hsl(45, 60%, 15%); color: var(--color-art); }
+[data-theme="darkroom"] .badge--film { background: hsl(280, 40%, 15%); }
 
 /* ---- LAYER 9: Card Component ---- */
 .card {
@@ -1398,4 +1390,122 @@ a:focus-visible {
     repeating-linear-gradient(90deg, oklch(0.65 0.25 25 / 0.08) 0 1px, transparent 1px var(--grid-gap)),
     repeating-linear-gradient(oklch(0.65 0.25 25 / 0.04) 0 1px, transparent 1px 8px);
   background-size: calc(100% / var(--grid-columns)) 100%, 100% 8px;
+}
+
+/* ---- ACCESSIBILITY: Reduced Motion ---- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---- ACCESSIBILITY: Focus Visible ---- */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* ---- ACCESSIBILITY: View Transitions ---- */
+@keyframes fade-in { from { opacity: 0; } }
+@keyframes fade-out { to { opacity: 0; } }
+@keyframes slide-from-right { from { transform: translateX(20px); } }
+@keyframes slide-to-left { to { transform: translateX(-20px); } }
+
+::view-transition-old(root) {
+  animation: 90ms var(--easing) fade-out, 200ms var(--easing) slide-to-left;
+}
+::view-transition-new(root) {
+  animation: 150ms var(--easing) fade-in 60ms, 200ms var(--easing) slide-from-right;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+}
+
+/* ─── Reader Mode ─── */
+.reader-mode {
+  --reader-max-width: 680px;
+  --reader-font-size: 1.125rem;
+  --reader-line-height: 1.75;
+}
+
+.reader-mode .section-wrapper {
+  max-width: var(--reader-max-width);
+  margin-inline: auto;
+  padding-inline: var(--space-lg);
+  font-size: var(--reader-font-size);
+  line-height: var(--reader-line-height);
+}
+
+/* Hide decorative elements in reader mode */
+.reader-mode canvas,
+.reader-mode .ascii-donut,
+.reader-mode .hero-visual,
+.reader-mode .animation-overlay,
+.reader-mode .pixel-canvas,
+.reader-mode .geometric-bg,
+.reader-mode .parallax-spacer,
+.reader-mode iframe,
+.reader-mode .project-embed,
+.reader-mode .inline-browser,
+.reader-mode .tmux-bar,
+.reader-mode video,
+.reader-mode .elevator {
+  display: none !important;
+}
+
+/* Simplify layout in reader mode */
+.reader-mode .hero {
+  display: block;
+}
+
+.reader-mode .hero-content {
+  max-width: 100%;
+}
+
+/* Clean typography for reader mode */
+.reader-mode h1,
+.reader-mode h2,
+.reader-mode h3 {
+  font-family: var(--font-sans);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-tight);
+}
+
+.reader-mode p,
+.reader-mode li {
+  font-family: var(--font-sans);
+  line-height: var(--reader-line-height);
+  color: var(--color-text);
+}
+
+/* Subtle section dividers in reader mode */
+.reader-mode .section-wrapper + .section-wrapper {
+  border-top: 1px solid var(--border-color-subtle);
+  padding-top: var(--space-2xl);
+  margin-top: var(--space-2xl);
+}
+
+/* Remove all animations in reader mode */
+.reader-mode * {
+  animation-duration: 0s !important;
+  transition-duration: 0s !important;
+}
+
+/* ─── Parallax Transitions ─── */
+.section-wrapper {
+  will-change: transform;
+}
+
+.parallax-spacer {
+  height: var(--space-4xl);
+  pointer-events: none;
 }
