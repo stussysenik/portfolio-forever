@@ -3,6 +3,8 @@
         import { profile } from "$lib/data/content";
         import { getConvexClient } from '$lib/convex';
         import { api } from '$convex/_generated/api';
+        import WorksCaseStudy from './works/WorksCaseStudy.svelte';
+        import WorksMinimalList from './works/WorksMinimalList.svelte';
 
         export let id = "works";
 
@@ -33,10 +35,12 @@
         let projects: Project[] = staticProjects;
         let loaded: Record<number, boolean> = {};
         let thumbnailConfig: any = null;
+        let displayConfig: any = null;
 
         $: displayMode = thumbnailConfig?.displayMode ?? 'grid';
         $: gridCols = thumbnailConfig?.columns ?? 2;
         $: showPreview = thumbnailConfig?.showPreview ?? true;
+        $: viewMode = displayConfig?.immune ? 'grid' : (displayConfig?.viewMode ?? 'grid');
 
         function handleLoad(index: number) {
                 loaded = { ...loaded, [index]: true };
@@ -52,6 +56,9 @@
                 const unsub2 = client.onUpdate(api.thumbnails.getConfig, { section: 'works' }, (data) => {
                         thumbnailConfig = data;
                 });
+                const unsub3 = client.onUpdate(api.display.getConfig, { section: 'works' }, (data: any) => {
+                        displayConfig = data;
+                });
 
                 document.querySelectorAll('.preview-image').forEach((img, _) => {
                         if ((img as HTMLImageElement).complete) {
@@ -60,7 +67,7 @@
                         }
                 });
 
-                return () => { unsub1(); unsub2(); };
+                return () => { unsub1(); unsub2(); unsub3(); };
         });
 </script>
 
@@ -76,49 +83,59 @@
                 <span class="section-meta">live embeds · {projects.length} projects</span>
         </header>
 
-        <div class="projects-grid" class:list-mode={displayMode === 'list'} style="--grid-cols: {gridCols};">
-                {#each projects as project, i}
-                        <div class="project-card">
-                                {#if showPreview}
-                                <div class="project-embed" class:loaded={loaded[i]}>
-                                        {#if !loaded[i]}
-                                                <div class="skeleton">
-                                                        <div class="skeleton-shimmer"></div>
-                                                </div>
+        {#if viewMode === 'grid'}
+                <div class="projects-grid" class:list-mode={displayMode === 'list'} style="--grid-cols: {gridCols};">
+                        {#each projects as project, i}
+                                <div class="project-card">
+                                        {#if showPreview}
+                                        <div class="project-embed" class:loaded={loaded[i]}>
+                                                {#if !loaded[i]}
+                                                        <div class="skeleton">
+                                                                <div class="skeleton-shimmer"></div>
+                                                        </div>
+                                                {/if}
+                                                {#if project.preview}
+                                                        <a href={project.url} target="_blank" rel="noopener noreferrer" class="preview-link">
+                                                                <img src={project.preview} alt={project.title} class="preview-image" loading="lazy" on:load={() => handleLoad(i)} />
+                                                        </a>
+                                                {:else}
+                                                        <iframe
+                                                                src={project.url}
+                                                                title={project.title}
+                                                                loading="lazy"
+                                                                sandbox="allow-scripts allow-same-origin"
+                                                                on:load={() => handleLoad(i)}
+                                                                tabindex="-1"
+                                                                style="--vp: {project.viewport ?? 2.5}; --cam: {project.cam ?? 'top left'};"
+                                                        ></iframe>
+                                                        <a href={project.url} target="_blank" rel="noopener noreferrer" class="project-overlay">
+                                                                <span class="overlay-cta">Visit →</span>
+                                                        </a>
+                                                {/if}
+                                        </div>
                                         {/if}
-                                        {#if project.preview}
-                                                <a href={project.url} target="_blank" rel="noopener noreferrer" class="preview-link">
-                                                        <img src={project.preview} alt={project.title} class="preview-image" loading="lazy" on:load={() => handleLoad(i)} />
-                                                </a>
-                                        {:else}
-                                                <iframe
-                                                        src={project.url}
-                                                        title={project.title}
-                                                        loading="lazy"
-                                                        sandbox="allow-scripts allow-same-origin"
-                                                        on:load={() => handleLoad(i)}
-                                                        tabindex="-1"
-                                                        style="--vp: {project.viewport ?? 2.5}; --cam: {project.cam ?? 'top left'};"
-                                                ></iframe>
-                                                <a href={project.url} target="_blank" rel="noopener noreferrer" class="project-overlay">
-                                                        <span class="overlay-cta">Visit →</span>
-                                                </a>
-                                        {/if}
+                                        <div class="project-meta">
+                                                {#if !showPreview}
+                                                        <a href={project.url} target="_blank" rel="noopener noreferrer" class="project-title">{project.title}</a>
+                                                {:else}
+                                                        <span class="project-title">{project.title}</span>
+                                                {/if}
+                                                {#if project.category}
+                                                        <span class="project-category">{project.category}</span>
+                                                {/if}
+                                        </div>
                                 </div>
-                                {/if}
-                                <div class="project-meta">
-                                        {#if !showPreview}
-                                                <a href={project.url} target="_blank" rel="noopener noreferrer" class="project-title">{project.title}</a>
-                                        {:else}
-                                                <span class="project-title">{project.title}</span>
-                                        {/if}
-                                        {#if project.category}
-                                                <span class="project-category">{project.category}</span>
-                                        {/if}
-                                </div>
-                        </div>
-                {/each}
-        </div>
+                        {/each}
+                </div>
+        {:else if viewMode === 'case-study'}
+                <WorksCaseStudy {projects} />
+        {:else if viewMode === 'minimal-list'}
+                <WorksMinimalList {projects} />
+        {:else if viewMode === 'pixel-universe'}
+                <div style="padding: var(--space-xl); text-align: center; font-family: var(--font-mono); color: var(--color-text-muted);">
+                        Pixel Universe — Phase 2
+                </div>
+        {/if}
 </section>
 
 <style>
