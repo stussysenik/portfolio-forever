@@ -1,11 +1,12 @@
 <script lang="ts">
   import { onMount } from 'svelte';
 
-  type Theme = 'minimal' | 'studio' | 'darkroom' | 'accessible';
+  type Theme = 'minimal' | 'studio' | 'terminal' | 'darkroom' | 'accessible';
 
   const themes: { id: Theme; label: string; icon: string; description: string }[] = [
     { id: 'minimal',    label: 'Minimal',    icon: '○', description: 'Warm & colorful' },
     { id: 'studio',     label: 'Studio',     icon: '◇', description: 'Achromatic precision' },
+    { id: 'terminal',   label: 'Terminal',   icon: '▸', description: 'Hacker dark' },
     { id: 'darkroom',   label: 'Darkroom',   icon: '◼', description: 'Reference dark' },
     { id: 'accessible', label: 'Accessible', icon: '◎', description: 'WCAG AAA' },
   ];
@@ -21,9 +22,6 @@
     if (saved === 'paper') {
       currentTheme = 'minimal';
       applyTheme('minimal');
-    } else if (saved === 'terminal') {
-      currentTheme = 'darkroom';
-      applyTheme('darkroom');
     } else if (saved && themes.some(t => t.id === saved)) {
       currentTheme = saved as Theme;
       applyTheme(saved as Theme);

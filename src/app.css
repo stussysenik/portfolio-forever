@@ -227,6 +227,34 @@
 }
 
 /* ---- THEME: Darkroom (SMPTE ST 2080-3 Reference Dark) ---- */
+/* ---- THEME: Terminal (Hacker Dark) ---- */
+/* Blue-tinted dark theme inspired by GitHub dark. Cyan accent. */
+[data-theme="terminal"],
+:root:has([data-theme="terminal"]) {
+  --color-bg: #0D1117;
+  --color-bg-alt: #010409;
+  --color-surface: #161B22;
+  --color-surface-raised: #1C2129;
+
+  --color-text: #E6EDF3;
+  --color-text-secondary: #8B949E;
+  --color-text-muted: #6E7681;
+  --color-text-subtle: #484F58;
+
+  --color-accent: #00D9FF;
+  --color-accent-hover: #33E0FF;
+  --color-accent-subtle: #0A1E24;
+
+  --border-color: #30363D;
+  --border-color-strong: #484F58;
+  --border-color-subtle: #21262D;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.6);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.7);
+}
+
+/* ---- THEME: Darkroom (Reference Dark) ---- */
 /* Color science: true neutral R=G=B achromatic. ~5 cd/m² surround. */
 /* ARRI/Leica/Hasselblad-grade dark. Cyan for signals. Pantone washes at 20%. */
 /* Character profile (Divers): deep. Zero noise. Content-only. */
@@ -852,6 +880,18 @@ a:focus-visible {
 .entry[data-highlight] .entry-date,
 .entry[data-highlight] .entry-title,
 .entry[data-highlight] .entry-links a {
+  color: inherit;
+}
+
+/* Terminal: same as darkroom highlights */
+[data-theme="terminal"] .entry[data-highlight] {
+  background: rgba(var(--hl), 0.15);
+  color: var(--hl-color);
+  border: 1px solid rgba(var(--hl), 0.35);
+}
+[data-theme="terminal"] .entry[data-highlight] .entry-date,
+[data-theme="terminal"] .entry[data-highlight] .entry-title,
+[data-theme="terminal"] .entry[data-highlight] .entry-links a {
   color: inherit;
 }
 

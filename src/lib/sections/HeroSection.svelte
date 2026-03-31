@@ -73,12 +73,14 @@
                                         >{formatDate(entry)}</span
                                 >
                                 <span class="entry-title">{entry.title}</span>
-                                {#if entry.links && entry.links.length > 0}
+                                {#if entry.url}
+                                        <span class="entry-links">
+                                                <a href={entry.url} target="_blank" rel="noopener noreferrer">visit</a>
+                                        </span>
+                                {:else if entry.links && entry.links.length > 0}
                                         <span class="entry-links">
                                                 {#each entry.links as link}
-                                                        <a href={link.url}
-                                                                >{link.label}</a
-                                                        >
+                                                        <a href={link.url}>{link.label}</a>
                                                 {/each}
                                         </span>
                                 {/if}
