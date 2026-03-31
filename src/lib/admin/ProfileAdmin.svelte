@@ -114,9 +114,9 @@
 						<button class="btn-sm" on:click={cancelEdit}>Cancel</button>
 					</div>
 				{:else}
-					<span class="field-value" role="button" tabindex="0" on:click={() => startEdit(item.field, item.value)} on:keydown={a11yClick(() => startEdit(item.field, item.value))}>
+					<button class="field-value" on:click={() => startEdit(item.field, item.value)}>
 						{item.value || '(empty)'}
-					</span>
+					</button>
 				{/if}
 			</div>
 		{/each}
@@ -161,7 +161,7 @@
 								placeholder="text"
 								bind:value={tagline.text}
 							/>
-							<button class="btn-sm btn-remove" on:click={() => removeTagline(i)}>✕</button>
+							<button class="btn-sm btn-remove" aria-label="Remove tagline" on:click={() => removeTagline(i)}>✕</button>
 						</div>
 					{/each}
 					<div class="taglines-footer">
@@ -266,8 +266,12 @@
 		border-radius: var(--radius-sm);
 		background: transparent;
 		color: var(--color-text);
-		outline: none;
 		resize: vertical;
+	}
+
+	.field-input:focus-visible {
+		outline: 2px solid var(--color-accent);
+		outline-offset: 1px;
 	}
 
 	.field-actions {
@@ -285,12 +289,17 @@
 		background: transparent;
 		color: var(--color-text-muted);
 		cursor: pointer;
-		transition: all var(--duration-fast) var(--easing);
+		transition: border-color var(--duration-fast) var(--easing), color var(--duration-fast) var(--easing);
 	}
 
 	.btn-sm:hover {
 		border-color: var(--color-text-muted);
 		color: var(--color-text);
+	}
+
+	.btn-sm:focus-visible {
+		outline: 2px solid var(--color-accent);
+		outline-offset: 1px;
 	}
 
 	.btn-save {
