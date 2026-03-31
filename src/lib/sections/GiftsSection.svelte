@@ -1,13 +1,12 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { profile } from "$lib/data/content";
 	import { getConvexClient } from '$lib/convex';
 	import { api } from '$convex/_generated/api';
 
 	export let id = "gifts";
 
-	let title = "The Promise";
-	let manifesto = "I build and design a lot of things with free value in mind. In return, you could send me kind gifts in the form of art supplies or film medium.";
+	let title = "";
+	let manifesto = "";
 	let callToAction = "";
 	let contactEmail = "";
 
@@ -26,7 +25,7 @@
 </script>
 
 <svelte:head>
-	<title>{title} | {profile.name}</title>
+	<title>{title}</title>
 	<meta name="description" content="A creative exchange — {manifesto}" />
 </svelte:head>
 

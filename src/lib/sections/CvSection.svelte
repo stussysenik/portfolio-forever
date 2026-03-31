@@ -1,17 +1,15 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { cvData as staticCvData } from '$lib/data/cv';
   import { tools, type Tool } from '$lib/data/content';
   import { getConvexClient } from '$lib/convex';
   import { api } from '$convex/_generated/api';
 
   export let id = "cv";
 
-  // State: start with static data, replace with Convex data when loaded
-  let profile = { name: staticCvData.name, jobTitle: staticCvData.jobTitle, summary: staticCvData.summary };
-  let experience: any[] = staticCvData.workExperience;
-  let education: any[] = staticCvData.education;
-  let languages: any[] = staticCvData.languages;
+  let profile: any = null;
+  let experience: any[] = [];
+  let education: any[] = [];
+  let languages: any[] = [];
 
   onMount(() => {
     const client = getConvexClient();
@@ -60,8 +58,8 @@
 </script>
 
 <svelte:head>
-  <title>CV | {profile.name}</title>
-  <meta name="description" content="Professional experience and background of {profile.name}" />
+  <title>CV</title>
+  <meta name="description" content="Professional experience and background" />
 </svelte:head>
 
 <div class="cv-container" {id}>
@@ -69,8 +67,8 @@
   <header class="cv-header">
     <div class="cv-header-top">
       <div>
-        <h1 class="cv-name">{profile.name}</h1>
-        <p class="cv-title">{profile.jobTitle}</p>
+        <h1 class="cv-name">{profile?.name ?? ''}</h1>
+        <p class="cv-title">{profile?.jobTitle ?? ''}</p>
         <p class="cv-location">NYC / Prague · itsmxzou@gmail.com</p>
       </div>
       <button class="cv-download-btn" on:click={() => window.print()} aria-label="Download CV as PDF">
@@ -87,7 +85,7 @@
   <!-- Summary -->
   <section class="cv-section">
     <h2 class="cv-section-title">◆ SUMMARY</h2>
-    <p class="cv-summary">{profile.summary}</p>
+    <p class="cv-summary">{profile?.summary ?? ''}</p>
   </section>
 
   <!-- Work Experience -->

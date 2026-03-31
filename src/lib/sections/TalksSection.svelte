@@ -1,18 +1,13 @@
 <script lang="ts">
         import { onMount } from 'svelte';
-        import {
-                sortedTalks as staticTalks,
-                sortedInterviews as staticInterviews,
-                profile,
-                getHighlight,
-        } from "$lib/data/content";
+        import { getHighlight } from "$lib/data/content";
         import { getConvexClient } from '$lib/convex';
         import { api } from '$convex/_generated/api';
 
         export let id = "talks";
 
-        let talks: any[] = staticTalks;
-        let interviews: any[] = staticInterviews;
+        let talks: any[] = [];
+        let interviews: any[] = [];
 
         function formatDate(entry: any) {
                 if (entry.month) {
@@ -35,8 +30,8 @@
 </script>
 
 <svelte:head>
-        <title>Talks & Interviews | {profile.name}</title>
-        <meta name="description" content="Talks, presentations, and interviews by {profile.name}" />
+        <title>Talks & Interviews</title>
+        <meta name="description" content="Talks, presentations, and interviews" />
 </svelte:head>
 
 <div {id} class="talks-wrapper">

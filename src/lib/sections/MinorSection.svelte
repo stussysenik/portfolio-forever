@@ -1,107 +1,45 @@
 <script lang="ts">
   // Minor things - little lists of life's moments
-  export let id = "minor";
+  import { onMount } from 'svelte';
+  import { getConvexClient } from '$lib/convex';
+  import { api } from '$convex/_generated/api';
 
-  interface ListItem {
-    text: string;
-    year?: number;
-    note?: string;
-  }
+  export let id = "minor";
 
   interface MinorList {
     id: string;
     title: string;
     emoji: string;
     description: string;
-    items: ListItem[];
+    items: { text: string; year?: number; note?: string }[];
   }
 
-  const minorLists: MinorList[] = [
-    {
-      id: 'lost',
-      title: "Things I've Lost",
-      emoji: '🔍',
-      description: 'Objects that slipped away',
-      items: [
-        { text: 'My favorite pen from 2019', year: 2019, note: 'Still mourning' },
-        { text: 'A single AirPod (left)', year: 2022 },
-        { text: 'That book I was almost done reading', year: 2023 },
-        { text: 'My sense of direction in IKEA', note: 'Repeatedly' },
-        { text: 'Several umbrellas', note: 'I stopped counting' },
-        { text: 'A really good idea I had at 3am', year: 2024 },
-      ],
-    },
-    {
-      id: 'broken',
-      title: "Things I've Broken",
-      emoji: '💔',
-      description: 'Victims of my presence',
-      items: [
-        { text: 'My phone screen (3 times)', note: 'Same corner each time' },
-        { text: 'A vintage coffee mug', year: 2021, note: 'RIP' },
-        { text: 'The office printer', year: 2023, note: 'It was already struggling' },
-        { text: 'Several promises to go to bed early' },
-        { text: 'The fourth wall', note: 'Right now' },
-        { text: 'A personal record for procrastination', year: 2024 },
-      ],
-    },
-    {
-      id: 'learned',
-      title: "Things I've Learned (The Hard Way)",
-      emoji: '📚',
-      description: 'Wisdom earned, not given',
-      items: [
-        { text: "Coffee doesn't replace sleep", note: 'Still trying though' },
-        { text: 'Always read the error message first', year: 2020 },
-        { text: `That backup you skipped? You'll need it`, year: 2022 },
-        { text: '"5 more minutes" is always a lie' },
-        { text: 'The deployment on Friday rule exists for a reason', year: 2023 },
-        { text: 'Sometimes the bug IS the feature', year: 2024 },
-      ],
-    },
-    {
-      id: 'overrated',
-      title: 'Things That Are Overrated',
-      emoji: '😒',
-      description: 'Hot takes served cold',
-      items: [
-        { text: 'Reply-all emails' },
-        { text: '"Quick sync" meetings that last an hour' },
-        { text: 'Motivational posters in open offices' },
-        { text: 'The word "synergy"' },
-        { text: 'Microwaved pizza', note: 'Fight me' },
-        { text: 'Monday productivity', note: 'A myth' },
-      ],
-    },
-    {
-      id: 'underrated',
-      title: 'Things That Are Underrated',
-      emoji: '✨',
-      description: 'Deserves more recognition',
-      items: [
-        { text: 'Silence in conversations' },
-        { text: 'The undo button', note: 'Ctrl+Z supremacy' },
-        { text: 'Leaving a party early' },
-        { text: 'Reading documentation first', note: 'Nobody does it' },
-        { text: 'A good night\'s sleep', year: 2024, note: 'Rare but real' },
-        { text: 'The mute button in meetings' },
-      ],
-    },
-    {
-      id: 'confused',
-      title: 'Things That Still Confuse Me',
-      emoji: '🤔',
-      description: 'Eternal mysteries',
-      items: [
-        { text: 'CSS vertical centering', note: 'Before flexbox' },
-        { text: 'Time zones' },
-        { text: 'Why printers sense fear' },
-        { text: 'The rules of cricket' },
-        { text: 'Where all my socks go' },
-        { text: 'Why I have 47 browser tabs open' },
-      ],
-    },
-  ];
+  let minorLists: MinorList[] = [];
+
+  onMount(() => {
+    const client = getConvexClient();
+    const unsub = client.onUpdate((api as any).minor.getVisibleMinor, {}, (data: any) => {
+      if (data) {
+        // Group flat rows by category
+        const grouped: Record<string, MinorList> = {};
+        for (const row of data) {
+          const key = row.category ?? row.id ?? 'misc';
+          if (!grouped[key]) {
+            grouped[key] = {
+              id: key,
+              title: row.categoryTitle ?? row.category ?? key,
+              emoji: row.emoji ?? '◇',
+              description: row.description ?? '',
+              items: [],
+            };
+          }
+          grouped[key].items.push({ text: row.text, year: row.year, note: row.note });
+        }
+        minorLists = Object.values(grouped);
+      }
+    });
+    return () => unsub();
+  });
 
   let expandedList: string | null = null;
 

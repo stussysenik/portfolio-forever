@@ -1,5 +1,7 @@
 <script lang="ts">
-  import { galleryItems, type GalleryItem } from '$lib/data/content';
+  import { onMount } from 'svelte';
+  import { getConvexClient } from '$lib/convex';
+  import { api } from '$convex/_generated/api';
 
   export let id = "gallery";
 
@@ -15,42 +17,36 @@
     film: 'var(--color-film)',
   };
 
-  // Extended gallery with placeholder items
-  const extendedGallery: GalleryItem[] = [
-    ...galleryItems,
-    { id: 'exp-1', title: 'Raymarching', thumbnail: '', category: ['technology'], year: 2023 },
-    { id: 'exp-2', title: 'Generative Type', thumbnail: '', category: ['design', 'technology'], year: 2023 },
-    { id: 'exp-3', title: 'Sound Visual', thumbnail: '', category: ['art', 'technology'], year: 2022 },
-    { id: 'exp-4', title: 'Arch Render', thumbnail: '', category: ['design'], year: 2021 },
-    { id: 'exp-5', title: 'Documentary', thumbnail: '', category: ['film'], year: 2022 },
-    { id: 'exp-6', title: 'WebGPU Particles', thumbnail: '', category: ['technology'], year: 2024 },
-    { id: 'exp-7', title: 'Brand System', thumbnail: '', category: ['design'], year: 2021 },
-    { id: 'exp-8', title: 'Installation', thumbnail: '', category: ['art', 'technology'], year: 2020 },
-    { id: 'exp-9', title: 'Music Video', thumbnail: '', category: ['film', 'art'], year: 2019 },
-    { id: 'exp-10', title: 'CAD Study', thumbnail: '', category: ['design'], year: 2023 },
-    { id: 'exp-11', title: 'Shader Art', thumbnail: '', category: ['technology', 'art'], year: 2024 },
-    { id: 'exp-12', title: 'Product Viz', thumbnail: '', category: ['design'], year: 2022 },
-    { id: 'exp-13', title: 'Exp. Film', thumbnail: '', category: ['film'], year: 2021 },
-    { id: 'exp-14', title: 'Kinetic', thumbnail: '', category: ['art'], year: 2020 },
-    { id: 'exp-15', title: 'Real-time GFX', thumbnail: '', category: ['technology'], year: 2024 },
-    { id: 'exp-16', title: 'Motion Sys', thumbnail: '', category: ['design'], year: 2023 },
-  ];
+  let galleryItems: any[] = [];
 
-  function getPlaceholderColor(item: GalleryItem): string {
-    const cat = item.category[0];
+  onMount(() => {
+    const client = getConvexClient();
+    const unsub = client.onUpdate((api as any).gallery.getVisibleGallery, {}, (data: any) => {
+      if (data) {
+        galleryItems = data;
+      }
+    });
+    return () => unsub();
+  });
+
+  function getPlaceholderColor(item: any): string {
+    const cat = Array.isArray(item.category) ? item.category[0] : item.category;
     return categoryColors[cat] || 'var(--color-text-subtle)';
   }
 
   $: filteredItems = activeFilter === 'all'
-    ? extendedGallery
-    : extendedGallery.filter(item => item.category.includes(activeFilter as any));
+    ? galleryItems
+    : galleryItems.filter((item: any) => {
+        const cats = Array.isArray(item.category) ? item.category : [item.category];
+        return cats.includes(activeFilter);
+      });
 
   function setFilter(category: string) {
     activeFilter = category;
   }
 
   // Selected item for detail view
-  let selected: GalleryItem | null = null;
+  let selected: any | null = null;
 </script>
 
 <svelte:head>

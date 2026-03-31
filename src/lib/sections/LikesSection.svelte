@@ -1,16 +1,11 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { profile } from "$lib/data/content";
 	import { getConvexClient } from '$lib/convex';
 	import { api } from '$convex/_generated/api';
 
 	export let id = "likes";
 
-	// Static fallback
-	const words = ["everything", "peace", "freedom", "love", "adventure", "magic", "growth", "balance", "courage", "abundance"];
-	let categories: { title: string; items: string[] }[] = [
-		{ title: "BOTTLED WISHES/GOALS FOR THIS YEAR", items: [words[Math.floor(Math.random() * words.length)]] },
-	];
+	let categories: { title: string; items: string[] }[] = [];
 
 	onMount(() => {
 		const client = getConvexClient();
@@ -24,7 +19,7 @@
 </script>
 
 <svelte:head>
-	<title>Likes • {profile.name}</title>
+	<title>Likes</title>
 </svelte:head>
 
 <div class="likes-wrapper" {id}>

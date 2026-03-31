@@ -1,25 +1,34 @@
 <script lang="ts">
-  import { labs, getStatusLabel, getStatusClass, checkAllFeatures, type LabExperiment } from '$lib/data/labs';
+  import { getStatusLabel, getStatusClass, checkAllFeatures } from '$lib/data/labs';
   import { onMount } from 'svelte';
+  import { getConvexClient } from '$lib/convex';
+  import { api } from '$convex/_generated/api';
 
-  // Sort by date (newest first), then by status
-  const sortedLabs = [...labs].sort((a, b) => {
-    // Stable/beta first, then experimental, then archived
-    const statusOrder = { stable: 0, beta: 1, experimental: 2, archived: 3 };
-    const statusDiff = statusOrder[a.status] - statusOrder[b.status];
-    if (statusDiff !== 0) return statusDiff;
-    
-    return new Date(b.date).getTime() - new Date(a.date).getTime();
-  });
+  let labs: any[] = [];
+  let sortedLabs: any[] = [];
 
   // Feature support (will be populated on mount)
   let featureSupport: Record<string, { supported: boolean; missing: string[] }> = {};
 
   onMount(() => {
-    for (const lab of labs) {
-      featureSupport[lab.slug] = checkAllFeatures(lab.requiredFeatures);
-    }
-    featureSupport = featureSupport; // Trigger reactivity
+    const client = getConvexClient();
+    const unsub = client.onUpdate((api as any).labs.getVisibleLabs, {}, (data: any) => {
+      if (data) {
+        labs = data;
+        sortedLabs = [...data].sort((a: any, b: any) => {
+          const statusOrder: Record<string, number> = { stable: 0, beta: 1, experimental: 2, archived: 3 };
+          const statusDiff = (statusOrder[a.status] ?? 99) - (statusOrder[b.status] ?? 99);
+          if (statusDiff !== 0) return statusDiff;
+          return new Date(b.date).getTime() - new Date(a.date).getTime();
+        });
+        const support: Record<string, { supported: boolean; missing: string[] }> = {};
+        for (const lab of data) {
+          support[lab.slug] = checkAllFeatures(lab.requiredFeatures ?? []);
+        }
+        featureSupport = support;
+      }
+    });
+    return () => unsub();
   });
 
   function getFeatureIcon(feature: string): string {
