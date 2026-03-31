@@ -146,6 +146,13 @@ export const updateProfile = mutation({
 			name: v.string(),
 			proficiency: v.number(),
 		}))),
+		taglines: v.optional(v.array(v.object({ lang: v.string(), text: v.string() }))),
+		shortBio: v.optional(v.string()),
+		location: v.optional(v.string()),
+		available: v.optional(v.boolean()),
+		email: v.optional(v.string()),
+		edition: v.optional(v.string()),
+		createdDate: v.optional(v.string()),
 	},
 	handler: async (ctx, { id, ...fields }) => {
 		await ctx.db.patch(id, stripUndefined(fields));
