@@ -72,6 +72,7 @@ displayConfig: defineTable({
   animationSpeed: v.optional(v.number()),
   animationOpacity: v.optional(v.number()),
   customCSS: v.optional(v.string()), // per-section style overrides
+  immune: v.optional(v.boolean()),   // locked = ignores view mode/animation changes, renders safe default
 }).index("by_section", ["section"])
 ```
 
@@ -225,11 +226,19 @@ blogPosts: defineTable({
 **Admin control surface:**
 
 ```
-Display Mode: [ Grid ▾ ]     ← per-section dropdown
+🔒 Immune:    [ OFF ▾ ]     ← lock page to safe defaults, ignore all below
+Display Mode: [ Grid ▾ ]     ← per-section dropdown (disabled when immune)
 Animation BG: [ None ▾ ]     ← optional background layer
 Anim Speed:   [====○===]     ← slider
 Anim Opacity: [======○=]     ← slider
 ```
+
+**Immunity system:**
+- Any page/section can be toggled immune from admin
+- Immune pages render their safe default (e.g., standard grid for works, clean timeline for CV)
+- Content edits (text, visibility, ordering) still work on immune pages — only visual mode/animation changes are blocked
+- Immune pages show a 🔒 badge in admin nav so you know at a glance what's locked
+- Use case: lock CV + Blog before a job interview, experiment freely with everything else
 
 **Per-item overrides** — extend `worksEntries`:
 ```typescript
