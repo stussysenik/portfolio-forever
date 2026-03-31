@@ -19,3 +19,5 @@ export { default as TalksAdmin } from './TalksAdmin.svelte';
 export { default as LikesAdmin } from './LikesAdmin.svelte';
 export { default as GiftsAdmin } from './GiftsAdmin.svelte';
 export { default as ThumbnailAdmin } from './ThumbnailAdmin.svelte';
+export { default as AdminNav } from './AdminNav.svelte';
+export { default as DisplayAdmin } from './DisplayAdmin.svelte';
