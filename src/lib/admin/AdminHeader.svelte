@@ -8,27 +8,29 @@
 		exportPDF: void;
 		exportJSON: void;
 	}>();
+
+	let showExport = false;
 </script>
 
 <header class="admin-header">
-	<div class="admin-header-left">
-		<h1>Portfolio Admin</h1>
-		{#if userName}
-			<span class="admin-user">
-				{#if userImage}<img src={userImage} alt="" class="admin-avatar" />{/if}
-				{userName}
-			</span>
-		{/if}
+	<div class="admin-id">
+		{#if userImage}<img src={userImage} alt="" width="20" height="20" class="admin-avatar" />{/if}
+		<span class="admin-path">
+			<span class="admin-path-dim">/admin</span>
+			{#if userName}<span class="admin-path-sep">/</span><span class="admin-path-user">{userName}</span>{/if}
+		</span>
 	</div>
-	<div class="admin-actions">
-		<button class="btn btn-accent" on:click={() => dispatch('exportPDF')}>Export PDF</button>
-		<button class="btn" on:click={() => dispatch('exportJSON')}>Export JSON</button>
-		<a href="/cv" class="btn" target="_blank">CV →</a>
-		<a href="/works" class="btn" target="_blank">Works →</a>
-		<a href="/academia" class="btn" target="_blank">Academia →</a>
-		<a href="/talks" class="btn" target="_blank">Talks →</a>
-		<a href="/likes" class="btn" target="_blank">Likes →</a>
-		<a href="/gifts" class="btn" target="_blank">Gifts →</a>
+
+	<div class="admin-tools">
+		<button class="tool-btn" aria-label="Export options" on:click={() => showExport = !showExport}>
+			Export
+		</button>
+		{#if showExport}
+			<div class="export-menu">
+				<button class="export-item" on:click={() => { dispatch('exportPDF'); showExport = false; }}>PDF</button>
+				<button class="export-item" on:click={() => { dispatch('exportJSON'); showExport = false; }}>JSON</button>
+			</div>
+		{/if}
 	</div>
 </header>
 
@@ -37,70 +39,100 @@
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		margin-bottom: var(--space-xl);
-		padding-bottom: var(--space-md);
-		border-bottom: 2px solid var(--border-color);
+		padding: var(--space-sm) 0;
+		margin-bottom: var(--space-md);
 	}
 
-	.admin-header h1 {
-		font-size: var(--font-size-xl);
-		font-weight: 600;
-	}
-
-	.admin-header-left {
-		display: flex;
-		align-items: center;
-		gap: var(--space-md);
-	}
-
-	.admin-user {
+	.admin-id {
 		display: flex;
 		align-items: center;
 		gap: var(--space-xs);
-		font-size: var(--font-size-sm);
-		color: var(--color-text-muted);
 	}
 
 	.admin-avatar {
-		width: 24px;
-		height: 24px;
 		border-radius: 50%;
+		opacity: 0.8;
 	}
 
-	.admin-actions {
-		display: flex;
-		gap: var(--space-sm);
-	}
-
-	.btn {
-		padding: 6px 14px;
-		border-radius: var(--radius-sm);
+	.admin-path {
+		font-family: var(--font-mono);
 		font-size: var(--font-size-sm);
-		font-weight: 500;
-		border: 1px solid var(--border-color);
-		background: var(--color-bg);
+		display: flex;
+		align-items: baseline;
+		gap: 0;
+	}
+
+	.admin-path-dim {
+		color: var(--color-text-muted);
+	}
+
+	.admin-path-sep {
+		color: var(--color-text-subtle);
+		margin: 0 1px;
+	}
+
+	.admin-path-user {
 		color: var(--color-text);
+		font-weight: 500;
+	}
+
+	.admin-tools {
+		position: relative;
+	}
+
+	.tool-btn {
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+		padding: var(--space-xs) var(--space-sm);
+		background: none;
+		border: 1px solid var(--border-color);
+		border-radius: var(--radius-sm);
+		color: var(--color-text-muted);
 		cursor: pointer;
-		text-decoration: none;
-		display: inline-flex;
-		align-items: center;
 	}
 
-	.btn:hover {
+	.tool-btn:hover {
 		border-color: var(--color-text-muted);
+		color: var(--color-text);
 	}
 
-	.btn-accent {
-		background: var(--color-accent);
-		color: var(--color-bg);
-		border-color: var(--color-accent);
+	.tool-btn:focus-visible {
+		outline: 2px solid var(--color-accent);
+		outline-offset: 1px;
 	}
 
-	@media (max-width: 767px) {
-		.admin-header {
-			flex-direction: column;
-			gap: var(--space-sm);
-			align-items: flex-start;
-		}
+	.export-menu {
+		position: absolute;
+		right: 0;
+		top: calc(100% + 4px);
+		display: flex;
+		gap: 2px;
+		background: var(--color-surface);
+		border: 1px solid var(--border-color);
+		border-radius: var(--radius-sm);
+		padding: 2px;
+		z-index: 10;
+	}
+
+	.export-item {
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+		padding: var(--space-xs) var(--space-sm);
+		background: none;
+		border: none;
+		border-radius: 2px;
+		color: var(--color-text-muted);
+		cursor: pointer;
+		white-space: nowrap;
+	}
+
+	.export-item:hover {
+		background: var(--color-bg-alt, rgba(0, 0, 0, 0.05));
+		color: var(--color-text);
+	}
+
+	.export-item:focus-visible {
+		outline: 2px solid var(--color-accent);
+		outline-offset: -1px;
 	}
 </style>

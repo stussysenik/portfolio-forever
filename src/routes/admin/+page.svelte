@@ -193,13 +193,13 @@
 			{:else if activeSection === 'works'}
 				<WorksAdmin {client} api={api} entries={worksEntries} />
 			{:else if activeSection === 'cv'}
-				<CvAdmin {client} api={api} {profile} {entries} {languages} {sections} />
+				<CvAdmin {client} api={api} {entries} {languages} {sections} />
 			{:else if activeSection === 'talks'}
 				<TalksAdmin {client} api={api} entries={talksEntries} />
 			{:else if activeSection === 'likes'}
 				<LikesAdmin {client} api={api} categories={likesCategories} />
 			{:else if activeSection === 'gifts'}
-				<GiftsAdmin {client} api={api} config={giftsConfig} />
+				<GiftsAdmin {client} api={api} {giftsConfig} />
 			{:else if activeSection === 'academia'}
 				<AcademiaAdmin {client} api={api} entries={academicEntries} />
 			{:else if activeSection === 'gallery'}
@@ -216,7 +216,7 @@
 			<SectionOrderAdmin {client} api={api} {siteConfigData} />
 			<ThumbnailAdmin {client} api={api} thumbnailConfigs={thumbnailConfigs} />
 		{:else if activeGroup === 'system'}
-			<FeatureFlagsAdmin {client} api={api} flags={featureFlags} />
+			<FeatureFlagsAdmin {client} api={api} {featureFlags} />
 			<DisplayAdmin {client} api={api} {displayConfigs} />
 		{/if}
 	{/if}
