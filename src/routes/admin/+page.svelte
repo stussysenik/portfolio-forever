@@ -5,20 +5,43 @@
 	import { getClerk } from '$lib/clerk';
 	import { toast } from '$lib/stores/toast';
 
-	import AdminHeader from '$lib/admin/AdminHeader.svelte';
-	import AdminNav from '$lib/admin/AdminNav.svelte';
-	import DisplayAdmin from '$lib/admin/DisplayAdmin.svelte';
-	import SiteConfigAdmin from '$lib/admin/SiteConfigAdmin.svelte';
-	import SectionOrderAdmin from '$lib/admin/SectionOrderAdmin.svelte';
-	import FeatureFlagsAdmin from '$lib/admin/FeatureFlagsAdmin.svelte';
+	import '$lib/admin/admin-shared.css';
+
+	// Layout
+	import BentoGrid from '$lib/admin/BentoGrid.svelte';
+	import BentoCell from '$lib/admin/BentoCell.svelte';
+
+	// Section admin panels (expanded view)
 	import ProfileAdmin from '$lib/admin/ProfileAdmin.svelte';
-	import CvAdmin from '$lib/admin/CvAdmin.svelte';
-	import AcademiaAdmin from '$lib/admin/AcademiaAdmin.svelte';
 	import WorksAdmin from '$lib/admin/WorksAdmin.svelte';
+	import CvAdmin from '$lib/admin/CvAdmin.svelte';
 	import TalksAdmin from '$lib/admin/TalksAdmin.svelte';
+	import AcademiaAdmin from '$lib/admin/AcademiaAdmin.svelte';
+	import BlogAdmin from '$lib/admin/BlogAdmin.svelte';
+	import GalleryAdmin from '$lib/admin/GalleryAdmin.svelte';
 	import LikesAdmin from '$lib/admin/LikesAdmin.svelte';
+	import MinorAdmin from '$lib/admin/MinorAdmin.svelte';
+	import LabsAdmin from '$lib/admin/LabsAdmin.svelte';
 	import GiftsAdmin from '$lib/admin/GiftsAdmin.svelte';
-	import ThumbnailAdmin from '$lib/admin/ThumbnailAdmin.svelte';
+
+	// Preview components
+	import WorksPreview from '$lib/admin/previews/WorksPreview.svelte';
+	import BlogPreview from '$lib/admin/previews/BlogPreview.svelte';
+	import GalleryPreview from '$lib/admin/previews/GalleryPreview.svelte';
+	import TerminalPreview from '$lib/admin/previews/TerminalPreview.svelte';
+	import TimelinePreview from '$lib/admin/previews/TimelinePreview.svelte';
+	import DesktopPreview from '$lib/admin/previews/DesktopPreview.svelte';
+	import GitHubPreview from '$lib/admin/previews/GitHubPreview.svelte';
+	import GenericListPreview from '$lib/admin/previews/GenericListPreview.svelte';
+	import ProcessPreview from '$lib/admin/previews/ProcessPreview.svelte';
+
+	// Control components
+	import AppearanceCell from '$lib/admin/controls/AppearanceCell.svelte';
+	import AnimationsCell from '$lib/admin/controls/AnimationsCell.svelte';
+	import ConfigCell from '$lib/admin/controls/ConfigCell.svelte';
+	import FlagsCell from '$lib/admin/controls/FlagsCell.svelte';
+	import OrderCell from '$lib/admin/controls/OrderCell.svelte';
+	import StreamsCell from '$lib/admin/controls/StreamsCell.svelte';
 
 	const client = getConvexClient();
 
@@ -29,6 +52,10 @@
 	let userName = '';
 	let userImage = '';
 	let signInFn: (() => void) | null = null;
+
+	// ── Appearance State ──
+	let currentTheme = 'minimal';
+	let currentFont = 'inter';
 
 	// ── Data State ──
 	let profile: any = null;
@@ -44,9 +71,15 @@
 	let siteConfigData: any = null;
 	let featureFlags: any[] = [];
 	let loading = true;
-	let activeGroup = 'content';
-	let activeSection = 'profile';
+	let galleryEntries: any[] = [];
+	let minorEntries: any[] = [];
+	let labsEntries: any[] = [];
+	let blogPosts: any[] = [];
 	let displayConfigs: any[] = [];
+
+	// ── New Data State (bento additions) ──
+	let registrySections: any[] = [];
+	let githubProjects: any[] = [];
 
 	const ALLOWED_GITHUB_USERNAMES = ['stussysenik', 's3nik', 'itsmxzou@gmail.com'];
 
@@ -89,6 +122,10 @@
 
 		if (!authed) return;
 
+		// ── Appearance init ──
+		currentTheme = document.documentElement.dataset.theme || 'minimal';
+		currentFont = document.documentElement.dataset.font || 'inter';
+
 		// ── Convex Subscriptions ──
 		const unsub1 = client.onUpdate(api.cv.getFullCV, {}, (data) => {
 			if (data) {
@@ -126,32 +163,48 @@
 		const unsubDisplay = client.onUpdate(api.display.getAllConfigs, {}, (data: any) => {
 			if (data) displayConfigs = data;
 		});
-		return () => { unsub1(); unsub2(); unsub3(); unsub4(); unsub5(); unsub6(); unsub7(); unsub8(); unsub9(); unsubDisplay(); };
+		const unsub10 = client.onUpdate(api.gallery.getFullGallery, {}, (data: any) => {
+			if (data) galleryEntries = data;
+		});
+		const unsub11 = client.onUpdate(api.minor.getFullMinor, {}, (data: any) => {
+			if (data) minorEntries = data;
+		});
+		const unsub12 = client.onUpdate(api.labs.getFullLabs, {}, (data: any) => {
+			if (data) labsEntries = data;
+		});
+		const unsub13 = client.onUpdate(api.blog.getFullPosts, {}, (data: any) => {
+			if (data) blogPosts = data;
+		});
+
+		// ── New subscriptions for bento grid ──
+		const unsubRegistry = client.onUpdate(api.sectionRegistry.getAll, {}, (data: any) => {
+			if (data) registrySections = data;
+		});
+		const unsubGitHub = client.onUpdate(api.github.getAll, {}, (data: any) => {
+			if (data) githubProjects = data;
+		});
+
+		return () => {
+			unsub1(); unsub2(); unsub3(); unsub4(); unsub5(); unsub6(); unsub7();
+			unsub8(); unsub9(); unsubDisplay(); unsub10(); unsub11(); unsub12(); unsub13();
+			unsubRegistry(); unsubGitHub();
+		};
 	});
 
-	// ── Page-level Actions ──
-	function exportPDF() {
-		window.open('/cv', '_blank');
-		setTimeout(() => {
-			alert('Use Ctrl/Cmd+P on the CV page to print or save as PDF.');
-		}, 500);
-	}
+	// ── Computed Streams ──
+	$: computedStreams = [
+		{ name: 'works', count: worksEntries.length, color: 'var(--bento-green, #44D62C)' },
+		{ name: 'gallery', count: galleryEntries.length, color: 'var(--bento-blue, #2563EB)' },
+		{ name: 'blog', count: blogPosts.length, color: '#737373' },
+		{ name: 'talks', count: talksEntries.length, color: '#737373' },
+		{ name: 'likes', count: likesCategories.length, color: '#737373' },
+		{ name: 'labs', count: labsEntries.length, color: 'var(--bento-green, #44D62C)' },
+		{ name: 'minor', count: minorEntries.length, color: '#737373' },
+	];
 
-	function exportSiteConfig() {
-		const config = {
-			siteConfig: siteConfigData,
-			featureFlags,
-			thumbnailConfigs,
-			exportedAt: new Date().toISOString(),
-		};
-		const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
-		const url = URL.createObjectURL(blob);
-		const a = document.createElement('a');
-		a.href = url;
-		a.download = `site-config-${new Date().toISOString().split('T')[0]}.json`;
-		a.click();
-		URL.revokeObjectURL(url);
-		toast.success('Config exported');
+	// ── GitHub Toggle Handler ──
+	async function handleGitHubToggle(e: CustomEvent) {
+		await client.mutation(api.github.toggleEnabled, { id: e.detail });
 	}
 </script>
 
@@ -180,53 +233,157 @@
 			{/if}
 		</div>
 	{:else}
-		<AdminHeader {userName} {userImage} on:exportPDF={exportPDF} on:exportJSON={exportSiteConfig} />
+		<BentoGrid {userName} {userImage}>
+			<!-- 01 · HERO — 12 cols -->
+			<BentoCell idx="01" name="Hero" accentColor="blue" span={12}>
+				{#if profile}
+					<div class="hero-preview">
+						<span class="hero-name">{profile.name || 'Name'}</span>
+						<span class="hero-tagline">{profile.tagline || 'tagline'}</span>
+					</div>
+				{:else}
+					<div class="hero-preview">
+						<span class="hero-name">Loading...</span>
+					</div>
+				{/if}
+				<svelte:fragment slot="expanded">
+					<ProfileAdmin {client} api={api} {profile} />
+				</svelte:fragment>
+			</BentoCell>
 
-		<AdminNav {activeGroup} {activeSection} {displayConfigs}
-			on:navigate={(e) => { activeGroup = e.detail.group; activeSection = e.detail.section; }} />
+			<!-- 02 · WORKS — 8 cols -->
+			<BentoCell idx="02" name="Works" count={worksEntries.length} accentColor="green" span={8}>
+				<WorksPreview entries={worksEntries} />
+				<svelte:fragment slot="expanded">
+					<WorksAdmin {client} api={api} entries={worksEntries} />
+				</svelte:fragment>
+			</BentoCell>
 
-		{#if loading}
-			<div class="loading">Loading CV data from Convex...</div>
-		{:else if activeGroup === 'content'}
-			{#if activeSection === 'profile'}
-				<ProfileAdmin {client} api={api} {profile} />
-			{:else if activeSection === 'works'}
-				<WorksAdmin {client} api={api} entries={worksEntries} />
-			{:else if activeSection === 'cv'}
-				<CvAdmin {client} api={api} {entries} {languages} {sections} />
-			{:else if activeSection === 'talks'}
-				<TalksAdmin {client} api={api} entries={talksEntries} />
-			{:else if activeSection === 'likes'}
-				<LikesAdmin {client} api={api} categories={likesCategories} />
-			{:else if activeSection === 'gifts'}
-				<GiftsAdmin {client} api={api} {giftsConfig} />
-			{:else if activeSection === 'academia'}
-				<AcademiaAdmin {client} api={api} entries={academicEntries} />
-			{:else if activeSection === 'gallery'}
-				<p style="padding: var(--space-lg); color: var(--color-text-muted); font-family: var(--font-mono); font-size: 0.85rem;">Gallery admin — coming in Phase 2</p>
-			{:else if activeSection === 'minor'}
-				<p style="padding: var(--space-lg); color: var(--color-text-muted); font-family: var(--font-mono); font-size: 0.85rem;">Minor admin — coming in Phase 2</p>
-			{:else if activeSection === 'labs'}
-				<p style="padding: var(--space-lg); color: var(--color-text-muted); font-family: var(--font-mono); font-size: 0.85rem;">Labs admin — coming in Phase 2</p>
-			{:else if activeSection === 'blog'}
-				<p style="padding: var(--space-lg); color: var(--color-text-muted); font-family: var(--font-mono); font-size: 0.85rem;">Blog admin — coming in Phase 2</p>
-			{/if}
-		{:else if activeGroup === 'appearance'}
-			<SiteConfigAdmin {client} api={api} {siteConfigData} />
-			<SectionOrderAdmin {client} api={api} {siteConfigData} />
-			<ThumbnailAdmin {client} api={api} thumbnailConfigs={thumbnailConfigs} />
-		{:else if activeGroup === 'system'}
-			<FeatureFlagsAdmin {client} api={api} {featureFlags} />
-			<DisplayAdmin {client} api={api} {displayConfigs} />
-		{/if}
+			<!-- APPEARANCE — 4 cols -->
+			<BentoCell idx="··" name="Appearance" accentColor="blue" span={4}>
+				<AppearanceCell {currentTheme} {currentFont} />
+			</BentoCell>
+
+			<!-- 03 · TALKS — 4 cols -->
+			<BentoCell idx="03" name="Talks" count={talksEntries.length} accentColor="muted" span={4}>
+				<TimelinePreview entries={talksEntries} type="talks" />
+				<svelte:fragment slot="expanded">
+					<TalksAdmin {client} api={api} entries={talksEntries} />
+				</svelte:fragment>
+			</BentoCell>
+
+			<!-- 04 · TERMINAL — 4 cols -->
+			<BentoCell idx="04" name="Terminal" accentColor="green" span={4}>
+				<TerminalPreview />
+			</BentoCell>
+
+			<!-- 05 · CV — 4 cols -->
+			<BentoCell idx="05" name="CV" count={entries.length} accentColor="muted" span={4}>
+				<TimelinePreview {entries} type="cv" />
+				<svelte:fragment slot="expanded">
+					<CvAdmin {client} api={api} {entries} {languages} {sections} />
+				</svelte:fragment>
+			</BentoCell>
+
+			<!-- 06 · ACADEMIA — 4 cols -->
+			<BentoCell idx="06" name="Re:mix" count={academicEntries.length} accentColor="blue" span={4}>
+				<GenericListPreview entries={academicEntries} />
+				<svelte:fragment slot="expanded">
+					<AcademiaAdmin {client} api={api} entries={academicEntries} />
+				</svelte:fragment>
+			</BentoCell>
+
+			<!-- 07 · BLOG — 4 cols -->
+			<BentoCell idx="07" name="Blog" count={blogPosts.length} accentColor="muted" span={4}>
+				<BlogPreview entries={blogPosts} />
+				<svelte:fragment slot="expanded">
+					<BlogAdmin {client} api={api} entries={blogPosts} />
+				</svelte:fragment>
+			</BentoCell>
+
+			<!-- 08 · PROCESS — 4 cols -->
+			<BentoCell idx="08" name="Process" accentColor="muted" span={4}>
+				<ProcessPreview />
+			</BentoCell>
+
+			<!-- 09 · GALLERY — 4 cols -->
+			<BentoCell idx="09" name="Gallery" count={galleryEntries.length} accentColor="blue" span={4}>
+				<GalleryPreview entries={galleryEntries} />
+				<svelte:fragment slot="expanded">
+					<GalleryAdmin {client} api={api} entries={galleryEntries} />
+				</svelte:fragment>
+			</BentoCell>
+
+			<!-- 10 · LIKES — 4 cols -->
+			<BentoCell idx="10" name="Likes" count={likesCategories.length} accentColor="muted" span={4}>
+				<GenericListPreview entries={likesCategories} />
+				<svelte:fragment slot="expanded">
+					<LikesAdmin {client} api={api} categories={likesCategories} />
+				</svelte:fragment>
+			</BentoCell>
+
+			<!-- 11 · MINOR — 4 cols -->
+			<BentoCell idx="11" name="Minor" count={minorEntries.length} accentColor="muted" span={4}>
+				<GenericListPreview entries={minorEntries} />
+				<svelte:fragment slot="expanded">
+					<MinorAdmin {client} api={api} entries={minorEntries} />
+				</svelte:fragment>
+			</BentoCell>
+
+			<!-- 12 · LABS — 4 cols -->
+			<BentoCell idx="12" name="Labs" count={labsEntries.length} accentColor="green" span={4}>
+				<GenericListPreview entries={labsEntries} />
+				<svelte:fragment slot="expanded">
+					<LabsAdmin {client} api={api} entries={labsEntries} />
+				</svelte:fragment>
+			</BentoCell>
+
+			<!-- 13 · GIFTS — 4 cols -->
+			<BentoCell idx="13" name="Gifts" accentColor="muted" span={4}>
+				<GenericListPreview entries={giftsConfig ? [giftsConfig] : []} />
+				<svelte:fragment slot="expanded">
+					<GiftsAdmin {client} api={api} {giftsConfig} />
+				</svelte:fragment>
+			</BentoCell>
+
+			<!-- 14 · OS — 4 cols -->
+			<BentoCell idx="14" name="OS" accentColor="blue" span={4}>
+				<DesktopPreview />
+			</BentoCell>
+
+			<!-- GITHUB — 8 cols -->
+			<BentoCell idx="··" name="GitHub" count={githubProjects.length} accentColor="muted" span={8}>
+				<GitHubPreview projects={githubProjects} on:toggle={handleGitHubToggle} />
+			</BentoCell>
+
+			<!-- ANIMATIONS — 4 cols -->
+			<BentoCell idx="··" name="Animations" accentColor="blue" span={4}>
+				<AnimationsCell sections={registrySections} {client} api={api} />
+			</BentoCell>
+
+			<!-- SYSTEM ROW — 3 cols each -->
+			<BentoCell idx="··" name="Config" accentColor="blue" span={3}>
+				<ConfigCell siteConfig={siteConfigData} {client} api={api} />
+			</BentoCell>
+
+			<BentoCell idx="··" name="Streams" accentColor="green" span={3}>
+				<StreamsCell streams={computedStreams} />
+			</BentoCell>
+
+			<BentoCell idx="··" name="Flags" accentColor="blue" span={3}>
+				<FlagsCell flags={featureFlags} {client} api={api} />
+			</BentoCell>
+
+			<BentoCell idx="··" name="Order" accentColor="muted" span={3}>
+				<OrderCell sections={registrySections} {client} api={api} />
+			</BentoCell>
+		</BentoGrid>
 	{/if}
 </div>
 
 <style>
 	.admin {
-		max-width: 900px;
-		margin: 0 auto;
-		padding: var(--space-md);
+		min-height: 100vh;
 	}
 
 	.auth-gate {
@@ -281,5 +438,25 @@
 		text-align: center;
 		padding: var(--space-3xl);
 		color: var(--color-text-muted);
+	}
+
+	/* Hero preview inline */
+	.hero-preview {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+	}
+
+	.hero-name {
+		font-size: var(--font-size-sm);
+		font-weight: 600;
+		color: var(--color-text);
+	}
+
+	.hero-tagline {
+		font-family: var(--font-mono);
+		font-size: var(--font-size-3xs);
+		color: var(--color-text-muted);
+		letter-spacing: 0.02em;
 	}
 </style>
