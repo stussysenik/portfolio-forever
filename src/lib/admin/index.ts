@@ -1,4 +1,8 @@
 // Admin component library - barrel exports
+// Layout
+export { default as BentoGrid } from './BentoGrid.svelte';
+export { default as BentoCell } from './BentoCell.svelte';
+
 // Primitives
 export { default as EditableField } from './EditableField.svelte';
 export { default as ReorderableList } from './ReorderableList.svelte';
@@ -21,3 +25,7 @@ export { default as GiftsAdmin } from './GiftsAdmin.svelte';
 export { default as ThumbnailAdmin } from './ThumbnailAdmin.svelte';
 export { default as AdminNav } from './AdminNav.svelte';
 export { default as DisplayAdmin } from './DisplayAdmin.svelte';
+export { default as GalleryAdmin } from './GalleryAdmin.svelte';
+export { default as MinorAdmin } from './MinorAdmin.svelte';
+export { default as LabsAdmin } from './LabsAdmin.svelte';
+export { default as BlogAdmin } from './BlogAdmin.svelte';
