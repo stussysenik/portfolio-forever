@@ -1,15 +1,39 @@
 <script lang="ts">
-        import {
-                sortedWorks,
-                profile,
-                formatDate,
-                getHighlight,
-        } from "$lib/data/content";
+        import { formatDate, getHighlight } from "$lib/data/content";
         import { getHighlightTextColor } from "$lib/utils/contrast";
         import AsciiDonut from "$lib/components/AsciiDonut.svelte";
         import Elevator from "$lib/components/Elevator.svelte";
+        import { onMount } from "svelte";
+        import { getConvexClient } from "$lib/convex";
+        import { api } from "$convex/_generated/api";
 
         export let id = "hero";
+
+        let profileData: any = {
+                name: "Stüssy Senik",
+                taglines: [{ lang: "de", text: "Design Engineer · Creative Producer" }],
+                shortBio: "Building at the intersection of engineering, creative production, and design — from code to camera",
+                location: "NYC / PRAGUE",
+        };
+        let works: any[] = [];
+
+        onMount(() => {
+                const client = getConvexClient();
+                const unsub1 = client.onUpdate(api.cv.getVisibleCV, {}, (data: any) => {
+                        if (data?.profile) {
+                                profileData = {
+                                        name: data.profile.name,
+                                        taglines: data.profile.taglines || profileData.taglines,
+                                        shortBio: data.profile.shortBio || data.profile.summary,
+                                        location: data.profile.location || profileData.location,
+                                };
+                        }
+                });
+                const unsub2 = client.onUpdate(api.works.getVisibleWorks, {}, (data: any) => {
+                        if (data && data.length > 0) works = data;
+                });
+                return () => { unsub1(); unsub2(); };
+        });
 </script>
 
 <!-- Hero - Breathing Space -->
@@ -17,14 +41,14 @@
 <header class="hero">
         <div class="hero-content">
                 <div class="hero-main">
-                        <h1 class="hero-name">{profile.name}</h1>
-                        <p class="hero-tagline">{profile.taglines[0].text}</p>
+                        <h1 class="hero-name">{profileData.name}</h1>
+                        <p class="hero-tagline">{profileData.taglines[0]?.text}</p>
                 </div>
 
-                <p class="hero-bio">{profile.shortBio}</p>
+                <p class="hero-bio">{profileData.shortBio}</p>
 
                 <div class="hero-meta">
-                        <span class="hero-location">{profile.location}</span>
+                        <span class="hero-location">{profileData.location}</span>
                 </div>
         </div>
 
@@ -39,10 +63,10 @@
         <header class="section-header">
                 <span class="section-marker">&#9670;</span>
                 <h2 class="section-title">WORKS</h2>
-                <span class="section-count">{sortedWorks.length}</span>
+                <span class="section-count">{works.length}</span>
         </header>
         <ul class="entry-list">
-                {#each sortedWorks as entry}
+                {#each works as entry}
                         <li class="entry" data-highlight={getHighlight(entry)}
                                 style:--hl-text={getHighlightTextColor(entry.featured)}>
                                 <span class="entry-date"
