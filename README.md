@@ -2,6 +2,9 @@
 
 # Portfolio Forever
 
+![Demo](demo.gif)
+
+
 ### Personal portfolio with ASCII aesthetics
 
 ![SvelteKit](https://img.shields.io/badge/SvelteKit-5-FF3E00?style=flat-square&logo=svelte&logoColor=white)
