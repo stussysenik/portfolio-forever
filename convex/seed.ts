@@ -1,5 +1,53 @@
 import { mutation } from "./_generated/server";
 
+// Section registry defaults shared across all seed entries
+const SECTION_DEFAULTS = {
+	visible: true,
+	adminVisible: true,
+	viewMode: "grid",
+	animationBg: "none",
+	animationSpeed: 1,
+	animationOpacity: 0.5,
+	immune: false,
+} as const;
+
+// One-time seed: populates sectionRegistry table with default sections
+export const seedSectionRegistry = mutation({
+	args: {},
+	handler: async (ctx) => {
+		const existing = await ctx.db.query("sectionRegistry").take(1);
+		if (existing.length > 0) {
+			return { status: "already seeded", sections: 0 };
+		}
+
+		const sections = [
+			{ sectionId: "hero",     label: "Home",     route: "/",         order: 1,  cellSpan: 12, cellAspect: "wide",   previewType: "list",     accentColor: "blue" },
+			{ sectionId: "works",    label: "Works",    route: "/works",    order: 2,  cellSpan: 8,  cellAspect: "golden", previewType: "list",     accentColor: "green" },
+			{ sectionId: "talks",    label: "Talks",    route: "/talks",    order: 3,  cellSpan: 4,  cellAspect: "square", previewType: "grid",     accentColor: "muted" },
+			{ sectionId: "terminal", label: "Terminal", route: "/terminal", order: 4,  cellSpan: 4,  cellAspect: "square", previewType: "terminal", accentColor: "green" },
+			{ sectionId: "cv",       label: "CV",       route: "/cv",       order: 5,  cellSpan: 4,  cellAspect: "square", previewType: "timeline", accentColor: "muted" },
+			{ sectionId: "academia", label: "Re:mix",   route: "/academia", order: 6,  cellSpan: 4,  cellAspect: "square", previewType: "grid",     accentColor: "blue" },
+			{ sectionId: "blog",     label: "Blog",     route: "/blog",     order: 7,  cellSpan: 4,  cellAspect: "square", previewType: "list",     accentColor: "muted" },
+			{ sectionId: "process",  label: "Process",  route: "/process",  order: 8,  cellSpan: 4,  cellAspect: "square", previewType: "cycle",    accentColor: "muted" },
+			{ sectionId: "gallery",  label: "Gallery",  route: "/gallery",  order: 9,  cellSpan: 4,  cellAspect: "square", previewType: "mosaic",   accentColor: "blue" },
+			{ sectionId: "likes",    label: "Likes",    route: "/likes",    order: 10, cellSpan: 4,  cellAspect: "square", previewType: "list",     accentColor: "muted" },
+			{ sectionId: "minor",    label: "Minor",    route: "/minor",    order: 11, cellSpan: 4,  cellAspect: "square", previewType: "list",     accentColor: "muted" },
+			{ sectionId: "labs",     label: "Labs",     route: "/labs",     order: 12, cellSpan: 4,  cellAspect: "square", previewType: "list",     accentColor: "green" },
+			{ sectionId: "gifts",    label: "Gifts",    route: "/gifts",    order: 13, cellSpan: 4,  cellAspect: "square", previewType: "list",     accentColor: "muted" },
+			{ sectionId: "os",       label: "OS",       route: "/os",       order: 14, cellSpan: 4,  cellAspect: "square", previewType: "desktop",  accentColor: "blue" },
+		];
+
+		for (const section of sections) {
+			await ctx.db.insert("sectionRegistry", {
+				...SECTION_DEFAULTS,
+				...section,
+			});
+		}
+
+		return { status: "seeded", sections: sections.length };
+	},
+});
+
 // One-time seed: migrates static cv.ts data into Convex tables
 export const seedFromStatic = mutation({
 	handler: async (ctx) => {
@@ -164,7 +212,7 @@ export const seedFromStatic = mutation({
 		// ── Education ──
 		const education = [
 			{
-				title: "Engineering Technology",
+				title: "Computer Engineering",
 				organization: "The Cooper Union for the Advancement of Science and Art",
 				location: "New York, NY",
 				startDate: "2022-09",

@@ -248,4 +248,39 @@ export default defineSchema({
 		coverImage: v.optional(v.string()),
 		visible: v.boolean(),
 	}).index("by_slug", ["slug"]),
+
+	// Section registry — controls bento grid layout and site navigation
+	sectionRegistry: defineTable({
+		sectionId: v.string(),
+		label: v.string(),
+		route: v.string(),
+		order: v.number(),
+		visible: v.boolean(),
+		adminVisible: v.boolean(),
+		viewMode: v.string(),
+		animationBg: v.string(),
+		animationSpeed: v.number(),
+		animationOpacity: v.number(),
+		immune: v.boolean(),
+		cellSpan: v.number(),
+		cellAspect: v.string(),
+		previewType: v.string(),
+		dataTable: v.optional(v.string()),
+		accentColor: v.string(),
+	}).index("by_sectionId", ["sectionId"])
+		.index("by_order", ["order"]),
+
+	// GitHub projects — synced from GitHub API
+	githubProjects: defineTable({
+		repoName: v.string(),
+		description: v.string(),
+		language: v.optional(v.string()),
+		url: v.string(),
+		category: v.string(),
+		enabled: v.boolean(),
+		featured: v.boolean(),
+		order: v.number(),
+		lastSynced: v.number(),
+	}).index("by_repoName", ["repoName"])
+		.index("by_order", ["order"]),
 });
