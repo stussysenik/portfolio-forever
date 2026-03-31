@@ -6,6 +6,8 @@
 	import { toast } from '$lib/stores/toast';
 
 	import AdminHeader from '$lib/admin/AdminHeader.svelte';
+	import AdminNav from '$lib/admin/AdminNav.svelte';
+	import DisplayAdmin from '$lib/admin/DisplayAdmin.svelte';
 	import SiteConfigAdmin from '$lib/admin/SiteConfigAdmin.svelte';
 	import SectionOrderAdmin from '$lib/admin/SectionOrderAdmin.svelte';
 	import FeatureFlagsAdmin from '$lib/admin/FeatureFlagsAdmin.svelte';
@@ -42,6 +44,9 @@
 	let siteConfigData: any = null;
 	let featureFlags: any[] = [];
 	let loading = true;
+	let activeGroup = 'content';
+	let activeSection = 'profile';
+	let displayConfigs: any[] = [];
 
 	const ALLOWED_GITHUB_USERNAMES = ['stussysenik', 's3nik', 'itsmxzou@gmail.com'];
 
@@ -118,7 +123,10 @@
 		const unsub9 = client.onUpdate(api.siteConfig.getFeatureFlags, {}, (data) => {
 			if (data) featureFlags = data;
 		});
-		return () => { unsub1(); unsub2(); unsub3(); unsub4(); unsub5(); unsub6(); unsub7(); unsub8(); unsub9(); };
+		const unsubDisplay = client.onUpdate(api.display.getAllConfigs, {}, (data: any) => {
+			if (data) displayConfigs = data;
+		});
+		return () => { unsub1(); unsub2(); unsub3(); unsub4(); unsub5(); unsub6(); unsub7(); unsub8(); unsub9(); unsubDisplay(); };
 	});
 
 	// ── Page-level Actions ──
@@ -174,20 +182,42 @@
 	{:else}
 		<AdminHeader {userName} {userImage} on:exportPDF={exportPDF} on:exportJSON={exportSiteConfig} />
 
+		<AdminNav {activeGroup} {activeSection} {displayConfigs}
+			on:navigate={(e) => { activeGroup = e.detail.group; activeSection = e.detail.section; }} />
+
 		{#if loading}
 			<div class="loading">Loading CV data from Convex...</div>
-		{:else}
+		{:else if activeGroup === 'content'}
+			{#if activeSection === 'profile'}
+				<ProfileAdmin {client} api={api} {profile} />
+			{:else if activeSection === 'works'}
+				<WorksAdmin {client} api={api} entries={worksEntries} />
+			{:else if activeSection === 'cv'}
+				<CvAdmin {client} api={api} {profile} {entries} {languages} {sections} />
+			{:else if activeSection === 'talks'}
+				<TalksAdmin {client} api={api} entries={talksEntries} />
+			{:else if activeSection === 'likes'}
+				<LikesAdmin {client} api={api} categories={likesCategories} />
+			{:else if activeSection === 'gifts'}
+				<GiftsAdmin {client} api={api} config={giftsConfig} />
+			{:else if activeSection === 'academia'}
+				<AcademiaAdmin {client} api={api} entries={academicEntries} />
+			{:else if activeSection === 'gallery'}
+				<p style="padding: var(--space-lg); color: var(--color-text-muted); font-family: var(--font-mono); font-size: 0.85rem;">Gallery admin — coming in Phase 2</p>
+			{:else if activeSection === 'minor'}
+				<p style="padding: var(--space-lg); color: var(--color-text-muted); font-family: var(--font-mono); font-size: 0.85rem;">Minor admin — coming in Phase 2</p>
+			{:else if activeSection === 'labs'}
+				<p style="padding: var(--space-lg); color: var(--color-text-muted); font-family: var(--font-mono); font-size: 0.85rem;">Labs admin — coming in Phase 2</p>
+			{:else if activeSection === 'blog'}
+				<p style="padding: var(--space-lg); color: var(--color-text-muted); font-family: var(--font-mono); font-size: 0.85rem;">Blog admin — coming in Phase 2</p>
+			{/if}
+		{:else if activeGroup === 'appearance'}
 			<SiteConfigAdmin {client} api={api} {siteConfigData} />
 			<SectionOrderAdmin {client} api={api} {siteConfigData} />
-			<FeatureFlagsAdmin {client} api={api} {featureFlags} />
-			<ProfileAdmin {client} api={api} {profile} />
-			<CvAdmin {client} api={api} {sections} {entries} {languages} />
-			<AcademiaAdmin {client} api={api} entries={academicEntries} />
-			<WorksAdmin {client} api={api} entries={worksEntries} />
-			<TalksAdmin {client} api={api} entries={talksEntries} />
-			<LikesAdmin {client} api={api} categories={likesCategories} />
-			<GiftsAdmin {client} api={api} {giftsConfig} />
-			<ThumbnailAdmin {client} api={api} {thumbnailConfigs} />
+			<ThumbnailAdmin {client} api={api} thumbnailConfigs={thumbnailConfigs} />
+		{:else if activeGroup === 'system'}
+			<FeatureFlagsAdmin {client} api={api} flags={featureFlags} />
+			<DisplayAdmin {client} api={api} {displayConfigs} />
 		{/if}
 	{/if}
 </div>
