@@ -42,6 +42,13 @@ export default defineSchema({
 			name: v.string(),
 			proficiency: v.number(),
 		})),
+		taglines: v.optional(v.array(v.object({ lang: v.string(), text: v.string() }))),
+		shortBio: v.optional(v.string()),
+		location: v.optional(v.string()),
+		available: v.optional(v.boolean()),
+		email: v.optional(v.string()),
+		edition: v.optional(v.string()),
+		createdDate: v.optional(v.string()),
 	}),
 
 	academicEntries: defineTable({
@@ -81,6 +88,14 @@ export default defineSchema({
 		muxPlaybackId: v.optional(v.string()),
 		order: v.number(),
 		visible: v.boolean(),
+		styleOverrides: v.optional(v.object({
+			accentColor: v.optional(v.string()),
+			badgeStyle: v.optional(v.string()),
+			impactMetrics: v.optional(v.array(v.object({
+				label: v.string(),
+				value: v.string(),
+			}))),
+		})),
 	}).index("by_order", ["order"]),
 
 	talksEntries: defineTable({
@@ -147,4 +162,90 @@ export default defineSchema({
 		previewOnHover: v.boolean(),
 		aspectRatio: v.optional(v.string()), // '16:9', '4:3', '1:1'
 	}).index("by_section", ["section"]),
+
+	// Per-section display mode + animation + immunity
+	displayConfig: defineTable({
+		section: v.string(),
+		viewMode: v.union(
+			v.literal("grid"),
+			v.literal("case-study"),
+			v.literal("minimal-list"),
+			v.literal("pixel-universe"),
+		),
+		animationBg: v.union(
+			v.literal("none"),
+			v.literal("conway"),
+			v.literal("kanagawa"),
+			v.literal("balatro"),
+		),
+		animationSpeed: v.number(),
+		animationOpacity: v.number(),
+		immune: v.boolean(),
+	}).index("by_section", ["section"]),
+
+	// Hero display settings (single doc)
+	heroConfig: defineTable({
+		showVelocity: v.optional(v.boolean()),
+		showAsciiDonut: v.optional(v.boolean()),
+		showPixelArt: v.optional(v.boolean()),
+		layout: v.optional(v.string()),
+		accentColor: v.optional(v.string()),
+	}),
+
+	// Gallery items
+	galleryItems: defineTable({
+		title: v.string(),
+		thumbnailUrl: v.optional(v.string()),
+		fullUrl: v.optional(v.string()),
+		category: v.optional(v.array(v.string())),
+		year: v.optional(v.number()),
+		description: v.optional(v.string()),
+		muxPlaybackId: v.optional(v.string()),
+		order: v.number(),
+		visible: v.boolean(),
+	}).index("by_order", ["order"]),
+
+	// Minor things lists
+	minorEntries: defineTable({
+		category: v.string(),
+		text: v.string(),
+		year: v.optional(v.number()),
+		note: v.optional(v.string()),
+		order: v.number(),
+		visible: v.boolean(),
+	}).index("by_category_and_order", ["category", "order"]),
+
+	// Lab experiments
+	labEntries: defineTable({
+		title: v.string(),
+		slug: v.optional(v.string()),
+		description: v.string(),
+		status: v.union(
+			v.literal("stable"),
+			v.literal("beta"),
+			v.literal("experimental"),
+			v.literal("archived"),
+		),
+		date: v.string(),
+		sourceUrl: v.optional(v.string()),
+		entryPoint: v.optional(v.string()),
+		fallbackImage: v.optional(v.string()),
+		tags: v.array(v.string()),
+		memoryBudget: v.number(),
+		requiredFeatures: v.array(v.string()),
+		order: v.number(),
+		visible: v.boolean(),
+	}).index("by_order", ["order"]),
+
+	// Blog posts (replaces Sanity)
+	blogPosts: defineTable({
+		title: v.string(),
+		slug: v.string(),
+		content: v.optional(v.string()),
+		excerpt: v.optional(v.string()),
+		tags: v.optional(v.array(v.string())),
+		publishedAt: v.optional(v.string()),
+		coverImage: v.optional(v.string()),
+		visible: v.boolean(),
+	}).index("by_slug", ["slug"]),
 });
