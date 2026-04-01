@@ -5,3 +5,5 @@ export { default as FlagsCell } from './FlagsCell.svelte';
 export { default as DisplayCell } from './DisplayCell.svelte';
 export { default as OrderCell } from './OrderCell.svelte';
 export { default as StreamsCell } from './StreamsCell.svelte';
+export { default as ParticlesCell } from './ParticlesCell.svelte';
+export { default as ColorStrip } from './ColorStrip.svelte';
