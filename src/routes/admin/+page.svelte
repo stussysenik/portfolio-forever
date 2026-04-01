@@ -14,9 +14,14 @@
 	let currentFont = 'inter';
 	let settingsOpen = false;
 
-	onMount(() => {
+	onMount(async () => {
 		currentTheme = document.documentElement.dataset.theme || 'minimal';
 		currentFont = document.documentElement.dataset.font || 'inter';
+
+		// Ensure pages are seeded from sectionRegistry (idempotent)
+		try {
+			await client.mutation(api.pages.ensureSeeded, {});
+		} catch (_) { /* already seeded or no registry */ }
 
 		const subs = [
 			client.onUpdate(api.pages.getAll, {}, (data: any) => { if (data) pages = data; }),
