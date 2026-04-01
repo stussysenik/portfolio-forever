@@ -52,7 +52,7 @@
 	{/if}
 
 	{#if !pixelEngineGlobal}
-		<span class="global-hint">pixel engine disabled globally — enable in Settings &gt; Flags</span>
+		<span class="global-hint">disabled globally — Settings &gt; Flags</span>
 	{/if}
 </div>
 
@@ -120,9 +120,10 @@
 
 	.preset-chip {
 		font-family: var(--font-mono);
-		font-size: 8px;
-		padding: 2px 6px;
+		font-size: 9px;
+		padding: 4px 8px;
 		border-radius: 3px;
+		min-height: 28px;
 		border: 1px solid var(--border-color-subtle, #222);
 		background: transparent;
 		color: var(--color-text-muted, #666);

@@ -246,7 +246,8 @@
 		background: none;
 		border: none;
 		cursor: pointer;
-		padding: 2px 4px;
+		padding: 6px 6px;
+		min-height: 28px;
 	}
 
 	.edit-btn {

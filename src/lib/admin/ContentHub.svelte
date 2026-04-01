@@ -184,8 +184,8 @@
 
 	.tab {
 		font-family: var(--font-mono);
-		font-size: 10px;
-		padding: 8px 14px;
+		font-size: 11px;
+		padding: 10px 14px;
 		color: var(--color-text-muted, #666);
 		background: none;
 		border: none;
@@ -193,6 +193,7 @@
 		cursor: pointer;
 		white-space: nowrap;
 		transition: color var(--duration-fast, 120ms) var(--easing);
+		min-height: 36px;
 	}
 
 	.tab:hover {

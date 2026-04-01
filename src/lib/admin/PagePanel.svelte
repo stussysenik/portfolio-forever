@@ -229,6 +229,8 @@
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
+		flex-wrap: wrap;
+		gap: 8px;
 	}
 
 	.panel-title-group {
@@ -255,18 +257,22 @@
 	.panel-chips {
 		display: flex;
 		gap: 4px;
+		flex-wrap: wrap;
 	}
 
 	.chip {
 		font-family: var(--font-mono);
 		font-size: 9px;
-		padding: 3px 8px;
+		padding: 4px 10px;
 		border-radius: 3px;
 		border: 1px solid var(--border-color-subtle, #222);
 		background: var(--color-bg, #111);
 		color: var(--color-text-muted, #888);
 		cursor: pointer;
 		transition: all var(--duration-fast, 120ms) var(--easing);
+		min-height: 28px;
+		display: inline-flex;
+		align-items: center;
 	}
 
 	.chip:hover {
