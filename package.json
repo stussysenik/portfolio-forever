@@ -19,6 +19,12 @@
                 "test:debug": "playwright test --debug",
                 "test:report": "playwright show-report",
                 "test:install": "playwright install --with-deps chromium firefox webkit",
+                "quota:init": "bun scripts/claude-quota-ledger.ts init",
+                "quota:doctor": "bun scripts/claude-quota-ledger.ts doctor",
+                "quota:probe": "bun scripts/claude-quota-ledger.ts probe",
+                "quota:report": "bun scripts/claude-quota-ledger.ts report",
+                "quota:install": "bun scripts/claude-quota-ledger.ts install-launchd",
+                "quota:uninstall": "bun scripts/claude-quota-ledger.ts uninstall-launchd",
                 "sync": "svelte-kit sync || echo ''",
                 "storybook": "storybook dev -p 6006",
                 "build-storybook": "storybook build"

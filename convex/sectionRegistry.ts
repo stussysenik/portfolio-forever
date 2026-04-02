@@ -39,6 +39,18 @@ export const upsert = mutation({
 			.unique();
 
 		if (existing) {
+			const trackableFields = ['viewMode', 'animationBg', 'animationSpeed', 'animationOpacity'] as const;
+			for (const field of trackableFields) {
+				if (args[field] !== undefined && existing[field] !== args[field]) {
+					await ctx.db.insert("adminHistory", {
+						table: "sectionRegistry",
+						field,
+						oldValue: existing[field] ?? null,
+						newValue: args[field],
+						timestamp: Date.now(),
+					});
+				}
+			}
 			await ctx.db.patch(existing._id, args);
 			return existing._id;
 		}
@@ -61,6 +73,17 @@ export const reorder = mutation({
 		for (const update of args.updates) {
 			await ctx.db.patch(update.id, { order: update.order });
 		}
+	},
+});
+
+/** Return a single section by its sectionId */
+export const getBySectionId = query({
+	args: { sectionId: v.string() },
+	handler: async (ctx, { sectionId }) => {
+		return await ctx.db
+			.query("sectionRegistry")
+			.withIndex("by_sectionId", (q) => q.eq("sectionId", sectionId))
+			.unique();
 	},
 });
 

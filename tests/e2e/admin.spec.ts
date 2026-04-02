@@ -14,3 +14,32 @@ test.describe('/admin', () => {
 		await expect(adminSection).toHaveCount(0);
 	});
 });
+
+test.describe('/admin - security', () => {
+	test('keyboard shortcuts do not bypass auth gate', async ({ page }) => {
+		await page.goto('/admin');
+		await page.waitForTimeout(1000);
+
+		// Try keyboard shortcuts that might bypass auth
+		await page.keyboard.press('?');
+		await page.waitForTimeout(300);
+
+		// Admin sections should still not be visible
+		const adminSection = page.locator('.admin-section');
+		await expect(adminSection).toHaveCount(0);
+	});
+
+	test('direct URL to admin sub-routes redirects to auth', async ({ page }) => {
+		await page.goto('/admin');
+		const authGate = page.locator('.auth-gate, .auth-title, .btn-github').first();
+		await expect(authGate).toBeVisible({ timeout: 10000 });
+	});
+
+	test('no admin data in page source without auth', async ({ page }) => {
+		await page.goto('/admin');
+		const pageContent = await page.textContent('body');
+		// Should not contain admin-specific content
+		expect(pageContent).not.toContain('Save Changes');
+		expect(pageContent).not.toContain('Delete Entry');
+	});
+});

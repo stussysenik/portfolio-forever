@@ -1,10 +1,26 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
+  import { getConvexClient } from '$lib/convex';
+  import { api } from '$convex/_generated/api';
+  import DOMPurify from 'dompurify';
   import type { PageData } from './$types';
-  import { PortableText } from '@portabletext/svelte';
 
   export let data: PageData;
 
-  $: note = data.post;
+  let note: any = null;
+
+  function sanitize(html: string): string {
+    if (typeof window === 'undefined') return html;
+    return DOMPurify.sanitize(html);
+  }
+
+  onMount(() => {
+    const client = getConvexClient();
+    const unsub = client.onUpdate(api.blog.getBySlug, { slug: data.slug }, (post: any) => {
+      note = post;
+    });
+    return () => unsub();
+  });
 
   function formatDate(dateStr: string): string {
     const date = new Date(dateStr);
@@ -63,8 +79,8 @@
 
     <!-- Article Content - Optimal reading width, proper rhythm -->
     <div class="article-content">
-      {#if note.body}
-        <PortableText value={note.body} />
+      {#if note.content}
+        {@html sanitize(note.content)}
       {:else}
         <p class="no-content">No content yet.</p>
       {/if}

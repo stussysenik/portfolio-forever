@@ -120,11 +120,12 @@
 			</button>
 		{/each}
 		<button
-			class="tab tab-new"
+			class="tab-add"
 			on:click={() => (showNewPageForm = !showNewPageForm)}
 			aria-label="Create new page"
+			title="New page"
 		>
-			+ New Page
+			+
 		</button>
 	</div>
 
@@ -222,12 +223,28 @@
 		color: var(--bento-green, #44D62C);
 	}
 
-	.tab-new {
+	.tab-add {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 28px;
+		height: 28px;
+		margin: auto 0 auto 4px;
+		padding: 0;
+		font-size: 14px;
+		font-weight: 400;
 		color: var(--color-text-subtle, #555);
+		background: none;
+		border: 1px solid var(--border-color-subtle);
+		border-radius: 4px;
+		cursor: pointer;
+		flex-shrink: 0;
+		transition: all 120ms ease;
 	}
 
-	.tab-new:hover {
+	.tab-add:hover {
 		color: var(--bento-blue, #2563EB);
+		border-color: var(--bento-blue, #2563EB);
 	}
 
 	.new-page-form {

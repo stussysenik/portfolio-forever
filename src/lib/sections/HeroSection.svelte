@@ -16,6 +16,11 @@
                 location: "NYC / PRAGUE",
         };
         let works: any[] = [];
+        let heroNameSize: number | null = null;
+        let heroNameWeight: number | null = null;
+        let heroNameLetterSpacing: number | null = null;
+        let heroNameLineHeight: number | null = null;
+        let heroNameTextWrap: string | null = null;
 
         onMount(() => {
                 const client = getConvexClient();
@@ -32,7 +37,14 @@
                 const unsub2 = client.onUpdate(api.works.getVisibleWorks, {}, (data: any) => {
                         if (data && data.length > 0) works = data;
                 });
-                return () => { unsub1(); unsub2(); };
+                const unsub3 = client.onUpdate(api.hero.getHeroConfig, {}, (data: any) => {
+                        heroNameSize = data?.heroNameSize ?? null;
+                        heroNameWeight = data?.heroNameWeight ?? null;
+                        heroNameLetterSpacing = data?.heroNameLetterSpacing ?? null;
+                        heroNameLineHeight = data?.heroNameLineHeight ?? null;
+                        heroNameTextWrap = data?.heroNameTextWrap ?? null;
+                });
+                return () => { unsub1(); unsub2(); unsub3(); };
         });
 </script>
 
@@ -41,7 +53,14 @@
 <header class="hero">
         <div class="hero-content">
                 <div class="hero-main">
-                        <h1 class="hero-name">{profileData.name}</h1>
+                        <h1
+                                class="hero-name"
+                                style:font-size={heroNameSize ? `${heroNameSize}rem` : null}
+                                style:font-weight={heroNameWeight ?? null}
+                                style:letter-spacing={heroNameLetterSpacing != null ? `${heroNameLetterSpacing}em` : null}
+                                style:line-height={heroNameLineHeight ?? null}
+                                style:text-wrap={heroNameTextWrap ?? null}
+                        >{profileData.name}</h1>
                         <p class="hero-tagline">{profileData.taglines[0]?.text}</p>
                 </div>
 

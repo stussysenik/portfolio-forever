@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { toast } from '$lib/stores/toast';
 	import type { Id } from '$convex/_generated/dataModel';
+	import PositionPicker from './controls/PositionPicker.svelte';
 
 	export let client: any;
 	export let api: any;
@@ -10,6 +11,13 @@
 	let editingField: string | null = null;
 	let editBuffer = '';
 	let saving = false;
+	let expandedId: string | null = null;
+
+	// New project form
+	let showNewForm = false;
+	let newTitle = '';
+	let newUrl = '';
+	let newPreview = '';
 
 	function startEdit(id: string, field: string, currentValue: string) {
 		editingId = id; editingField = field; editBuffer = currentValue || '';
@@ -19,10 +27,28 @@
 		return (e: KeyboardEvent) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handler(); } };
 	}
 
+	function toggleExpand(id: string) {
+		expandedId = expandedId === id ? null : id;
+	}
+
 	async function addWorkEntry() {
+		if (!showNewForm) { showNewForm = true; newTitle = ''; newUrl = ''; newPreview = ''; return; }
+		if (!newUrl.trim()) { toast.error('URL is required'); return; }
 		await client.mutation(api.works.createEntry, {
-			title: 'New Project', url: 'https://',
+			title: newTitle.trim() || 'New Project',
+			url: newUrl.trim(),
+			preview: newPreview.trim() || undefined,
 			order: entries.length, visible: true,
+		});
+		showNewForm = false;
+		toast.success('Project added');
+	}
+
+	function cancelNewForm() { showNewForm = false; }
+
+	async function saveObjectPosition(id: string, value: string) {
+		await client.mutation(api.works.updateEntry, {
+			id: id as Id<"worksEntries">, objectPosition: value,
 		});
 	}
 
@@ -71,6 +97,27 @@
 		<a href="/works" class="btn-sm" target="_blank">View &rarr;</a>
 	</div>
 
+	{#if showNewForm}
+		<div class="new-form">
+			<div class="new-form-row">
+				<label class="new-form-label">Title</label>
+				<input class="field-input-sm" bind:value={newTitle} placeholder="Project name" />
+			</div>
+			<div class="new-form-row">
+				<label class="new-form-label">URL</label>
+				<input class="field-input-sm" bind:value={newUrl} placeholder="https://..." />
+			</div>
+			<div class="new-form-row">
+				<label class="new-form-label">Preview</label>
+				<input class="field-input-sm" bind:value={newPreview} placeholder="/previews/... or https://..." />
+			</div>
+			<div class="new-form-actions">
+				<button class="btn-sm btn-save" on:click={addWorkEntry}>Create</button>
+				<button class="btn-sm" on:click={cancelNewForm}>Cancel</button>
+			</div>
+		</div>
+	{/if}
+
 	{#each [...entries].sort((a, b) => a.order - b.order) as entry, idx}
 		<div class="card" class:hidden-entry={!entry.visible}>
 			<div class="card-header">
@@ -118,7 +165,10 @@
 
 			<div class="card-body">
 				<div class="card-tools" style="margin-top: var(--space-xs);">
-					{#each ['preview', 'viewport', 'cam', 'muxPlaybackId'] as field}
+					<button class="tool-tag tool-tag-btn" on:click={() => toggleExpand(entry._id)}>
+					Preview {expandedId === entry._id ? '\u25B4' : '\u25BE'}
+				</button>
+				{#each ['viewport', 'cam', 'muxPlaybackId'] as field}
 						{#if editingId === entry._id && editingField === field}
 							<input class="field-input-sm" bind:value={editBuffer} on:keydown={(e) => { if (e.key === 'Enter') saveWorkEdit(entry._id); if (e.key === 'Escape') cancelEdit(); }} />
 							<button class="btn-sm btn-save" on:click={() => saveWorkEdit(entry._id)}>&#10003;</button>
@@ -129,6 +179,35 @@
 						{/if}
 					{/each}
 				</div>
+
+				{#if expandedId === entry._id}
+					<div class="preview-panel">
+						<div class="preview-field">
+							<span class="preview-label">Preview URL</span>
+							{#if editingId === entry._id && editingField === 'preview'}
+								<div class="preview-edit-row">
+									<input class="field-input-sm flex-1" bind:value={editBuffer} on:keydown={(e) => { if (e.key === 'Enter') saveWorkEdit(entry._id); if (e.key === 'Escape') cancelEdit(); }} />
+									<button class="btn-sm btn-save" on:click={() => saveWorkEdit(entry._id)}>&#10003;</button>
+								</div>
+							{:else}
+								<span class="preview-url" role="button" tabindex="0" on:click={() => startEdit(entry._id, 'preview', entry.preview || '')} on:keydown={a11yClick(() => startEdit(entry._id, 'preview', entry.preview || ''))}>
+									{entry.preview || '(none)'}
+								</span>
+							{/if}
+						</div>
+
+						{#if entry.preview}
+							<div class="preview-position">
+								<span class="preview-label">Position</span>
+								<PositionPicker
+									previewUrl={entry.preview}
+									value={entry.objectPosition || 'center top'}
+									onChange={(val) => saveObjectPosition(entry._id, val)}
+								/>
+							</div>
+						{/if}
+					</div>
+				{/if}
 			</div>
 		</div>
 	{/each}
@@ -343,6 +422,101 @@
 
 	.flex-1 {
 		flex: 1;
+	}
+
+	/* ── Preview toggle button ── */
+	.tool-tag-btn {
+		cursor: pointer;
+		border: 1px solid var(--border-color-subtle);
+		transition: all 160ms ease;
+	}
+
+	.tool-tag-btn:hover {
+		border-color: var(--bento-blue, #2563EB);
+		color: var(--color-text);
+	}
+
+	/* ── Expandable preview panel ── */
+	.preview-panel {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+		margin-top: var(--space-sm);
+		padding: var(--space-sm);
+		border: 1px solid var(--border-color-subtle);
+		border-radius: var(--radius-sm);
+		background: var(--color-bg-alt, #fafafa);
+	}
+
+	.preview-field {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+	}
+
+	.preview-label {
+		font-family: var(--font-mono);
+		font-size: 7px;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		color: var(--color-text-subtle);
+	}
+
+	.preview-url {
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+		color: var(--color-text-muted);
+		cursor: pointer;
+		word-break: break-all;
+	}
+
+	.preview-url:hover {
+		color: var(--color-accent);
+	}
+
+	.preview-edit-row {
+		display: flex;
+		gap: var(--space-xs);
+		align-items: center;
+	}
+
+	.preview-position {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+	}
+
+	/* ── New project form ── */
+	.new-form {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+		padding: var(--space-md);
+		margin-bottom: var(--space-sm);
+		border: 1px solid var(--bento-blue, #2563EB);
+		border-radius: var(--radius-md);
+		background: var(--color-bg-alt, #fafafa);
+	}
+
+	.new-form-row {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+	}
+
+	.new-form-label {
+		font-family: var(--font-mono);
+		font-size: 8px;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-text-muted);
+		min-width: 48px;
+	}
+
+	.new-form-actions {
+		display: flex;
+		gap: var(--space-xs);
+		margin-top: var(--space-xs);
 	}
 
 	@media (max-width: 767px) {

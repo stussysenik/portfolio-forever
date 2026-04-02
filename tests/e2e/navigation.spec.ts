@@ -50,3 +50,21 @@ test.describe('Error page', () => {
 		await expect(page.locator('.error-page')).toBeVisible();
 	});
 });
+
+test.describe('Extended route health', () => {
+	const extendedRoutes = [
+		{ path: '/blog', title: /Short notes|Blog/i },
+		{ path: '/gallery', title: /Gallery/i },
+		{ path: '/minor', title: /Minor/i },
+		{ path: '/labs', title: /Lab/i },
+		{ path: '/os', title: /OS/i },
+		{ path: '/scratchpad', title: /Scratchpad/i },
+	];
+
+	for (const route of extendedRoutes) {
+		test(`${route.path} returns 200`, async ({ page }) => {
+			const response = await page.goto(route.path);
+			expect(response?.status()).toBe(200);
+		});
+	}
+});

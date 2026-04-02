@@ -1,13 +1,8 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
+	import { AdminChipGroup } from '$lib/admin/primitives';
 
 	export let currentTheme: string = 'minimal';
 	export let currentFont: string = 'inter';
-
-	const dispatch = createEventDispatcher<{
-		themeChange: { theme: string };
-		fontChange: { font: string };
-	}>();
 
 	const themes: { id: string; label: string; bg: string; accent: string }[] = [
 		{ id: 'minimal',    label: 'Minimal',    bg: '#FAFAF9', accent: '#2563EB' },
@@ -41,14 +36,12 @@
 		currentTheme = id;
 		document.documentElement.dataset.theme = id;
 		localStorage.setItem('theme', id);
-		dispatch('themeChange', { theme: id });
 	}
 
 	function selectFont(id: string) {
 		currentFont = id;
 		document.documentElement.dataset.font = id;
 		localStorage.setItem('preferred-font', id);
-		dispatch('fontChange', { font: id });
 	}
 </script>
 
@@ -78,20 +71,15 @@
 	<!-- Font -->
 	<div class="cell-section">
 		<span class="cell-label">Font</span>
-		<div class="font-grid">
-			{#each fonts as font}
-				<button
-					class="font-chip"
-					class:active={currentFont === font.id}
-					on:click={() => selectFont(font.id)}
-					aria-label="Set font to {font.name}"
-					aria-pressed={currentFont === font.id}
-				>
-					<span class="font-preview" style="font-family: {font.family}">Aa</span>
-					<span class="font-name">{font.name}</span>
-				</button>
-			{/each}
-		</div>
+		<AdminChipGroup
+			options={fonts.map(f => ({id: f.id, label: f.name}))}
+			value={currentFont}
+			layout="grid"
+			columns={3}
+			mode="exclusive"
+			color="blue"
+			on:change={(e) => selectFont(e.detail.value as string)}
+		/>
 	</div>
 
 	<!-- Palette (display only) -->
@@ -142,7 +130,7 @@
 		gap: 3px;
 		padding: 4px;
 		border: 1px solid var(--border-color-subtle);
-		border-radius: 3px;
+		border-radius: 2px;
 		background: transparent;
 		cursor: pointer;
 		transition: all 160ms ease;
@@ -154,8 +142,8 @@
 	}
 
 	.theme-chip.active {
-		border-color: #2563EB;
-		background: color-mix(in oklch, #2563EB, transparent 92%);
+		border-color: var(--bento-blue, #2563EB);
+		background: color-mix(in oklch, var(--bento-blue, #2563EB), transparent 92%);
 	}
 
 	.theme-swatch {
@@ -185,53 +173,6 @@
 		color: var(--color-text-muted);
 	}
 
-	/* ── Font grid ── */
-	.font-grid {
-		display: grid;
-		grid-template-columns: repeat(3, 1fr);
-		gap: 3px;
-	}
-
-	.font-chip {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 2px;
-		padding: 4px 2px;
-		border: 1px solid var(--border-color-subtle);
-		border-radius: 2px;
-		background: transparent;
-		cursor: pointer;
-		transition: all 160ms ease;
-	}
-
-	.font-chip:hover {
-		border-color: var(--border-color);
-	}
-
-	.font-chip.active {
-		border-color: #2563EB;
-		background: color-mix(in oklch, #2563EB, transparent 92%);
-	}
-
-	.font-preview {
-		font-size: 11px;
-		line-height: 1;
-		color: var(--color-text);
-	}
-
-	.font-name {
-		font-family: var(--font-mono);
-		font-size: 6px;
-		text-transform: uppercase;
-		letter-spacing: 0.06em;
-		color: var(--color-text-muted);
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		max-width: 100%;
-	}
-
 	/* ── Palette ── */
 	.palette-grid {
 		display: grid;
@@ -249,7 +190,7 @@
 	.swatch-circle {
 		width: 16px;
 		height: 16px;
-		border-radius: 3px;
+		border-radius: 2px;
 		border: 1px solid var(--border-color-subtle);
 	}
 

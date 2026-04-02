@@ -72,3 +72,44 @@ test.describe('Convex-backed pages', () => {
 		});
 	});
 });
+
+test.describe('/cv (deep)', () => {
+	test('displays profile name from Convex', async ({ page }) => {
+		await page.goto('/cv');
+		await page.waitForSelector('.cv-name', { timeout: 15000 });
+		const name = await page.locator('.cv-name').textContent();
+		expect(name?.length).toBeGreaterThan(0);
+	});
+
+	test('education shows Computer Engineering at Cooper Union', async ({ page }) => {
+		await page.goto('/cv');
+		await page.waitForSelector('.timeline-title', { timeout: 15000 });
+		const titles = await page.locator('.timeline-title').allTextContents();
+		expect(titles.some(t => t.includes('Computer Engineering'))).toBe(true);
+		const orgs = await page.locator('.timeline-org').allTextContents();
+		expect(orgs.some(o => o.includes('Cooper Union'))).toBe(true);
+	});
+
+	test('languages section shows 4 languages', async ({ page }) => {
+		await page.goto('/cv');
+		await page.waitForSelector('.language-name', { timeout: 15000 });
+		const count = await page.locator('.language-name').count();
+		expect(count).toBe(4);
+	});
+});
+
+test.describe('/likes', () => {
+	test('loads likes page with categories', async ({ page }) => {
+		await page.goto('/likes');
+		await page.waitForSelector('.category', { timeout: 15000 });
+		const count = await page.locator('.category').count();
+		expect(count).toBeGreaterThanOrEqual(1);
+	});
+});
+
+test.describe('/gifts', () => {
+	test('loads gifts page', async ({ page }) => {
+		const response = await page.goto('/gifts');
+		expect(response?.status()).toBe(200);
+	});
+});

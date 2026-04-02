@@ -30,10 +30,12 @@ export const getFullPosts = query({
 export const getBySlug = query({
 	args: { slug: v.string() },
 	handler: async (ctx, { slug }) => {
-		return await ctx.db
+		const post = await ctx.db
 			.query("blogPosts")
 			.withIndex("by_slug", (q) => q.eq("slug", slug))
 			.first();
+		if (post && !post.visible) return null;
+		return post;
 	},
 });
 

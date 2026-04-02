@@ -517,12 +517,21 @@ export const testData = {
 
         urls: {
                 home: "/",
-                works: "/",
+                works: "/works",
+                talks: "/talks",
+                academia: "/academia",
                 likes: "/likes",
-                notes: "/notes",
+                blog: "/blog",
+                gallery: "/gallery",
+                gifts: "/gifts",
+                minor: "/minor",
+                labs: "/labs",
+                os: "/os",
+                scratchpad: "/scratchpad",
                 cv: "/cv",
                 terminal: "/terminal",
                 process: "/process",
+                admin: "/admin",
         },
 
         selectors: {
@@ -531,10 +540,6 @@ export const testData = {
                 main: "main",
                 footer: "footer",
                 hero: ".hero",
-                wipBanner: ".wip-banner",
-                videoPlayer: ".ascii-video",
-                playButton: ".play-button-large",
-                progressBar: ".progress-container",
         },
 
         accessibility: {

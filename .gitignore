@@ -27,3 +27,11 @@ test-results/
 
 # Claude Code local state
 .claude/
+.claude-quota-ledger/
+.superpowers/
+
+# AI agent local state
+.agents/
+.goose/
+.trae/
+.impeccable.md

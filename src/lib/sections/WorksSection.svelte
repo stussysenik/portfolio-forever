@@ -15,6 +15,7 @@
                 preview?: string;
                 viewport?: number;
                 cam?: string;
+                objectPosition?: string;
         }
 
         // Static fallback
@@ -35,12 +36,12 @@
         let projects: Project[] = staticProjects;
         let loaded: Record<number, boolean> = {};
         let thumbnailConfig: any = null;
-        let displayConfig: any = null;
+        let sectionConfig: any = null;
 
         $: displayMode = thumbnailConfig?.displayMode ?? 'grid';
         $: gridCols = thumbnailConfig?.columns ?? 2;
         $: showPreview = thumbnailConfig?.showPreview ?? true;
-        $: viewMode = displayConfig?.immune ? 'grid' : (displayConfig?.viewMode ?? 'grid');
+        $: viewMode = sectionConfig?.immune ? 'grid' : (sectionConfig?.viewMode ?? 'grid');
 
         function handleLoad(index: number) {
                 loaded = { ...loaded, [index]: true };
@@ -56,8 +57,8 @@
                 const unsub2 = client.onUpdate(api.thumbnails.getConfig, { section: 'works' }, (data) => {
                         thumbnailConfig = data;
                 });
-                const unsub3 = client.onUpdate(api.display.getConfig, { section: 'works' }, (data: any) => {
-                        displayConfig = data;
+                const unsub3 = client.onUpdate(api.sectionRegistry.getBySectionId, { sectionId: 'works' }, (data: any) => {
+                        sectionConfig = data;
                 });
 
                 document.querySelectorAll('.preview-image').forEach((img, _) => {
@@ -96,7 +97,7 @@
                                                 {/if}
                                                 {#if project.preview}
                                                         <a href={project.url} target="_blank" rel="noopener noreferrer" class="preview-link">
-                                                                <img src={project.preview} alt={project.title} class="preview-image" loading="lazy" on:load={() => handleLoad(i)} />
+                                                                <img src={project.preview} alt={project.title} class="preview-image" loading="lazy" on:load={() => handleLoad(i)} style:object-position={project.objectPosition || null} />
                                                         </a>
                                                 {:else}
                                                         <iframe
@@ -131,10 +132,6 @@
                 <WorksCaseStudy {projects} />
         {:else if viewMode === 'minimal-list'}
                 <WorksMinimalList {projects} />
-        {:else if viewMode === 'pixel-universe'}
-                <div style="padding: var(--space-xl); text-align: center; font-family: var(--font-mono); color: var(--color-text-muted);">
-                        Pixel Universe — Phase 2
-                </div>
         {/if}
 </section>
 

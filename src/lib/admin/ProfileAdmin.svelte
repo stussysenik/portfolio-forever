@@ -388,7 +388,7 @@
 		gap: 4px;
 		padding: 2px 10px;
 		background: var(--color-surface, rgba(0,0,0,0.03));
-		border-radius: 100px;
+		border-radius: 2px;
 		font-size: 12px;
 		color: var(--color-text-secondary);
 	}

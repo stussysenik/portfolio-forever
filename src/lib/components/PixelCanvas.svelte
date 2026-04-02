@@ -20,7 +20,7 @@
 	// Check feature flag
 	$: {
 		const flags = $featureFlags;
-		enabled = flags.size === 0 || (flags.get("pixel-engine") ?? true);
+		enabled = flags.get("pixel-engine") ?? false;
 	}
 
 	// Disable in reader mode

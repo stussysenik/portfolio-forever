@@ -108,7 +108,11 @@
                 if (isInputFocused() && document.activeElement !== inputElement && e.key !== "Escape") return;
 
                 // Toggle with ?
-                if (e.key === "?" && !e.metaKey && !e.ctrlKey) {
+                // Also handle Shift+/ (e.key="/", shiftKey=true) when our own input is
+                // focused — browsers report the physical key instead of the character
+                const isQuestionMark = e.key === "?" ||
+                        (e.key === "/" && e.shiftKey && document.activeElement === inputElement);
+                if (isQuestionMark && !e.metaKey && !e.ctrlKey) {
                         e.preventDefault();
                         isOpen = !isOpen;
                         return;

@@ -2,8 +2,9 @@
 	import { toast } from '$lib/stores/toast';
 	import { validateLabel, validateRoute } from '$lib/admin/admin-utils';
 	import { sectionTypeRegistry } from '$lib/sections/registry';
-	import { VIEW_MODES } from '$lib/admin/constants';
+	import { VIEW_MODES, stripConvexMeta, DEFAULTS } from '$lib/admin/constants';
 	import { ParticlesCell, ColorStrip } from '$lib/admin/controls';
+	import { ChangeBadge, ResetButton } from '$lib/admin/primitives';
 	import EntryTable from '$lib/admin/EntryTable.svelte';
 	import SectionPicker from '$lib/admin/SectionPicker.svelte';
 
@@ -26,6 +27,8 @@
 	$: pageParticlesEnabled = pageParticles.length > 0;
 
 	$: currentViewMode = page?.sections?.[0]?.config?.viewMode ?? 'grid';
+	$: isViewModeDefault = currentViewMode === 'grid';
+	$: isParticlesDefault = !pageParticlesEnabled;
 
 	function cycleViewMode() {
 		const idx = VIEW_MODES.indexOf(currentViewMode as any);
@@ -36,7 +39,7 @@
 	async function togglePageVisibility() {
 		try {
 			await client.mutation(api.pages.upsert, {
-				...page,
+				...stripConvexMeta(page),
 				visible: !page.visible,
 			});
 		} catch (e: any) {
@@ -47,7 +50,7 @@
 	async function toggleNavVisibility() {
 		try {
 			await client.mutation(api.pages.upsert, {
-				...page,
+				...stripConvexMeta(page),
 				navVisible: !page.navVisible,
 			});
 		} catch (e: any) {
@@ -68,6 +71,14 @@
 		} catch (e: any) {
 			toast.error(e.message || 'Failed to update section config');
 		}
+	}
+
+	function resetViewMode() {
+		updateSectionConfig('viewMode', 'grid');
+	}
+
+	function resetParticles() {
+		updateSectionConfig('particles', []);
 	}
 
 	function handleParticleToggle(enabled: boolean) {
@@ -129,6 +140,14 @@
 				<button class="chip" on:click={cycleViewMode}>
 					{currentViewMode} ▾
 				</button>
+				<ChangeBadge
+					timestamp={null}
+					isDefault={isViewModeDefault}
+				/>
+				<ResetButton
+					visible={!isViewModeDefault}
+					on:reset={resetViewMode}
+				/>
 			{/if}
 			<button
 				class="chip"
@@ -161,6 +180,17 @@
 	{/if}
 
 	<!-- Particle animations -->
+	<div class="control-header">
+		<span class="control-label">PARTICLES</span>
+		<ChangeBadge
+			timestamp={null}
+			isDefault={isParticlesDefault}
+		/>
+		<ResetButton
+			visible={!isParticlesDefault}
+			on:reset={resetParticles}
+		/>
+	</div>
 	<ParticlesCell
 		particles={pageParticles}
 		enabled={pageParticlesEnabled}
@@ -221,8 +251,8 @@
 	.page-panel {
 		display: flex;
 		flex-direction: column;
-		gap: 12px;
-		padding: 16px;
+		gap: 8px;
+		padding: 12px 16px;
 	}
 
 	.controls-row {
@@ -264,7 +294,7 @@
 		font-family: var(--font-mono);
 		font-size: 9px;
 		padding: 4px 10px;
-		border-radius: 3px;
+		border-radius: 2px;
 		border: 1px solid var(--border-color-subtle, #222);
 		background: var(--color-bg, #111);
 		color: var(--color-text-muted, #888);
@@ -351,7 +381,7 @@
 		padding: 4px 8px;
 		background: var(--color-bg, #111);
 		border: 1px solid var(--border-color-subtle, #1a1a1a);
-		border-radius: 3px;
+		border-radius: 2px;
 		font-family: var(--font-mono);
 		font-size: 10px;
 	}
@@ -381,5 +411,20 @@
 
 	.composer-link:hover {
 		text-decoration: underline;
+	}
+
+	.control-header {
+		display: flex;
+		align-items: center;
+		gap: var(--admin-space-1, 4px);
+	}
+
+	.control-header .control-label {
+		flex: 1;
+		font-family: var(--font-mono);
+		font-size: 9px;
+		text-transform: uppercase;
+		letter-spacing: 0.5px;
+		color: var(--color-text-subtle, #666);
 	}
 </style>

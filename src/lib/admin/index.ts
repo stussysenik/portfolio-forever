@@ -2,8 +2,18 @@
 // Layout
 export { default as BentoGrid } from './BentoGrid.svelte';
 export { default as BentoCell } from './BentoCell.svelte';
+export { default as AdminShell } from './AdminShell.svelte';
+export { default as PageSidebar } from './PageSidebar.svelte';
+export { default as SectionBuilder } from './SectionBuilder.svelte';
+export { default as DraggableSectionList } from './DraggableSectionList.svelte';
+export { default as PreviewPane } from './PreviewPane.svelte';
+export { default as SectionConfigPanel } from './SectionConfigPanel.svelte';
+export { default as InlineSectionConfig } from './InlineSectionConfig.svelte';
 
-// Primitives
+// Primitives (shared)
+export * from './primitives';
+
+// Legacy Primitives
 export { default as EditableField } from './EditableField.svelte';
 export { default as ReorderableList } from './ReorderableList.svelte';
 export { default as VisibilityToggle } from './VisibilityToggle.svelte';

@@ -1,23 +1,22 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { client } from "$lib/sanity/client";
-  import { POSTS_QUERY } from "$lib/sanity/queries";
+  import { getConvexClient } from '$lib/convex';
+  import { api } from '$convex/_generated/api';
 
   export let posts: any[] = [];
   export let id = "blog";
 
-  // Fetch posts client-side when rendered in one-page mode (no server data)
-  onMount(async () => {
-    if (posts.length === 0) {
-      try {
-        posts = await client.fetch(POSTS_QUERY);
-      } catch (e) {
-        console.warn("Failed to fetch blog posts:", e);
+  onMount(() => {
+    const client = getConvexClient();
+    const unsub = client.onUpdate(api.blog.getVisiblePosts, {}, (data: any) => {
+      if (data) {
+        posts = data;
       }
-    }
+    });
+    return () => unsub();
   });
 
-  // Map Sanity posts to note-like structure and sort by date
+  // Sort by date
   $: sortedNotes = [...(posts || [])]
     .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
 

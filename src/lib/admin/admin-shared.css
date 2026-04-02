@@ -26,7 +26,7 @@
 :global(.card-desc) { color: var(--color-text-secondary); font-size: var(--font-size-sm); cursor: pointer; line-height: 1.5; }
 :global(.card-desc:hover) { color: var(--color-text); }
 :global(.card-tools) { display: flex; flex-wrap: wrap; gap: var(--space-xs); margin-top: var(--space-sm); }
-:global(.tool-tag) { font-size: var(--font-size-xs); padding: 2px 8px; border-radius: var(--radius-sm); background: var(--color-bg-alt); color: var(--color-text-muted); }
+:global(.tool-tag) { font-size: var(--font-size-xs); padding: 2px 8px; border-radius: 2px; background: var(--color-bg-alt); color: var(--color-text-muted); }
 
 /* Reorder controls */
 :global(.reorder-btns) { display: flex; flex-direction: column; gap: 1px; }
@@ -68,7 +68,7 @@
 
 /* Mode switcher buttons */
 :global(.mode-switcher) { display: flex; gap: var(--space-xs); flex-wrap: wrap; }
-:global(.mode-btn) { padding: var(--space-xs) var(--space-md); font-family: var(--font-mono); font-size: var(--font-size-xs); border: 1px solid var(--border-color); border-radius: var(--radius-sm); background: transparent; color: var(--color-text-muted); cursor: pointer; transition: all var(--duration-fast) var(--easing); }
+:global(.mode-btn) { padding: var(--space-xs) var(--space-md); font-family: var(--font-mono); font-size: var(--font-size-xs); border: 1px solid var(--border-color); border-radius: 2px; background: transparent; color: var(--color-text-muted); cursor: pointer; transition: all var(--duration-fast) var(--easing); }
 :global(.mode-btn.active) { background: var(--color-accent); color: var(--color-bg); border-color: var(--color-accent); }
 :global(.mode-btn:hover:not(.active)) { border-color: var(--color-text-muted); color: var(--color-text); }
 

@@ -109,6 +109,7 @@
           class:active={currentTheme === theme.id}
           on:click={() => selectTheme(theme.id)}
           role="menuitem"
+          data-theme={theme.id}
         >
           <span class="option-icon">{theme.icon}</span>
           <span class="option-label">{theme.label}</span>

@@ -80,6 +80,7 @@ export default defineSchema({
 		preview: v.optional(v.string()),
 		viewport: v.optional(v.number()),
 		cam: v.optional(v.string()),
+		objectPosition: v.optional(v.string()),
 		description: v.optional(v.string()),
 		tools: v.optional(v.array(v.string())),
 		year: v.optional(v.number()),
@@ -123,6 +124,10 @@ export default defineSchema({
 		sectionOrder: v.array(v.string()),
 		parallaxSpeed: v.number(),
 		readerModeRoute: v.optional(v.string()),
+		footerEdition: v.optional(v.string()),
+		footerYear: v.optional(v.number()),
+		navMode: v.optional(v.union(v.literal("auto"), v.literal("manual"))),
+		heroVisual: v.optional(v.string()),
 	}),
 
 	featureFlags: defineTable({
@@ -190,6 +195,11 @@ export default defineSchema({
 		showPixelArt: v.optional(v.boolean()),
 		layout: v.optional(v.string()),
 		accentColor: v.optional(v.string()),
+		heroNameSize: v.optional(v.number()),
+		heroNameWeight: v.optional(v.number()),
+		heroNameLetterSpacing: v.optional(v.number()),
+		heroNameLineHeight: v.optional(v.number()),
+		heroNameTextWrap: v.optional(v.string()),
 	}),
 
 	// Gallery items
@@ -269,6 +279,56 @@ export default defineSchema({
 		accentColor: v.string(),
 	}).index("by_sectionId", ["sectionId"])
 		.index("by_order", ["order"]),
+
+	// Pages — composable page-first platform
+	pages: defineTable({
+		pageId: v.string(),
+		label: v.string(),
+		route: v.string(),
+		navLabel: v.optional(v.string()),
+		navOrder: v.number(),
+		navVisible: v.boolean(),
+		visible: v.boolean(),
+		sections: v.array(v.object({
+			sectionType: v.string(),
+			config: v.any(),
+			dataTable: v.optional(v.string()),
+			order: v.number(),
+			themeOverrides: v.optional(v.any()),
+			spacingBefore: v.optional(v.number()),
+			spacingAfter: v.optional(v.number()),
+		})),
+		themeOverrides: v.optional(v.any()),
+		meta: v.optional(v.object({
+			title: v.optional(v.string()),
+			description: v.optional(v.string()),
+			ogImage: v.optional(v.string()),
+		})),
+	}).index("by_pageId", ["pageId"])
+		.index("by_navOrder", ["navOrder"])
+		.index("by_route", ["route"]),
+
+	// Themes — layered theme system
+	themes: defineTable({
+		themeId: v.string(),
+		label: v.string(),
+		type: v.union(v.literal("light"), v.literal("dark")),
+		colors: v.any(),
+		fonts: v.optional(v.any()),
+		spacing: v.optional(v.any()),
+		borders: v.optional(v.any()),
+		isBuiltIn: v.boolean(),
+		isDefault: v.boolean(),
+	}).index("by_themeId", ["themeId"]),
+
+	// Admin change history — tracks config modifications for undo/audit
+	adminHistory: defineTable({
+		table: v.string(),
+		field: v.string(),
+		oldValue: v.any(),
+		newValue: v.any(),
+		timestamp: v.number(),
+	}).index("by_table_field", ["table", "field"]),
 
 	// GitHub projects — synced from GitHub API
 	githubProjects: defineTable({

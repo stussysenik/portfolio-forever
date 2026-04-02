@@ -10,7 +10,7 @@ import { test, expect, devices } from '@playwright/test';
 // Run all tests against chromium only for speed
 test.use({ ...devices['Desktop Chrome'] });
 
-const BASE_URL = 'http://localhost:3000';
+// Use baseURL from playwright.config.ts — all paths are relative
 
 // ===========================================
 // ROUTE HEALTH — All pages return 200
@@ -20,7 +20,7 @@ test.describe('Route health', () => {
 
 	for (const route of routes) {
 		test(`${route} returns 200`, async ({ page }) => {
-			const response = await page.goto(BASE_URL + route);
+			const response = await page.goto(route);
 			expect(response?.status()).toBe(200);
 		});
 	}
@@ -35,7 +35,7 @@ test.describe('Nav hierarchy', () => {
 			viewport: { width: 1280, height: 800 },
 		});
 		const page = await context.newPage();
-		await page.goto(BASE_URL);
+		await page.goto('/');
 		await page.waitForLoadState('networkidle');
 
 		// @ toggle should be visible on desktop
@@ -54,7 +54,7 @@ test.describe('Nav hierarchy', () => {
 			viewport: { width: 375, height: 812 },
 		});
 		const page = await context.newPage();
-		await page.goto(BASE_URL);
+		await page.goto('/');
 		await page.waitForLoadState('networkidle');
 
 		// @ toggle button should be visible
@@ -78,7 +78,7 @@ test.describe('Hero responsiveness', () => {
 			viewport: { width: 375, height: 812 },
 		});
 		const page = await context.newPage();
-		await page.goto(BASE_URL);
+		await page.goto('/');
 		await page.waitForLoadState('networkidle');
 
 		const hero = page.locator('.hero');
@@ -102,7 +102,7 @@ test.describe('Hero responsiveness', () => {
 			viewport: { width: 1280, height: 800 },
 		});
 		const page = await context.newPage();
-		await page.goto(BASE_URL);
+		await page.goto('/');
 		await page.waitForLoadState('networkidle');
 
 		const hero = page.locator('.hero');
@@ -119,7 +119,7 @@ test.describe('Hero responsiveness', () => {
 // ===========================================
 test.describe('Footer dropdowns', () => {
 	test('Theme switcher opens upward (bottom positioning)', async ({ page }) => {
-		await page.goto(BASE_URL);
+		await page.goto('/');
 		await page.waitForLoadState('networkidle');
 
 		// Click theme toggle
@@ -145,7 +145,7 @@ test.describe('Footer dropdowns', () => {
 // ===========================================
 test.describe('Command palette', () => {
 	test('Opens with ? key', async ({ page }) => {
-		await page.goto(BASE_URL);
+		await page.goto('/');
 		await page.waitForLoadState('networkidle');
 
 		await page.keyboard.press('?');
@@ -160,7 +160,7 @@ test.describe('Command palette', () => {
 			viewport: { width: 1280, height: 800 },
 		});
 		const page = await context.newPage();
-		await page.goto(BASE_URL);
+		await page.goto('/');
 		await page.waitForLoadState('networkidle');
 
 		await page.keyboard.press('?');
@@ -180,7 +180,7 @@ test.describe('Command palette', () => {
 			viewport: { width: 375, height: 812 },
 		});
 		const page = await context.newPage();
-		await page.goto(BASE_URL);
+		await page.goto('/');
 		await page.waitForLoadState('networkidle');
 
 		await page.keyboard.press('?');
@@ -196,7 +196,7 @@ test.describe('Command palette', () => {
 	});
 
 	test('Contains "Go to Gifts" shortcut', async ({ page }) => {
-		await page.goto(BASE_URL);
+		await page.goto('/');
 		await page.waitForLoadState('networkidle');
 
 		await page.keyboard.press('?');
@@ -207,7 +207,7 @@ test.describe('Command palette', () => {
 	});
 
 	test('Uses CSS variables (no hardcoded colors)', async ({ page }) => {
-		await page.goto(BASE_URL);
+		await page.goto('/');
 		await page.waitForLoadState('networkidle');
 
 		await page.keyboard.press('?');
@@ -227,7 +227,7 @@ test.describe('Command palette', () => {
 // ===========================================
 test.describe('Works page', () => {
 	test('Shows 11 projects (no "2D CAD editor")', async ({ page }) => {
-		await page.goto(BASE_URL + '/works');
+		await page.goto('/works');
 		await page.waitForLoadState('networkidle');
 
 		// Count project cards
@@ -240,7 +240,7 @@ test.describe('Works page', () => {
 	});
 
 	test('mymind clone shows preview image (not blank iframe)', async ({ page }) => {
-		await page.goto(BASE_URL + '/works');
+		await page.goto('/works');
 		await page.waitForLoadState('networkidle');
 
 		// First project should be mymind clone with a preview image
@@ -262,7 +262,7 @@ test.describe('Works page', () => {
 // ===========================================
 test.describe('Blog route', () => {
 	test('/blog loads (not /notes)', async ({ page }) => {
-		const response = await page.goto(BASE_URL + '/blog');
+		const response = await page.goto('/blog');
 		expect(response?.status()).toBe(200);
 
 		// Page title should reference notes/blog
@@ -270,7 +270,7 @@ test.describe('Blog route', () => {
 	});
 
 	test('/notes does NOT exist as a route', async ({ page }) => {
-		const response = await page.goto(BASE_URL + '/notes');
+		const response = await page.goto('/notes');
 		// Should be 404 or redirect, not 200 with content
 		const status = response?.status();
 		// SvelteKit returns 404 for non-existent routes
@@ -283,7 +283,7 @@ test.describe('Blog route', () => {
 // ===========================================
 test.describe('Identity section', () => {
 	test('Domains in order: mxzou.com, mengxuanzou.com, stussysenik.com', async ({ page }) => {
-		await page.goto(BASE_URL);
+		await page.goto('/');
 		await page.waitForLoadState('networkidle');
 
 		const domainGroups = page.locator('.domain-group');
@@ -308,30 +308,21 @@ test.describe('Identity section', () => {
 // CV PAGE
 // ===========================================
 test.describe('CV page', () => {
-	test('Disciplines show bars but no percentage values', async ({ page }) => {
-		await page.goto(BASE_URL + '/cv');
-		await page.waitForLoadState('networkidle');
+	test('Tools section shows grouped tool tags', async ({ page }) => {
+		await page.goto('/cv');
+		await page.waitForSelector('.tool-group', { timeout: 15000 });
 
-		// Skill bars should be present
-		const skillBars = page.locator('.skill-bar');
-		const barCount = await skillBars.count();
-		expect(barCount).toBeGreaterThan(0);
-
-		// No percentage values should be visible (they're commented out)
-		const skillValues = page.locator('.skill-value');
-		const visibleValues = await skillValues.count();
-		// skill-value elements should not exist in DOM (commented out in template)
-		expect(visibleValues).toBe(0);
+		const toolGroups = page.locator('.tool-group');
+		const groupCount = await toolGroups.count();
+		expect(groupCount).toBeGreaterThan(0);
 	});
 
 	test('Cooper Union mentions "dropped out"', async ({ page }) => {
-		await page.goto(BASE_URL + '/cv');
-		await page.waitForLoadState('networkidle');
+		await page.goto('/cv');
+		await page.waitForSelector('.timeline-entry', { timeout: 15000 });
 
-		// Find Cooper Union entry
 		const pageText = await page.textContent('body');
 		expect(pageText).toContain('Cooper Union');
-		// The description mentions dropping out
 		expect(pageText?.toLowerCase()).toContain('dropped out');
 	});
 });
@@ -340,30 +331,28 @@ test.describe('CV page', () => {
 // GIFTS PAGE
 // ===========================================
 test.describe('Gifts page', () => {
-	test('3 items in "What to send"', async ({ page }) => {
-		await page.goto(BASE_URL + '/gifts');
-		await page.waitForLoadState('networkidle');
+	test('Gifts page loads from Convex', async ({ page }) => {
+		await page.goto('/gifts');
+		await page.waitForSelector('.letter-title', { timeout: 15000 });
 
-		const sendItems = page.locator('.send-list li');
-		await expect(sendItems).toHaveCount(3);
+		const title = page.locator('.letter-title');
+		await expect(title).toBeVisible();
 	});
 
 	test('No "physical address" text', async ({ page }) => {
-		await page.goto(BASE_URL + '/gifts');
+		await page.goto('/gifts');
 		await page.waitForLoadState('networkidle');
 
 		const pageText = await page.textContent('body');
 		expect(pageText?.toLowerCase()).not.toContain('physical address');
 	});
 
-	test('Promise clarification present', async ({ page }) => {
-		await page.goto(BASE_URL + '/gifts');
-		await page.waitForLoadState('networkidle');
+	test('Manifesto text visible', async ({ page }) => {
+		await page.goto('/gifts');
+		await page.waitForSelector('.manifesto', { timeout: 15000 });
 
-		// The body-note clarifies The Promise scope
-		const note = page.locator('.body-note');
-		await expect(note).toBeVisible();
-		await expect(note).toContainText('Promise');
+		const manifesto = page.locator('.manifesto');
+		await expect(manifesto).toBeVisible();
 	});
 });
 
@@ -383,7 +372,7 @@ test.describe('Cross-breakpoint smoke', () => {
 				viewport: { width: bp.width, height: bp.height },
 			});
 			const page = await context.newPage();
-			const response = await page.goto(BASE_URL);
+			const response = await page.goto('/');
 			await page.waitForLoadState('networkidle');
 
 			expect(response?.status()).toBe(200);

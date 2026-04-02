@@ -58,6 +58,8 @@ export const upsert = mutation({
 			dataTable: v.optional(v.string()),
 			order: v.number(),
 			themeOverrides: v.optional(v.any()),
+			spacingBefore: v.optional(v.number()),
+			spacingAfter: v.optional(v.number()),
 		})),
 		themeOverrides: v.optional(v.any()),
 		meta: v.optional(v.object({
@@ -90,6 +92,8 @@ export const updateSections = mutation({
 			dataTable: v.optional(v.string()),
 			order: v.number(),
 			themeOverrides: v.optional(v.any()),
+			spacingBefore: v.optional(v.number()),
+			spacingAfter: v.optional(v.number()),
 		})),
 	},
 	handler: async (ctx, { pageId, sections }) => {
@@ -98,6 +102,103 @@ export const updateSections = mutation({
 			.withIndex("by_pageId", (q) => q.eq("pageId", pageId))
 			.unique();
 		if (!page) throw new Error(`Page "${pageId}" not found`);
+		await ctx.db.patch(page._id, { sections });
+	},
+});
+
+/** Reorder sections within a page (lightweight — just updates order) */
+export const reorderSections = mutation({
+	args: {
+		pageId: v.string(),
+		sectionOrder: v.array(v.number()),  // array of current indices in new order
+	},
+	handler: async (ctx, { pageId, sectionOrder }) => {
+		const page = await ctx.db
+			.query("pages")
+			.withIndex("by_pageId", (q) => q.eq("pageId", pageId))
+			.unique();
+		if (!page) throw new Error(`Page "${pageId}" not found`);
+
+		const reordered = sectionOrder.map((oldIndex, newOrder) => ({
+			...page.sections[oldIndex],
+			order: newOrder,
+		}));
+		await ctx.db.patch(page._id, { sections: reordered });
+	},
+});
+
+/** Update config for a single section within a page */
+export const updateSectionConfig = mutation({
+	args: {
+		pageId: v.string(),
+		sectionIndex: v.number(),
+		config: v.any(),
+	},
+	handler: async (ctx, { pageId, sectionIndex, config }) => {
+		const page = await ctx.db
+			.query("pages")
+			.withIndex("by_pageId", (q) => q.eq("pageId", pageId))
+			.unique();
+		if (!page) throw new Error(`Page "${pageId}" not found`);
+		if (sectionIndex < 0 || sectionIndex >= page.sections.length) {
+			throw new Error(`Section index ${sectionIndex} out of bounds`);
+		}
+
+		const sections = [...page.sections];
+		sections[sectionIndex] = {
+			...sections[sectionIndex],
+			config: { ...sections[sectionIndex].config, ...config },
+		};
+		await ctx.db.patch(page._id, { sections });
+	},
+});
+
+/** Update spacing for a section within a page */
+export const updateSectionSpacing = mutation({
+	args: {
+		pageId: v.string(),
+		sectionIndex: v.number(),
+		spacingBefore: v.optional(v.number()),
+		spacingAfter: v.optional(v.number()),
+	},
+	handler: async (ctx, { pageId, sectionIndex, ...spacing }) => {
+		const page = await ctx.db
+			.query("pages")
+			.withIndex("by_pageId", (q) => q.eq("pageId", pageId))
+			.unique();
+		if (!page) throw new Error(`Page "${pageId}" not found`);
+		if (sectionIndex < 0 || sectionIndex >= page.sections.length) {
+			throw new Error(`Section index ${sectionIndex} out of bounds`);
+		}
+
+		const sections = [...page.sections];
+		sections[sectionIndex] = { ...sections[sectionIndex], ...spacing };
+		await ctx.db.patch(page._id, { sections });
+	},
+});
+
+/** Update themeOverrides (CSS box model properties) for a section */
+export const updateSectionThemeOverrides = mutation({
+	args: {
+		pageId: v.string(),
+		sectionIndex: v.number(),
+		themeOverrides: v.any(),
+	},
+	handler: async (ctx, { pageId, sectionIndex, themeOverrides }) => {
+		const page = await ctx.db
+			.query("pages")
+			.withIndex("by_pageId", (q) => q.eq("pageId", pageId))
+			.unique();
+		if (!page) throw new Error(`Page "${pageId}" not found`);
+		if (sectionIndex < 0 || sectionIndex >= page.sections.length) {
+			throw new Error(`Section index ${sectionIndex} out of bounds`);
+		}
+
+		const sections = [...page.sections];
+		sections[sectionIndex] = {
+			...sections[sectionIndex],
+			themeOverrides: { ...sections[sectionIndex].themeOverrides, ...themeOverrides },
+		};
 		await ctx.db.patch(page._id, { sections });
 	},
 });

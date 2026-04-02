@@ -7,3 +7,4 @@ export { default as OrderCell } from './OrderCell.svelte';
 export { default as StreamsCell } from './StreamsCell.svelte';
 export { default as ParticlesCell } from './ParticlesCell.svelte';
 export { default as ColorStrip } from './ColorStrip.svelte';
+export { default as PositionPicker } from './PositionPicker.svelte';

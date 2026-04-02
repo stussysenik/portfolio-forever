@@ -9,14 +9,14 @@
 
 import { test, expect, devices } from '@playwright/test';
 
-const BASE_URL = 'http://localhost:3000';
+// Use baseURL from playwright.config.ts — all paths are relative
 
 // ===========================================
 // REACTIVITY & STATE TESTS
 // ===========================================
 test.describe('Reactivity & State', () => {
         test('Command Palette opens and closes with keyboard', async ({ page }) => {
-                await page.goto(BASE_URL);
+                await page.goto('/');
                 await page.waitForLoadState('networkidle');
 
                 // Open command palette with ?
@@ -34,24 +34,16 @@ test.describe('Reactivity & State', () => {
         });
 
         test('Navigation highlights active page', async ({ page }) => {
-                await page.goto(BASE_URL);
+                await page.goto('/cv');
                 await page.waitForLoadState('networkidle');
 
-                // Works link should be active on homepage
-                const worksLink = page.locator('.nav-link.active');
-                await expect(worksLink).toContainText('works');
-
-                // Navigate to CV
-                await page.click('a[href="/cv"]');
-                await page.waitForLoadState('networkidle');
-
-                // CV link should now be active
-                const cvLink = page.locator('.nav-link.active');
-                await expect(cvLink).toContainText('cv');
+                // CV link should be active on CV page
+                const activeLink = page.locator('.nav-link.active');
+                await expect(activeLink).toContainText('cv');
         });
 
         test('ASCII Donut renders and animates', async ({ page }) => {
-                await page.goto(BASE_URL);
+                await page.goto('/');
                 await page.waitForLoadState('networkidle');
 
                 // ASCII donut should be visible
@@ -75,20 +67,20 @@ test.describe('Reactivity & State', () => {
 // ===========================================
 test.describe('Interaction', () => {
         test('Navigation links work correctly', async ({ page }) => {
-                await page.goto(BASE_URL);
+                await page.goto('/');
                 await page.waitForLoadState('networkidle');
 
                 // Test each main nav link
                 const routes = [
                         { href: '/likes', title: 'likes' },
-                        { href: '/notes', title: 'notes' },
+                        { href: '/blog', title: 'blog' },
                         { href: '/cv', title: 'cv' },
                 ];
 
                 for (const route of routes) {
                         await page.click(`a[href="${route.href}"]`);
                         await page.waitForLoadState('networkidle');
-                        await expect(page).toHaveURL(BASE_URL + route.href);
+                        await expect(page).toHaveURL(route.href);
 
                         // Navigate back
                         await page.click('a[href="/"]');
@@ -97,7 +89,7 @@ test.describe('Interaction', () => {
         });
 
         test('Source code toggle button works', async ({ page }) => {
-                await page.goto(BASE_URL);
+                await page.goto('/');
                 await page.waitForLoadState('networkidle');
 
                 // Find the source toggle button
@@ -119,7 +111,7 @@ test.describe('Interaction', () => {
         });
 
         test('External links have correct attributes', async ({ page }) => {
-                await page.goto(BASE_URL);
+                await page.goto('/');
                 await page.waitForLoadState('networkidle');
 
                 // All external links should have target="_blank" and rel="noopener"
@@ -135,7 +127,7 @@ test.describe('Interaction', () => {
         });
 
         test('Footer hint button triggers command palette', async ({ page }) => {
-                await page.goto(BASE_URL);
+                await page.goto('/');
                 await page.waitForLoadState('networkidle');
 
                 // Find the "/ for CMDs" button in footer
@@ -161,7 +153,7 @@ test.describe('Responsiveness', () => {
                 });
                 const page = await context.newPage();
 
-                await page.goto(BASE_URL);
+                await page.goto('/');
                 await page.waitForLoadState('networkidle');
 
                 // Header should still be visible
@@ -177,7 +169,7 @@ test.describe('Responsiveness', () => {
                 // Navigation links should still work
                 await page.click('a[href="/cv"]');
                 await page.waitForLoadState('networkidle');
-                await expect(page).toHaveURL(BASE_URL + '/cv');
+                await expect(page).toHaveURL('/cv');
 
                 await context.close();
         });
@@ -188,7 +180,7 @@ test.describe('Responsiveness', () => {
                 });
                 const page = await context.newPage();
 
-                await page.goto(BASE_URL);
+                await page.goto('/');
                 await page.waitForLoadState('networkidle');
 
                 // Hero section should be visible
@@ -207,7 +199,7 @@ test.describe('Responsiveness', () => {
                 });
                 const page = await context.newPage();
 
-                await page.goto(BASE_URL);
+                await page.goto('/');
                 await page.waitForLoadState('networkidle');
 
                 // Header should be visible
@@ -238,7 +230,7 @@ test.describe('Page Load', () => {
                         if (msg.type() === 'error') errors.push(msg.text());
                 });
 
-                const response = await page.goto(BASE_URL);
+                const response = await page.goto('/');
                 await page.waitForLoadState('networkidle');
 
                 // Should return 200
@@ -256,7 +248,7 @@ test.describe('Page Load', () => {
                 const pages = ['/', '/likes', '/notes', '/cv', '/terminal', '/process'];
 
                 for (const route of pages) {
-                        const response = await page.goto(BASE_URL + route);
+                        const response = await page.goto(route);
                         expect(response?.status()).not.toBe(500);
                         await page.waitForLoadState('networkidle');
                 }

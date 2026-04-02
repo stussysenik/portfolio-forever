@@ -1,0 +1,48 @@
+/* Admin Design Tokens */
+:root {
+  /* Chrome colors — constrained palette */
+  --admin-blue: #2563EB;
+  --admin-green: #44D62C;
+
+  /* Spacing scale (4px grid) */
+  --admin-space-1: 4px;
+  --admin-space-2: 8px;
+  --admin-space-3: 12px;
+  --admin-space-4: 16px;
+  --admin-space-5: 20px;
+  --admin-space-6: 24px;
+
+  /* Font sizes (fixed, not fluid — admin is a tool) */
+  --admin-text-3xs: 6px;
+  --admin-text-2xs: 7px;
+  --admin-text-xs: 9px;
+  --admin-text-sm: 11px;
+  --admin-text-base: 13px;
+  --admin-text-lg: 16px;
+  --admin-text-xl: 18px;
+
+  /* Touch targets */
+  --admin-touch-min: 44px;
+  --admin-touch-compact: 28px;
+
+  /* Layout */
+  --admin-sidebar-w: 220px;
+  --admin-topbar-h: 44px;
+
+  /* Transition */
+  --admin-transition: 120ms ease;
+  --admin-transition-slow: 240ms ease;
+}
+
+/* Admin label utility — replaces ~30 inline copies of mono uppercase labels */
+.admin-label {
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-subtle, #666);
+  font-weight: 600;
+}
+.admin-label--3xs { font-size: var(--admin-text-3xs); }
+.admin-label--2xs { font-size: var(--admin-text-2xs); }
+.admin-label--xs { font-size: var(--admin-text-xs); }
+.admin-label--sm { font-size: var(--admin-text-sm); }

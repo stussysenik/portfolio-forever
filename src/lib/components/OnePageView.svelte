@@ -1,7 +1,10 @@
 <script lang="ts">
-  import { onMount, onDestroy } from "svelte";
+  import { onMount, onDestroy, tick } from "svelte";
   import { sections } from "$lib/sections/index";
   import { isReaderMode, siteConfig } from "$lib/stores/siteMode";
+  import { getConvexClient } from "$lib/convex";
+  import { api } from "$convex/_generated/api";
+  import { resolveComponentKey, sectionTypeRegistry } from "$lib/sections/registry";
 
   import HeroSection from "$lib/sections/HeroSection.svelte";
   import WorksSection from "$lib/sections/WorksSection.svelte";
@@ -16,12 +19,52 @@
   import MinorSection from "$lib/sections/MinorSection.svelte";
   import GiftsSection from "$lib/sections/GiftsSection.svelte";
   import OsSection from "$lib/sections/OsSection.svelte";
+  import LabsSection from "$lib/sections/LabsSection.svelte";
 
   export let blogPosts: any[] = [];
 
-  // Read section order and parallax from siteConfig store, with fallback
-  $: sectionOrder = $siteConfig?.sectionOrder || sections.map((s) => s.id);
+  // Home page data from pages table (authoritative source for one-page section composition)
+  let homePage: any = null;
+  let homePageUnsub: (() => void) | null = null;
+
+  // Derive section order from pages table, fall back to siteConfig
+  $: pageSections = homePage?.sections
+    ? [...homePage.sections].sort((a: any, b: any) => a.order - b.order)
+    : null;
+  $: sectionOrder = pageSections
+    ? pageSections
+        .filter((s: any) => s.visible !== false)
+        .map((s: any) => resolveComponentKey(s.sectionType))
+    : ($siteConfig?.sectionOrder || sections.map((s) => s.id));
   $: parallaxSpeed = $siteConfig?.parallaxSpeed ?? 0.5;
+
+  // Build section data lookup (component key → section data with spacing/themeOverrides)
+  $: sectionDataMap = (() => {
+    const map: Record<string, any> = {};
+    if (pageSections) {
+      for (const s of pageSections) {
+        const key = resolveComponentKey(s.sectionType);
+        map[key] = s;
+      }
+    }
+    return map;
+  })();
+
+  // Build nav label lookup from pages sections + registry
+  $: sectionLabels = (() => {
+    const labels: Record<string, string> = {};
+    if (pageSections) {
+      for (const s of pageSections) {
+        const key = resolveComponentKey(s.sectionType);
+        labels[key] = sectionTypeRegistry[s.sectionType]?.label ?? key;
+      }
+    }
+    // Fallback labels from static sections metadata
+    for (const s of sections) {
+      if (!labels[s.id]) labels[s.id] = s.label;
+    }
+    return labels;
+  })();
 
   // Map section IDs to components
   const componentMap: Record<string, any> = {
@@ -38,6 +81,7 @@
     minor: MinorSection,
     gifts: GiftsSection,
     os: OsSection,
+    labs: LabsSection,
   };
 
   let activeSection = "hero";
@@ -55,8 +99,37 @@
   let sectionOffsets: Record<string, number> = {};
   let _resizeHandler: (() => void) | null = null;
 
+  // Re-observe section elements (called imperatively from subscription callback, not reactively)
+  function reobserveSections() {
+    for (const id of sectionOrder) {
+      visibleSections.add(id);
+    }
+    visibleSections = visibleSections;
+
+    if (observer) {
+      observer.disconnect();
+      for (const id of sectionOrder) {
+        const el = document.getElementById(id);
+        if (el) {
+          sectionElements[id] = el;
+          sectionOffsets[id] = el.offsetTop;
+          observer.observe(el);
+        }
+      }
+    }
+  }
+
   // Scroll spy via IntersectionObserver
   onMount(() => {
+    // Subscribe to home page from pages table
+    const client = getConvexClient();
+    homePageUnsub = client.onUpdate(api.pages.getByPageId, { pageId: "home" }, (data: any) => {
+      if (data) {
+        homePage = data;
+        tick().then(reobserveSections);
+      }
+    });
+
     // Lazy load observer: render sections when ~1 viewport away
     lazyObs = new IntersectionObserver(
       (entries) => {
@@ -122,6 +195,7 @@
   onDestroy(() => {
     observer?.disconnect();
     lazyObs?.disconnect();
+    homePageUnsub?.();
     if (_resizeHandler) window.removeEventListener('resize', _resizeHandler);
   });
 
@@ -176,14 +250,14 @@
   <!-- Section nav (scroll spy) -->
   <nav class="section-nav" aria-label="Page sections">
     {#each sectionOrder as id}
-      {@const meta = sections.find((s) => s.id === id)}
-      {#if meta}
+      {@const label = sectionLabels[id]}
+      {#if label && componentMap[id]}
         <button
           class="section-nav-item"
           class:active={activeSection === id}
           on:click={() => scrollToSection(id)}
         >
-          {meta.label}
+          {label}
         </button>
       {/if}
     {/each}
@@ -191,10 +265,17 @@
 
   <!-- Sections -->
   {#each sectionOrder as id (id)}
+    {@const sd = sectionDataMap[id]}
     <section
       class="section-wrapper"
       class:parallaxing={parallaxEnabled && !$isReaderMode && inViewport.has(id)}
       {id}
+      style:margin-top="{sd?.spacingBefore ?? 0}px"
+      style:margin-bottom="{sd?.spacingAfter ?? 0}px"
+      style:padding-top="{sd?.themeOverrides?.paddingTop ?? 0}px"
+      style:padding-right="{sd?.themeOverrides?.paddingRight ?? 0}px"
+      style:padding-bottom="{sd?.themeOverrides?.paddingBottom ?? 0}px"
+      style:padding-left="{sd?.themeOverrides?.paddingLeft ?? 0}px"
       style:transform={parallaxEnabled && !$isReaderMode && inViewport.has(id)
         ? `translateY(${(scrollY - (sectionOffsets[id] ?? 0)) * parallaxSpeed * 0.1}px)`
         : undefined}

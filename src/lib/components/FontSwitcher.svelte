@@ -97,6 +97,7 @@
             class:active={currentFont === font.id}
             on:click={() => selectFont(font.id)}
             role="menuitem"
+            data-font={font.id}
           >
             <div class="cell-header">
               <span class="cell-name">{font.name}</span>

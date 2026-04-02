@@ -21,6 +21,10 @@ export const upsert = mutation({
 		sectionOrder: v.optional(v.array(v.string())),
 		parallaxSpeed: v.optional(v.number()),
 		readerModeRoute: v.optional(v.string()),
+		footerEdition: v.optional(v.string()),
+		footerYear: v.optional(v.number()),
+		navMode: v.optional(v.union(v.literal("auto"), v.literal("manual"))),
+		heroVisual: v.optional(v.string()),
 	},
 	handler: async (ctx, args) => {
 		const existing = await ctx.db.query("siteConfig").collect();
@@ -28,6 +32,18 @@ export const upsert = mutation({
 			Object.entries(args).filter(([, v]) => v !== undefined)
 		);
 		if (existing[0]) {
+			const trackableFields = ['mode', 'parallaxSpeed'] as const;
+			for (const field of trackableFields) {
+				if (args[field] !== undefined && existing[0][field] !== args[field]) {
+					await ctx.db.insert("adminHistory", {
+						table: "siteConfig",
+						field,
+						oldValue: existing[0][field] ?? null,
+						newValue: args[field],
+						timestamp: Date.now(),
+					});
+				}
+			}
 			await ctx.db.patch(existing[0]._id, filtered);
 			return existing[0]._id;
 		}
@@ -40,6 +56,10 @@ export const upsert = mutation({
 			],
 			parallaxSpeed: args.parallaxSpeed ?? 0.5,
 			readerModeRoute: args.readerModeRoute,
+			footerEdition: args.footerEdition,
+			footerYear: args.footerYear,
+			navMode: args.navMode,
+			heroVisual: args.heroVisual,
 		});
 	},
 });
@@ -63,6 +83,15 @@ export const setFeatureFlag = mutation({
 			.withIndex("by_key", (q) => q.eq("key", key))
 			.collect();
 		if (existing[0]) {
+			if (existing[0].enabled !== enabled) {
+				await ctx.db.insert("adminHistory", {
+					table: "featureFlags",
+					field: key,
+					oldValue: existing[0].enabled,
+					newValue: enabled,
+					timestamp: Date.now(),
+				});
+			}
 			await ctx.db.patch(existing[0]._id, { enabled, category });
 			return existing[0]._id;
 		}

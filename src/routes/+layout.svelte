@@ -27,8 +27,8 @@
                 });
         });
 
-        // Navigation - academia + terminal first, then by importance
-        const mainNav = [
+        // Navigation - static fallback for SSR, replaced by Convex data on mount
+        const staticNav = [
                 { href: "/academia", label: "re:mix" },
                 { href: "/terminal", label: "terminal" },
                 { href: "/process", label: "process" },
@@ -39,6 +39,9 @@
                 { href: "/gifts", label: "gifts" },
                 { href: "/cv", label: "cv" },
         ];
+
+        let navItems: { href: string; label: string }[] = staticNav;
+        let siteConfigData: any = null;
 
         $: currentPath = $page.url.pathname;
 
@@ -52,6 +55,19 @@
         onMount(() => {
                 initPostHog();
 
+                // Listen for admin preview messages (section scroll sync)
+                adminMessageHandler = (e: MessageEvent) => {
+                        if (e.data?.type === 'admin:scrollToSection') {
+                                const el = document.getElementById(e.data.sectionId);
+                                if (el) {
+                                        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                        el.classList.add('admin-highlight');
+                                        setTimeout(() => el.classList.remove('admin-highlight'), 2000);
+                                }
+                        }
+                };
+                window.addEventListener('message', adminMessageHandler);
+
                 // Load site config from Convex
                 try {
                         const client = getConvexClient();
@@ -64,10 +80,20 @@
                                                 sectionOrder: config.sectionOrder,
                                                 parallaxSpeed: config.parallaxSpeed,
                                         });
+                                        siteConfigData = config;
+                                }
+                        });
+                        // Subscribe to nav items from pages table
+                        unsubNavItems = client.onUpdate(api.pages.getNavItems, {}, (items: any[]) => {
+                                if (items && items.length > 0) {
+                                        navItems = items.map((p: any) => ({
+                                                href: p.route,
+                                                label: p.label,
+                                        }));
                                 }
                         });
                         // Subscribe to feature flags
-                        client.onUpdate(api.siteConfig.getFeatureFlags, {}, (flags: any[]) => {
+                        unsubFlags = client.onUpdate(api.siteConfig.getFeatureFlags, {}, (flags: any[]) => {
                                 if (flags) {
                                         const map = new Map<string, boolean>();
                                         for (const f of flags) map.set(f.key, f.enabled);
@@ -93,7 +119,15 @@
 
         // Cleanup
         let unsubSiteConfig: (() => void) | undefined;
-        onDestroy(() => unsubSiteConfig?.());
+        let unsubNavItems: (() => void) | undefined;
+        let unsubFlags: (() => void) | undefined;
+        let adminMessageHandler: ((e: MessageEvent) => void) | undefined;
+        onDestroy(() => {
+                unsubSiteConfig?.();
+                unsubNavItems?.();
+                unsubFlags?.();
+                if (adminMessageHandler) window.removeEventListener('message', adminMessageHandler);
+        });
 
         // Social links toggle for mobile
         let socialExpanded = false;
@@ -204,7 +238,7 @@
                 <div class="header-nav-group">
                         <!-- Main navigation -->
                         <nav class="nav" aria-label="Main">
-                                {#each mainNav as item}
+                                {#each navItems as item}
                                         <a
                                                 href={item.href}
                                                 class="nav-link"
@@ -247,7 +281,7 @@
 
 <footer class="terminal">
         <div class="terminal-left">
-                <span class="terminal-edition">Made with 💙 in Bed-Stuy by STÜSSY SENIK · 2026</span>
+                <span class="terminal-edition">{siteConfigData?.footerEdition ?? 'Made with 💙 in Bed-Stuy by STÜSSY SENIK'} · {siteConfigData?.footerYear ?? new Date().getFullYear()}</span>
                 <span class="terminal-sep">·</span>
                 <span class="terminal-path">{currentPath}</span>
         </div>
@@ -268,6 +302,11 @@
 </footer>
 
 <style>
+        :global(.admin-highlight) {
+                outline: 2px dashed #2563EB;
+                outline-offset: 4px;
+                transition: outline-color 0.3s ease;
+        }
 
         .top-frame {
                 position: fixed;
