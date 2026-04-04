@@ -9,7 +9,7 @@ export const layoutConfig = {
          * Toggle WIP banner visibility
          * Set to false to hide the maintenance banner
          */
-        showWipBanner: false,
+        showWipBanner: true,
 
         /**
          * WIP banner position
