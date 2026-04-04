@@ -100,16 +100,16 @@
 	{#if showNewForm}
 		<div class="new-form">
 			<div class="new-form-row">
-				<label class="new-form-label">Title</label>
-				<input class="field-input-sm" bind:value={newTitle} placeholder="Project name" />
+				<label class="new-form-label" for="new-work-title">Title</label>
+				<input id="new-work-title" class="field-input-sm" bind:value={newTitle} placeholder="Project name" />
 			</div>
 			<div class="new-form-row">
-				<label class="new-form-label">URL</label>
-				<input class="field-input-sm" bind:value={newUrl} placeholder="https://..." />
+				<label class="new-form-label" for="new-work-url">URL</label>
+				<input id="new-work-url" class="field-input-sm" bind:value={newUrl} placeholder="https://..." />
 			</div>
 			<div class="new-form-row">
-				<label class="new-form-label">Preview</label>
-				<input class="field-input-sm" bind:value={newPreview} placeholder="/previews/... or https://..." />
+				<label class="new-form-label" for="new-work-preview">Preview</label>
+				<input id="new-work-preview" class="field-input-sm" bind:value={newPreview} placeholder="/previews/... or https://..." />
 			</div>
 			<div class="new-form-actions">
 				<button class="btn-sm btn-save" on:click={addWorkEntry}>Create</button>
@@ -158,7 +158,7 @@
 					{/if}
 					{#if entry.featured}
 						<span class="meta-sep">&middot;</span>
-						<span class="tool-tag" on:click={() => startEdit(entry._id, 'featured', entry.featured || '')} style="cursor:pointer;">{entry.featured}</span>
+						<button type="button" class="tool-tag tool-tag-btn" on:click={() => startEdit(entry._id, 'featured', entry.featured || '')}>{entry.featured}</button>
 					{/if}
 				</div>
 			</div>
@@ -173,9 +173,9 @@
 							<input class="field-input-sm" bind:value={editBuffer} on:keydown={(e) => { if (e.key === 'Enter') saveWorkEdit(entry._id); if (e.key === 'Escape') cancelEdit(); }} />
 							<button class="btn-sm btn-save" on:click={() => saveWorkEdit(entry._id)}>&#10003;</button>
 						{:else}
-							<span class="tool-tag" on:click={() => startEdit(entry._id, field, String(entry[field] || ''))} style="cursor:pointer;">
+							<button type="button" class="tool-tag tool-tag-btn" on:click={() => startEdit(entry._id, field, String(entry[field] || ''))}>
 								{field}: {entry[field] || '—'}
-							</span>
+							</button>
 						{/if}
 					{/each}
 				</div>
@@ -214,217 +214,8 @@
 </section>
 
 <style>
-	.admin-section {
-		margin-bottom: var(--space-xl);
-	}
+	/* Shared admin styles come from admin-shared.css */
 
-	.section-header {
-		display: flex;
-		align-items: center;
-		gap: var(--space-sm);
-		margin-bottom: var(--space-md);
-	}
-
-	.section-label {
-		font-size: var(--font-size-sm);
-		font-weight: 600;
-		text-transform: uppercase;
-		letter-spacing: 0.05em;
-		color: var(--color-text-muted);
-	}
-
-	.section-count {
-		font-size: var(--font-size-xs);
-		color: var(--color-text-subtle);
-		background: var(--color-bg-alt);
-		padding: 2px 8px;
-		border-radius: var(--radius-sm);
-	}
-
-	.card {
-		border: 1px solid var(--border-color-subtle);
-		border-radius: var(--radius-md);
-		padding: var(--space-md);
-		margin-bottom: var(--space-sm);
-		transition: border-color var(--duration-fast) var(--easing);
-	}
-
-	.card:hover {
-		border-color: var(--border-color);
-	}
-
-	.card.hidden-entry {
-		opacity: 0.5;
-		border-style: dashed;
-	}
-
-	.card-header {
-		margin-bottom: var(--space-sm);
-	}
-
-	.card-title-row {
-		display: flex;
-		align-items: center;
-		gap: var(--space-sm);
-	}
-
-	.card-title {
-		font-weight: 500;
-		cursor: pointer;
-	}
-
-	.card-title:hover {
-		color: var(--color-accent);
-	}
-
-	.card-meta {
-		display: flex;
-		align-items: center;
-		gap: var(--space-xs);
-		font-size: var(--font-size-xs);
-		color: var(--color-text-muted);
-		margin-top: var(--space-xs);
-		padding-left: 52px;
-	}
-
-	.meta-org, .meta-loc {
-		cursor: pointer;
-	}
-
-	.meta-org:hover, .meta-loc:hover {
-		color: var(--color-accent);
-	}
-
-	.meta-sep {
-		opacity: 0.4;
-	}
-
-	.card-body {
-		padding-left: 52px;
-	}
-
-	.card-tools {
-		display: flex;
-		flex-wrap: wrap;
-		gap: var(--space-xs);
-		margin-top: var(--space-sm);
-	}
-
-	.tool-tag {
-		font-size: var(--font-size-xs);
-		padding: 2px 8px;
-		border-radius: var(--radius-sm);
-		background: var(--color-bg-alt);
-		color: var(--color-text-muted);
-	}
-
-	.reorder-btns {
-		display: flex;
-		flex-direction: column;
-		gap: 1px;
-	}
-
-	.field-input, .field-input-sm {
-		font-family: inherit;
-		font-size: inherit;
-		padding: 4px 8px;
-		border: 1px solid var(--border-color);
-		border-radius: var(--radius-sm);
-		background: var(--color-bg);
-		color: var(--color-text);
-		width: 100%;
-	}
-
-	.field-input:focus, .field-input-sm:focus {
-		outline: none;
-		border-color: var(--color-accent);
-	}
-
-	.field-input-sm {
-		padding: 2px 6px;
-		font-size: var(--font-size-sm);
-	}
-
-	.field-actions {
-		display: flex;
-		gap: var(--space-xs);
-		margin-top: var(--space-xs);
-	}
-
-	.btn {
-		padding: 6px 14px;
-		border-radius: var(--radius-sm);
-		font-size: var(--font-size-sm);
-		font-weight: 500;
-		border: 1px solid var(--border-color);
-		background: var(--color-bg);
-		color: var(--color-text);
-		cursor: pointer;
-		text-decoration: none;
-		display: inline-flex;
-		align-items: center;
-	}
-
-	.btn:hover {
-		border-color: var(--color-text-muted);
-	}
-
-	.btn-sm {
-		padding: 2px 8px;
-		font-size: var(--font-size-xs);
-		border-radius: var(--radius-sm);
-		border: 1px solid var(--border-color-subtle);
-		background: var(--color-bg);
-		color: var(--color-text-muted);
-		cursor: pointer;
-		text-decoration: none;
-		display: inline-flex;
-		align-items: center;
-	}
-
-	.btn-save {
-		background: var(--color-accent);
-		color: var(--color-bg);
-		border-color: var(--color-accent);
-	}
-
-	.btn-add {
-		border-color: var(--color-accent);
-		color: var(--color-accent);
-	}
-
-	.btn-icon {
-		padding: 2px 6px;
-		font-size: var(--font-size-xs);
-		border: none;
-		background: none;
-		color: var(--color-text-muted);
-		cursor: pointer;
-		border-radius: var(--radius-sm);
-	}
-
-	.btn-icon:hover {
-		background: var(--color-bg-alt);
-	}
-
-	.btn-icon:disabled {
-		opacity: 0.3;
-		cursor: default;
-	}
-
-	.btn-danger {
-		color: var(--color-error);
-	}
-
-	.btn-danger:hover {
-		background: color-mix(in oklch, var(--color-error), transparent 90%);
-	}
-
-	.flex-1 {
-		flex: 1;
-	}
-
-	/* ── Preview toggle button ── */
 	.tool-tag-btn {
 		cursor: pointer;
 		border: 1px solid var(--border-color-subtle);
@@ -517,16 +308,5 @@
 		display: flex;
 		gap: var(--space-xs);
 		margin-top: var(--space-xs);
-	}
-
-	@media (max-width: 767px) {
-		.card-meta {
-			padding-left: 0;
-			flex-wrap: wrap;
-		}
-
-		.card-body {
-			padding-left: 0;
-		}
 	}
 </style>

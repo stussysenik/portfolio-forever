@@ -17,22 +17,26 @@
 		if (e.key === 'Escape') close();
 	}
 
-	function handleBackdropClick() {
-		close();
-	}
 </script>
 
 <svelte:window on:keydown={open ? handleKeydown : undefined} />
 
 {#if open}
-	<div class="modal-backdrop" on:click={handleBackdropClick} role="presentation">
+	<div class="modal-backdrop" role="presentation">
+		<button
+			type="button"
+			class="modal-dismiss"
+			tabindex="-1"
+			aria-label={title ? `Close ${title}` : 'Close dialog'}
+			on:click={close}
+		></button>
 		<div
 			class="modal-content"
 			style="max-width: {maxWidth}"
-			on:click|stopPropagation
 			role="dialog"
 			aria-modal="true"
 			aria-label={title}
+			tabindex="-1"
 		>
 			<div class="modal-header">
 				<span class="modal-title">{title}</span>
@@ -59,7 +63,18 @@
 		animation: fadeIn 120ms ease;
 	}
 
+	.modal-dismiss {
+		position: absolute;
+		inset: 0;
+		border: none;
+		background: transparent;
+		padding: 0;
+		cursor: pointer;
+	}
+
 	.modal-content {
+		position: relative;
+		z-index: 1;
 		background: var(--color-bg);
 		border: 1px solid var(--border-color);
 		border-radius: var(--radius-md, 8px);
@@ -69,6 +84,7 @@
 		flex-direction: column;
 		box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
 		animation: scaleIn 120ms ease;
+		overscroll-behavior: contain;
 	}
 
 	.modal-header {

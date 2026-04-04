@@ -11,9 +11,11 @@
         const frameInterval = 1000 / targetFPS;
         let A = 0;
         let B = 0;
+        let prefersReducedMotion = false;
 
         const width = 100;
         const height = 32;
+        const decoder = new TextDecoder();
 
         // Reuse arrays to reduce memory allocations
         const bufferSize = width * height;
@@ -21,15 +23,7 @@
         const zArray = new Float32Array(bufferSize);
         const outputArray = new Uint8Array(bufferSize + height); // Extra space for newlines
 
-        function renderFrame(timestamp: number = 0) {
-                // Throttle frame rate to reduce CPU usage
-                const elapsed = timestamp - lastFrameTime;
-                if (elapsed < frameInterval) {
-                        animationFrame = requestAnimationFrame(renderFrame);
-                        return;
-                }
-                lastFrameTime = timestamp;
-
+        function drawFrame() {
                 // Clear arrays instead of creating new ones
                 bArray.fill(32); // ASCII space
                 zArray.fill(0);
@@ -99,10 +93,24 @@
                         }
                         outputArray[outputIndex++] = 10; // newline character
                 }
-                asciiOutput = String.fromCharCode.apply(
-                        null,
-                        Array.from(outputArray.slice(0, outputIndex)),
-                );
+                asciiOutput = decoder.decode(outputArray.subarray(0, outputIndex));
+        }
+
+        function renderFrame(timestamp: number = 0) {
+                if (prefersReducedMotion) {
+                        animationFrame = 0;
+                        return;
+                }
+
+                // Throttle frame rate to reduce CPU usage
+                const elapsed = timestamp - lastFrameTime;
+                if (elapsed < frameInterval) {
+                        animationFrame = requestAnimationFrame(renderFrame);
+                        return;
+                }
+                lastFrameTime = timestamp;
+
+                drawFrame();
 
                 A += 0.04;
                 B += 0.02;
@@ -111,11 +119,34 @@
         }
 
         onMount(() => {
-                renderFrame();
+                const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+                const syncMotionPreference = (matches: boolean) => {
+                        prefersReducedMotion = matches;
+                        if (prefersReducedMotion) {
+                                if (animationFrame) {
+                                        cancelAnimationFrame(animationFrame);
+                                        animationFrame = 0;
+                                }
+                                drawFrame();
+                                return;
+                        }
+                        if (!animationFrame) {
+                                lastFrameTime = 0;
+                                animationFrame = requestAnimationFrame(renderFrame);
+                        }
+                };
+
+                const handleMotionChange = (event: MediaQueryListEvent) => {
+                        syncMotionPreference(event.matches);
+                };
+
+                syncMotionPreference(mediaQuery.matches);
+                mediaQuery.addEventListener("change", handleMotionChange);
                 return () => {
                         if (animationFrame) {
                                 cancelAnimationFrame(animationFrame);
                         }
+                        mediaQuery.removeEventListener("change", handleMotionChange);
                 };
         });
 

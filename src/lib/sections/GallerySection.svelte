@@ -95,8 +95,15 @@
 
 <!-- Detail Panel -->
 {#if selected}
-  <div class="detail-backdrop" on:click={() => selected = null}>
-    <div class="detail-panel" on:click|stopPropagation>
+  <div class="detail-backdrop" role="presentation">
+    <button
+      type="button"
+      class="detail-dismiss"
+      tabindex="-1"
+      aria-label="Close gallery detail"
+      on:click={() => selected = null}
+    ></button>
+    <div class="detail-panel" role="dialog" aria-modal="true" tabindex="-1">
       <button class="detail-close" on:click={() => selected = null}>&times;</button>
       <div class="detail-visual" style="--bg: {getPlaceholderColor(selected)}">
         <span class="detail-char">{selected.title.charAt(0)}</span>
@@ -261,6 +268,15 @@
     animation: fadeIn var(--duration-fast) var(--easing);
   }
 
+  .detail-dismiss {
+    position: absolute;
+    inset: 0;
+    border: none;
+    background: transparent;
+    padding: 0;
+    cursor: pointer;
+  }
+
   .detail-panel {
     background: var(--color-surface);
     border-radius: var(--radius-md);
@@ -268,6 +284,7 @@
     width: 100%;
     overflow: hidden;
     position: relative;
+    z-index: 1;
   }
 
   .detail-close {

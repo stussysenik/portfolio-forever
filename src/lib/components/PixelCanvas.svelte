@@ -3,7 +3,7 @@
 	import { isReaderMode, featureFlags } from "$lib/stores/siteMode";
 	import * as engine from "$lib/pixel-engine/engine";
 	import { loadLuaRuntime, compileBehavior } from "$lib/pixel-engine/lua-runtime";
-	import { ShaderPipeline } from "$lib/pixel-engine/shader-pipeline";
+	import { ShaderPipeline, type ShaderParams } from "$lib/pixel-engine/shader-pipeline";
 
 	// Lua scripts (imported as raw strings)
 	import electronScript from "$lib/pixel-engine/scripts/electron.lua?raw";
@@ -16,6 +16,24 @@
 	let mouseX = 0;
 	let mouseY = 0;
 	let enabled = true;
+	let runtimeDisabled = false;
+
+	type RuntimeProfile = {
+		disabled: boolean;
+		useLua: boolean;
+		trackPointer: boolean;
+		shaderParams?: Partial<ShaderParams>;
+		counts: {
+			electrons: number;
+			wanderers: number;
+			cards: number;
+		};
+	};
+
+	type NavigatorHints = Navigator & {
+		connection?: { saveData?: boolean };
+		deviceMemory?: number;
+	};
 
 	// Check feature flag
 	$: {
@@ -25,16 +43,70 @@
 
 	// Disable in reader mode
 	$: active = enabled && !$isReaderMode;
+	$: shouldRender = active && !runtimeDisabled;
 
 	let cleanupFns: (() => void)[] = [];
 
 	onMount(() => {
 		if (!active) return;
-		setup();
+		const profile = getRuntimeProfile();
+		runtimeDisabled = profile.disabled;
+		if (profile.disabled) return;
+		setup(profile);
 		return () => cleanupFns.forEach((fn) => fn());
 	});
 
-	async function setup() {
+	function getRuntimeProfile(): RuntimeProfile {
+		const nav = navigator as NavigatorHints;
+		const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+		const saveData = nav.connection?.saveData === true;
+		const lowMemory = (nav.deviceMemory ?? 8) <= 4;
+		const lowCpu = (navigator.hardwareConcurrency ?? 8) <= 4;
+		const coarsePointer = window.matchMedia("(pointer: coarse)").matches;
+		const smallViewport = window.innerWidth < 768;
+		const constrained = lowMemory || lowCpu || coarsePointer || smallViewport;
+
+		if (prefersReducedMotion || saveData) {
+			return {
+				disabled: true,
+				useLua: false,
+				trackPointer: false,
+				counts: { electrons: 0, wanderers: 0, cards: 0 },
+			};
+		}
+
+		if (constrained) {
+			return {
+				disabled: false,
+				useLua: false,
+				trackPointer: false,
+				shaderParams: {
+					crt: 0.2,
+					chromatic: 0.5,
+					bloom: 0,
+					holographic: 0,
+				},
+				counts: {
+					electrons: 3,
+					wanderers: 2,
+					cards: 1,
+				},
+			};
+		}
+
+		return {
+			disabled: false,
+			useLua: true,
+			trackPointer: true,
+			counts: {
+				electrons: 6,
+				wanderers: 4,
+				cards: 3,
+			},
+		};
+	}
+
+	async function setup(profile: RuntimeProfile) {
 
 		// Init sprite canvas (Canvas 2D)
 		engine.init(spriteCanvas, () => {
@@ -43,10 +115,10 @@
 		});
 
 		// Init shader pipeline (WebGL)
-		pipeline = new ShaderPipeline(shaderCanvas);
+		pipeline = new ShaderPipeline(shaderCanvas, profile.shaderParams);
 
 		// Load Lua runtime
-		const luaReady = await loadLuaRuntime();
+		const luaReady = profile.useLua ? await loadLuaRuntime() : false;
 
 		// Compile Lua behaviors
 		const behaviors: Record<string, ReturnType<typeof compileBehavior>> = {};
@@ -61,7 +133,7 @@
 		const vh = window.innerHeight;
 
 		// Electrons orbiting
-		for (let i = 0; i < 6; i++) {
+		for (let i = 0; i < profile.counts.electrons; i++) {
 			engine.spawn({
 				type: "electron",
 				x: vw * 0.3 + Math.random() * vw * 0.4,
@@ -75,7 +147,7 @@
 		}
 
 		// Wanderers
-		for (let i = 0; i < 4; i++) {
+		for (let i = 0; i < profile.counts.wanderers; i++) {
 			engine.spawn({
 				type: "wanderer",
 				x: Math.random() * vw,
@@ -91,7 +163,7 @@
 		}
 
 		// Cards
-		for (let i = 0; i < 3; i++) {
+		for (let i = 0; i < profile.counts.cards; i++) {
 			engine.spawn({
 				type: "card",
 				x: vw * 0.2 + Math.random() * vw * 0.6,
@@ -109,12 +181,14 @@
 		// Start engine
 		engine.start();
 
-		// Track mouse
-		const onMouse = (e: MouseEvent) => {
-			mouseX = e.clientX;
-			mouseY = e.clientY;
-		};
-		window.addEventListener("mousemove", onMouse);
+		if (profile.trackPointer) {
+			const onPointerMove = (e: PointerEvent) => {
+				mouseX = e.clientX;
+				mouseY = e.clientY;
+			};
+			window.addEventListener("pointermove", onPointerMove, { passive: true });
+			cleanupFns.push(() => window.removeEventListener("pointermove", onPointerMove));
+		}
 
 		// Track scroll
 		const onScroll = () => {
@@ -126,10 +200,20 @@
 		const onResize = () => engine.resize();
 		window.addEventListener("resize", onResize);
 
+		const onVisibilityChange = () => {
+			if (document.hidden) {
+				engine.stop();
+				return;
+			}
+			engine.start();
+		};
+		document.addEventListener("visibilitychange", onVisibilityChange);
+
 		cleanupFns.push(
-			() => window.removeEventListener("mousemove", onMouse),
 			() => window.removeEventListener("scroll", onScroll),
 			() => window.removeEventListener("resize", onResize),
+			() => document.removeEventListener("visibilitychange", onVisibilityChange),
+			() => engine.stop(),
 		);
 	}
 
@@ -140,7 +224,7 @@
 	});
 </script>
 
-{#if active}
+{#if shouldRender}
 	<!-- Sprite canvas (Canvas 2D, hidden — feeds into shader) -->
 	<canvas
 		bind:this={spriteCanvas}

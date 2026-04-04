@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { getConvexClient } from '$lib/convex';
 	import { api } from '$convex/_generated/api';
+	import GenericListBlock from '$lib/components/blocks/GenericListBlock.svelte';
 
 	export let id = "likes";
 
@@ -32,14 +33,7 @@
 
 		<div class="likes-grid">
 			{#each categories as category}
-				<div class="category">
-					<h2 class="category-title">{category.title}</h2>
-					<ul class="item-list">
-						{#each category.items as item}
-							<li class="item">{item}</li>
-						{/each}
-					</ul>
-				</div>
+				<GenericListBlock title={category.title} items={category.items} />
 			{/each}
 		</div>
 	</section>
@@ -99,50 +93,6 @@
 		.likes-grid {
 			grid-template-columns: repeat(3, 1fr);
 		}
-	}
-
-	.category {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-md);
-	}
-
-	.category-title {
-		font-family: var(--font-mono);
-		font-size: var(--font-size-xs);
-		text-transform: uppercase;
-		letter-spacing: var(--letter-spacing-wider);
-		color: var(--color-text-subtle);
-		margin: 0;
-		padding-bottom: var(--space-xs);
-		border-bottom: var(--border-width) dashed
-			var(--border-color-subtle);
-		transition: color var(--duration-fast) var(--easing);
-	}
-
-	.category:hover .category-title {
-		color: var(--color-text-secondary);
-	}
-
-	.item-list {
-		list-style: none;
-		padding: 0;
-		margin: 0;
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-sm);
-	}
-
-	.item {
-		font-size: var(--font-size-sm);
-		color: var(--color-text);
-		transition: color var(--duration-fast), transform var(--duration-fast);
-		cursor: default;
-	}
-
-	.item:hover {
-		color: var(--color-accent);
-		transform: translateX(2px);
 	}
 
 	.gifts-callout {

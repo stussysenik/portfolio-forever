@@ -210,7 +210,7 @@
 						<button class="btn-sm" on:click={cancelEdit}>Cancel</button>
 					</div>
 				{:else}
-					<p class="card-desc" role="button" tabindex="0" on:click={() => startEdit(entry._id, 'description', entry.description || '')} on:keydown={a11yClick(() => startEdit(entry._id, 'description', entry.description || ''))}>{entry.description || '(click to add description)'}</p>
+					<button type="button" class="card-desc inline-edit-btn" on:click={() => startEdit(entry._id, 'description', entry.description || '')}>{entry.description || '(click to add description)'}</button>
 				{/if}
 				<!-- Highlights -->
 				{#if editingHighlights && editingHighlights.id === entry._id}
@@ -228,9 +228,9 @@
 						</div>
 					</div>
 				{:else if entry.highlights?.length}
-					<ul class="card-highlights" role="button" tabindex="0" on:click={() => startEditHighlights(entry._id, entry.highlights)} on:keydown={a11yClick(() => startEditHighlights(entry._id, entry.highlights))}>
-						{#each entry.highlights as hl}<li>→ {hl}</li>{/each}
-					</ul>
+					<button type="button" class="card-highlights inline-edit-btn" on:click={() => startEditHighlights(entry._id, entry.highlights)}>
+						{#each entry.highlights as hl}<span class="highlight-line">→ {hl}</span>{/each}
+					</button>
 				{:else}
 					<button class="btn-sm" on:click={() => startEditHighlights(entry._id, [])}>+ Add highlights</button>
 				{/if}
@@ -427,7 +427,8 @@
 		background: var(--color-bg-hover, rgba(255, 255, 255, 0.05));
 	}
 
-	.card-highlights li {
+	.highlight-line {
+		display: block;
 		padding: 1px 4px;
 	}
 
@@ -452,40 +453,6 @@
 		display: flex;
 		flex-direction: column;
 		gap: 1px;
-	}
-
-	/* Field inputs */
-	.field-row {
-		display: flex;
-		align-items: flex-start;
-		gap: var(--space-sm);
-		padding: var(--space-sm) 0;
-		border-bottom: 1px solid var(--border-color-subtle);
-	}
-
-	.field-row:last-child {
-		border-bottom: none;
-	}
-
-	.field-label {
-		font-size: var(--font-size-xs);
-		font-weight: 600;
-		text-transform: uppercase;
-		color: var(--color-text-muted);
-		min-width: 70px;
-		padding-top: 4px;
-	}
-
-	.field-value {
-		flex: 1;
-		cursor: pointer;
-		padding: 2px 4px;
-		border-radius: var(--radius-sm);
-		transition: background var(--duration-fast) var(--easing);
-	}
-
-	.field-value:hover {
-		background: var(--color-bg-hover, rgba(255, 255, 255, 0.05));
 	}
 
 	.field-input {
@@ -687,15 +654,6 @@
 
 		.languages-grid {
 			grid-template-columns: 1fr;
-		}
-
-		.field-row {
-			flex-direction: column;
-			gap: var(--space-xs);
-		}
-
-		.field-label {
-			min-width: unset;
 		}
 
 		.field-actions {

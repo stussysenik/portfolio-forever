@@ -282,6 +282,7 @@
 			"pills"
 			"builder";
 		height: 100vh;
+		height: 100dvh;
 		overflow: hidden;
 		background: var(--color-bg, #0a0a0a);
 		color: var(--color-text, #e5e5e5);

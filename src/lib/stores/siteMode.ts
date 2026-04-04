@@ -1,7 +1,7 @@
 import { writable, derived, get } from "svelte/store";
 import { goto } from "$app/navigation";
 
-export type SiteMode = "one-page" | "multi-page" | "reader";
+export type SiteMode = "one-page" | "multi-page" | "reader" | "disabled";
 
 export const siteMode = writable<SiteMode>("multi-page");
 

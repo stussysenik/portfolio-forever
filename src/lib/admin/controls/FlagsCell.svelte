@@ -109,6 +109,7 @@
 	.flag-step-bar {
 		display: flex;
 		flex-direction: row;
+		flex-wrap: wrap;
 		gap: 2px;
 		margin-bottom: 8px;
 	}

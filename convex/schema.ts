@@ -119,7 +119,8 @@ export default defineSchema({
 		mode: v.union(
 			v.literal("one-page"),
 			v.literal("multi-page"),
-			v.literal("reader")
+			v.literal("reader"),
+			v.literal("disabled")
 		),
 		sectionOrder: v.array(v.string()),
 		parallaxSpeed: v.number(),

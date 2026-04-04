@@ -6,7 +6,7 @@
 	export let client: any;
 	export let api: any;
 
-	const MODES = ['multi-page', 'one-page', 'reader'] as const;
+	const MODES = ['multi-page', 'one-page', 'reader', 'disabled'] as const;
 	$: mode = siteConfig?.mode ?? 'multi-page';
 	$: parallax = siteConfig?.parallaxSpeed ?? 0.5;
 

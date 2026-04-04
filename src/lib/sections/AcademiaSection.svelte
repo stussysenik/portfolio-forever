@@ -3,6 +3,7 @@
   import { getConvexClient } from '$lib/convex';
   import { api } from '$convex/_generated/api';
   import MuxVideo from '$lib/components/MuxVideo.svelte';
+  import GenericListBlock from '$lib/components/blocks/GenericListBlock.svelte';
 
   export let id = "academia";
 
@@ -105,6 +106,13 @@
       {/each}
     {/if}
   </section>
+
+	<section class="academia-pipeline mt-2xl pt-xl border-t border-border-color-subtle">
+		<GenericListBlock
+			title="Research Pipeline & WIP"
+			items={["Diffusion Models for Vector Space", "Sparse Neural Rendering", "Realtime WebGL Kernels"]}
+		/>
+	</section>
 </div>
 
 <style>

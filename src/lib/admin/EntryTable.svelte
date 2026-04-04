@@ -82,6 +82,20 @@
 		return String(val);
 	}
 
+	function getNamedColor(entry: any): NamedColor | null {
+		const color = entry[colorField];
+		return typeof color === 'string' && color in COLOR_CSS ? (color as NamedColor) : null;
+	}
+
+	function getColorLabel(entry: any): string | null {
+		return getNamedColor(entry);
+	}
+
+	function getColorCss(entry: any): string | null {
+		const namedColor = getNamedColor(entry);
+		return namedColor ? COLOR_CSS[namedColor] : null;
+	}
+
 	async function toggleVisibility(entry: any) {
 		try {
 			const mutationMap: Record<string, any> = {
@@ -106,7 +120,7 @@
 </script>
 
 {#if sortedEntries.length > 0}
-	<table class="entry-table" role="table">
+	<table class="entry-table">
 		<thead>
 			<tr>
 				<th class="col-dot" aria-label="Color"></th>
@@ -123,11 +137,11 @@
 					on:click={() => toggleExpand(entry._id)}
 				>
 					<td class="col-dot">
-						{#if entry[colorField]}
+						{#if getColorLabel(entry)}
 							<span
 								class="color-dot"
-								style="background: {COLOR_CSS[entry[colorField]] ?? '#333'}"
-								aria-label="Color: {entry[colorField]}"
+								style="background: {getColorCss(entry)}"
+								aria-label="Color: {getColorLabel(entry)}"
 							></span>
 						{/if}
 					</td>

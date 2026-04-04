@@ -41,7 +41,7 @@ test.describe('Accessibility - WCAG 2.1 Compliance', () => {
 					el.getAttribute('aria-label') ||
 					el.getAttribute('aria-labelledby') ||
 					el.textContent?.trim() ||
-					el.title ||
+					el.getAttribute('title') ||
 					''
 				);
 			});

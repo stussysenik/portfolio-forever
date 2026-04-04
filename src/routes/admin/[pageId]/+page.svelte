@@ -171,8 +171,9 @@
 					</span>
 
 					<div class="config-field">
-						<label class="config-label">View Mode</label>
+						<label class="config-label" for="section-view-mode">View Mode</label>
 						<select
+							id="section-view-mode"
 							class="config-select"
 							value={selectedSection.config?.viewMode ?? 'grid'}
 							on:change={(e) => updateSectionConfig('viewMode', e.currentTarget.value)}
@@ -185,13 +186,13 @@
 
 					{#if selectedSection.dataTable}
 						<div class="config-field">
-							<label class="config-label">Data Table</label>
+							<span class="config-label">Data Table</span>
 							<span class="config-value">{selectedSection.dataTable}</span>
 						</div>
 					{/if}
 
 					<div class="config-field">
-						<label class="config-label">Type</label>
+						<span class="config-label">Type</span>
 						<span class="config-value">{selectedSection.sectionType}</span>
 					</div>
 				</div>

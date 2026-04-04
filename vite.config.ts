@@ -4,6 +4,7 @@ import path from "path";
 
 export default defineConfig({
         plugins: [sveltekit()],
+        envPrefix: ["VITE_", "PUBLIC_", "NEXT_PUBLIC_"],
         resolve: {
                 alias: {
                         "$convex": path.resolve("./convex"),

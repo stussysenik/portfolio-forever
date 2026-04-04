@@ -102,7 +102,7 @@
 							<button class="btn-sm" on:click={cancelEdit}>Cancel</button>
 						</div>
 					{:else}
-						<p class="card-desc" role="button" tabindex="0" on:click={() => startEdit(entry._id, 'note', entry.note || '')} on:keydown={a11yClick(() => startEdit(entry._id, 'note', entry.note || ''))}>{entry.note}</p>
+						<button type="button" class="card-desc inline-edit-btn" on:click={() => startEdit(entry._id, 'note', entry.note || '')}>{entry.note}</button>
 					{/if}
 				</div>
 			{/if}

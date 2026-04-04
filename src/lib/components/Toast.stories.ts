@@ -2,13 +2,13 @@ import type { Meta, StoryObj } from '@storybook/svelte';
 import Toast from './Toast.svelte';
 import { toast } from '$lib/stores/toast';
 
-const meta: Meta<Toast> = {
+const meta = {
 	title: 'Components/Toast',
 	component: Toast,
-};
+} satisfies Meta<typeof Toast>;
 
 export default meta;
-type Story = StoryObj<Toast>;
+type Story = StoryObj<typeof meta>;
 
 export const Success: Story = {
 	play: () => { toast.success('Entry saved successfully'); },

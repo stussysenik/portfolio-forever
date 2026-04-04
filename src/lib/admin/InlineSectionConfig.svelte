@@ -69,6 +69,10 @@
 		label: m,
 	}));
 
+	function getSingleValue(value: string | string[]): string {
+		return Array.isArray(value) ? value[0] ?? '' : value;
+	}
+
 	async function setHeroConfig(field: string, value: any) {
 		try {
 			await client.mutation(api.hero.upsertHeroConfig, { [field]: value });
@@ -207,7 +211,7 @@
 			<AdminChipGroup
 				options={WEIGHT_OPTIONS}
 				value={String(heroNameWeight)}
-				on:change={(e) => setHeroConfig('heroNameWeight', parseInt(e.detail.value))}
+				on:change={(e) => setHeroConfig('heroNameWeight', parseInt(getSingleValue(e.detail.value), 10))}
 			/>
 		</div>
 
@@ -258,7 +262,7 @@
 			<AdminChipGroup
 				options={VIEW_MODE_OPTIONS}
 				value={viewMode}
-				on:change={(e) => setViewMode(e.detail.value)}
+				on:change={(e) => setViewMode(getSingleValue(e.detail.value))}
 			/>
 		</div>
 	{/if}

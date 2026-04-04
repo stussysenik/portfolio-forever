@@ -85,50 +85,60 @@
 		}
 	}
 
-	onMount(async () => {
+	onMount(() => {
 		currentTheme = document.documentElement.dataset.theme || 'minimal';
 		currentFont = document.documentElement.dataset.font || 'inter';
+		let subs: Array<() => void> = [];
+		let disposed = false;
 
-		// Ensure pages are seeded
-		try {
-			await client.mutation(api.pages.ensureSeeded, {});
-		} catch (_) { /* already seeded */ }
+		const init = async () => {
+			try {
+				await client.mutation(api.pages.ensureSeeded, {});
+			} catch (_) { /* already seeded */ }
 
-		const subs = [
-			client.onUpdate(api.pages.getAll, {}, (data: any) => { if (data) pages = data; }),
-			client.onUpdate(api.siteConfig.get, {}, (data: any) => { siteConfigData = data; }),
-			client.onUpdate(api.siteConfig.getFeatureFlags, {}, (data: any) => { if (data) featureFlags = data; }),
-			client.onUpdate(api.sectionRegistry.getAll, {}, (data: any) => { if (data) registrySections = data; }),
-			client.onUpdate(api.works.getFullWorks, {}, (data: any) => {
-				if (data) entriesByTable = { ...entriesByTable, worksEntries: data };
-			}),
-			client.onUpdate(api.talks.getFullTalks, {}, (data: any) => {
-				if (data) entriesByTable = { ...entriesByTable, talksEntries: data };
-			}),
-			client.onUpdate(api.blog.getFullPosts, {}, (data: any) => {
-				if (data) entriesByTable = { ...entriesByTable, blogPosts: data };
-			}),
-			client.onUpdate(api.gallery.getFullGallery, {}, (data: any) => {
-				if (data) entriesByTable = { ...entriesByTable, galleryItems: data };
-			}),
-			client.onUpdate(api.likes.getFullLikes, {}, (data: any) => {
-				if (data) entriesByTable = { ...entriesByTable, likesCategories: data };
-			}),
-			client.onUpdate(api.minor.getFullMinor, {}, (data: any) => {
-				if (data) entriesByTable = { ...entriesByTable, minorEntries: data };
-			}),
-			client.onUpdate(api.labs.getFullLabs, {}, (data: any) => {
-				if (data) entriesByTable = { ...entriesByTable, labEntries: data };
-			}),
-			client.onUpdate(api.academia.getFullAcademia, {}, (data: any) => {
-				if (data) entriesByTable = { ...entriesByTable, academicEntries: data };
-			}),
-			client.onUpdate(api.cv.getFullCV, {}, (data: any) => {
-				if (data) entriesByTable = { ...entriesByTable, cvEntries: data.entries ?? [] };
-			}),
-		];
+			if (disposed) return;
 
-		return () => subs.forEach((fn) => fn());
+			subs = [
+				client.onUpdate(api.pages.getAll, {}, (data: any) => { if (data) pages = data; }),
+				client.onUpdate(api.siteConfig.get, {}, (data: any) => { siteConfigData = data; }),
+				client.onUpdate(api.siteConfig.getFeatureFlags, {}, (data: any) => { if (data) featureFlags = data; }),
+				client.onUpdate(api.sectionRegistry.getAll, {}, (data: any) => { if (data) registrySections = data; }),
+				client.onUpdate(api.works.getFullWorks, {}, (data: any) => {
+					if (data) entriesByTable = { ...entriesByTable, worksEntries: data };
+				}),
+				client.onUpdate(api.talks.getFullTalks, {}, (data: any) => {
+					if (data) entriesByTable = { ...entriesByTable, talksEntries: data };
+				}),
+				client.onUpdate(api.blog.getFullPosts, {}, (data: any) => {
+					if (data) entriesByTable = { ...entriesByTable, blogPosts: data };
+				}),
+				client.onUpdate(api.gallery.getFullGallery, {}, (data: any) => {
+					if (data) entriesByTable = { ...entriesByTable, galleryItems: data };
+				}),
+				client.onUpdate(api.likes.getFullLikes, {}, (data: any) => {
+					if (data) entriesByTable = { ...entriesByTable, likesCategories: data };
+				}),
+				client.onUpdate(api.minor.getFullMinor, {}, (data: any) => {
+					if (data) entriesByTable = { ...entriesByTable, minorEntries: data };
+				}),
+				client.onUpdate(api.labs.getFullLabs, {}, (data: any) => {
+					if (data) entriesByTable = { ...entriesByTable, labEntries: data };
+				}),
+				client.onUpdate(api.academia.getFullAcademia, {}, (data: any) => {
+					if (data) entriesByTable = { ...entriesByTable, academicEntries: data };
+				}),
+				client.onUpdate(api.cv.getFullCV, {}, (data: any) => {
+					if (data) entriesByTable = { ...entriesByTable, cvEntries: data.entries ?? [] };
+				}),
+			];
+		};
+
+		void init();
+
+		return () => {
+			disposed = true;
+			subs.forEach((fn) => fn());
+		};
 	});
 </script>
 
@@ -153,7 +163,6 @@
 		<SectionBuilder
 			page={activePage}
 			{featureFlags}
-			{entriesByTable}
 			{client}
 			{api}
 			on:selectsection={(e) => { selectedSectionId = e.detail.sectionId; }}

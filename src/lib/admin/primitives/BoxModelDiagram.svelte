@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
+	import { createEventDispatcher, tick } from 'svelte';
 
 	export let margin: { top: number; right: number; bottom: number; left: number } = { top: 0, right: 0, bottom: 0, left: 0 };
 	export let padding: { top: number; right: number; bottom: number; left: number } = { top: 0, right: 0, bottom: 0, left: 0 };
@@ -11,10 +11,14 @@
 
 	let editingKey: string | null = null;
 	let editValue: string = '';
+	let activeInput: HTMLInputElement | null = null;
 
-	function startEdit(layer: 'margin' | 'padding', side: string, currentValue: number) {
+	async function startEdit(layer: 'margin' | 'padding', side: string, currentValue: number) {
 		editingKey = `${layer}.${side}`;
 		editValue = String(currentValue);
+		await tick();
+		activeInput?.focus();
+		activeInput?.select();
 	}
 
 	function commitEdit() {
@@ -51,7 +55,7 @@
 		<div class="edge edge-top">
 			{#if isEditing('margin', 'top')}
 				<input class="edge-input margin-input" type="number" min="0" step="4"
-					bind:value={editValue} on:blur={commitEdit} on:keydown={handleKeydown} autofocus />
+					bind:this={activeInput} bind:value={editValue} on:blur={commitEdit} on:keydown={handleKeydown} />
 			{:else}
 				<button class="edge-value margin-value" on:click={() => startEdit('margin', 'top', margin.top)}>
 					{margin.top}
@@ -63,7 +67,7 @@
 		<div class="edge edge-left">
 			{#if isEditing('margin', 'left')}
 				<input class="edge-input margin-input" type="number" min="0" step="4"
-					bind:value={editValue} on:blur={commitEdit} on:keydown={handleKeydown} autofocus />
+					bind:this={activeInput} bind:value={editValue} on:blur={commitEdit} on:keydown={handleKeydown} />
 			{:else}
 				<button class="edge-value margin-value" on:click={() => startEdit('margin', 'left', margin.left)}>
 					{margin.left}
@@ -75,7 +79,7 @@
 		<div class="edge edge-right">
 			{#if isEditing('margin', 'right')}
 				<input class="edge-input margin-input" type="number" min="0" step="4"
-					bind:value={editValue} on:blur={commitEdit} on:keydown={handleKeydown} autofocus />
+					bind:this={activeInput} bind:value={editValue} on:blur={commitEdit} on:keydown={handleKeydown} />
 			{:else}
 				<button class="edge-value margin-value" on:click={() => startEdit('margin', 'right', margin.right)}>
 					{margin.right}
@@ -87,7 +91,7 @@
 		<div class="edge edge-bottom">
 			{#if isEditing('margin', 'bottom')}
 				<input class="edge-input margin-input" type="number" min="0" step="4"
-					bind:value={editValue} on:blur={commitEdit} on:keydown={handleKeydown} autofocus />
+					bind:this={activeInput} bind:value={editValue} on:blur={commitEdit} on:keydown={handleKeydown} />
 			{:else}
 				<button class="edge-value margin-value" on:click={() => startEdit('margin', 'bottom', margin.bottom)}>
 					{margin.bottom}
@@ -103,7 +107,7 @@
 			<div class="edge edge-top">
 				{#if isEditing('padding', 'top')}
 					<input class="edge-input padding-input" type="number" min="0" step="4"
-						bind:value={editValue} on:blur={commitEdit} on:keydown={handleKeydown} autofocus />
+						bind:this={activeInput} bind:value={editValue} on:blur={commitEdit} on:keydown={handleKeydown} />
 				{:else}
 					<button class="edge-value padding-value" on:click={() => startEdit('padding', 'top', padding.top)}>
 						{padding.top}
@@ -115,7 +119,7 @@
 			<div class="edge edge-left">
 				{#if isEditing('padding', 'left')}
 					<input class="edge-input padding-input" type="number" min="0" step="4"
-						bind:value={editValue} on:blur={commitEdit} on:keydown={handleKeydown} autofocus />
+						bind:this={activeInput} bind:value={editValue} on:blur={commitEdit} on:keydown={handleKeydown} />
 				{:else}
 					<button class="edge-value padding-value" on:click={() => startEdit('padding', 'left', padding.left)}>
 						{padding.left}
@@ -127,7 +131,7 @@
 			<div class="edge edge-right">
 				{#if isEditing('padding', 'right')}
 					<input class="edge-input padding-input" type="number" min="0" step="4"
-						bind:value={editValue} on:blur={commitEdit} on:keydown={handleKeydown} autofocus />
+						bind:this={activeInput} bind:value={editValue} on:blur={commitEdit} on:keydown={handleKeydown} />
 				{:else}
 					<button class="edge-value padding-value" on:click={() => startEdit('padding', 'right', padding.right)}>
 						{padding.right}
@@ -139,7 +143,7 @@
 			<div class="edge edge-bottom">
 				{#if isEditing('padding', 'bottom')}
 					<input class="edge-input padding-input" type="number" min="0" step="4"
-						bind:value={editValue} on:blur={commitEdit} on:keydown={handleKeydown} autofocus />
+						bind:this={activeInput} bind:value={editValue} on:blur={commitEdit} on:keydown={handleKeydown} />
 				{:else}
 					<button class="edge-value padding-value" on:click={() => startEdit('padding', 'bottom', padding.bottom)}>
 						{padding.bottom}
@@ -280,6 +284,7 @@
 		border-radius: 2px;
 		padding: 1px 3px;
 		outline: none;
+		appearance: textfield;
 		-moz-appearance: textfield;
 	}
 

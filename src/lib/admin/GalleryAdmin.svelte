@@ -104,7 +104,7 @@
 						<button class="btn-sm" on:click={cancelEdit}>Cancel</button>
 					</div>
 				{:else}
-					<p class="card-desc" role="button" tabindex="0" on:click={() => startEdit(entry._id, 'description', entry.description || '')} on:keydown={a11yClick(() => startEdit(entry._id, 'description', entry.description || ''))}>{entry.description || '(click to add description)'}</p>
+					<button type="button" class="card-desc inline-edit-btn" on:click={() => startEdit(entry._id, 'description', entry.description || '')}>{entry.description || '(click to add description)'}</button>
 				{/if}
 
 				<!-- Tool tags -->
@@ -114,9 +114,9 @@
 							<input class="field-input-sm" bind:value={editBuffer} placeholder="{field}" on:keydown={(e) => { if (e.key === 'Enter') saveGalleryEdit(entry._id); if (e.key === 'Escape') cancelEdit(); }} />
 							<button class="btn-sm btn-save" on:click={() => saveGalleryEdit(entry._id)}>&#10003;</button>
 						{:else}
-							<span class="tool-tag clickable" on:click={() => startEdit(entry._id, field, entry[field] || '')}>
+							<button type="button" class="tool-tag clickable tool-tag-btn" on:click={() => startEdit(entry._id, field, entry[field] || '')}>
 								{field.replace('Url', '')}: {entry[field] ? '✓' : '—'}
-							</span>
+							</button>
 						{/if}
 					{/each}
 				</div>

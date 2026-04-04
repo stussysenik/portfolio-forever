@@ -1,4 +1,5 @@
 <script lang="ts">
+        import { browser } from "$app/environment";
         import { onMount, onDestroy } from "svelte";
         import "../app.css";
         import { page } from "$app/stores";
@@ -6,7 +7,6 @@
         import { siteConfig, socialLinks, profile } from "$lib/data/content";
         import { layoutConfig } from "$lib/data/layout-config";
         import CommandPalette from "$lib/components/CommandPalette.svelte";
-        import PixelCanvas from "$lib/components/PixelCanvas.svelte";
         import ThemeSwitcher from "$lib/components/ThemeSwitcher.svelte";
         import FontSwitcher from "$lib/components/FontSwitcher.svelte";
         import Toast from "$lib/components/Toast.svelte";
@@ -15,6 +15,7 @@
         import { siteMode, readerOverride, isReaderMode, siteConfig as siteConfigStore, featureFlags } from "$lib/stores/siteMode";
         import { getConvexClient } from "$lib/convex";
         import { api } from "$convex/_generated/api";
+        import Embellishments from "$lib/components/Embellishments.svelte";
 
         // View Transitions API — smooth page-to-page animations
         onNavigate((navigation) => {
@@ -42,8 +43,17 @@
 
         let navItems: { href: string; label: string }[] = staticNav;
         let siteConfigData: any = null;
+        let PixelCanvasComponent: any = null;
+        let pixelCanvasPromise: Promise<void> | null = null;
 
         $: currentPath = $page.url.pathname;
+        $: pixelCanvasEnabled = ($featureFlags.get("pixel-engine") ?? false) && !$isReaderMode;
+
+        $: if (browser && pixelCanvasEnabled && !PixelCanvasComponent) {
+                pixelCanvasPromise ??= import("$lib/components/PixelCanvas.svelte").then(({ default: component }) => {
+                        PixelCanvasComponent = component;
+                });
+        }
 
         // Scroll to top on every navigation + track page view
         afterNavigate(() => {
@@ -129,13 +139,6 @@
                 if (adminMessageHandler) window.removeEventListener('message', adminMessageHandler);
         });
 
-        // Social links toggle for mobile
-        let socialExpanded = false;
-
-        function toggleSocial() {
-                socialExpanded = !socialExpanded;
-        }
-
         function handleGlobalKeydown(e: KeyboardEvent) {
                 if (typeof document === "undefined") return;
 
@@ -183,8 +186,8 @@
                                 hour: '2-digit',
                                 minute: '2-digit',
                                 second: '2-digit',
-                                weekday: 'short', 
-                                month: 'short', 
+                                weekday: 'short',
+                                month: 'short',
                                 day: 'numeric'
                         };
                         try {
@@ -198,7 +201,7 @@
                                 pragueTime = "TIME ONLINE";
                         }
                 };
-                
+
                 updateTime();
                 const interval = setInterval(updateTime, 1000);
                 return () => clearInterval(interval);
@@ -216,9 +219,21 @@
 
 <!-- Command Palette (global) -->
 <CommandPalette />
-<PixelCanvas />
+{#if pixelCanvasEnabled && PixelCanvasComponent}
+        <svelte:component this={PixelCanvasComponent} />
+{/if}
+<Embellishments />
 <Toast />
 
+{#if $siteMode === 'disabled' && !currentPath.startsWith('/admin')}
+	<div class="maintenance-lockscreen">
+		<div class="lock-inner">
+			<h2>{siteConfig?.title || 'System Offline'}</h2>
+			<p>Evidence Engine is currently down for maintenance.</p>
+			<span>{pragueTime}</span>
+		</div>
+	</div>
+{:else}
 <div class="top-frame">
 <!-- WIP BANNER - First visible element, before everything -->
 {#if layoutConfig.showWipBanner && layoutConfig.wipBannerPosition !== 'hidden'}
@@ -252,23 +267,16 @@
                                                 {item.label}
                                         </a>
                                 {/each}
-                        </nav>
 
-                        <!-- Desktop: social links inline | Mobile: toggle button -->
-                        <button 
-                                class="social-toggle"
-                                on:click={toggleSocial}
-                                aria-expanded={socialExpanded}
-                                aria-label="Toggle social links"
-                        >
-                                {socialExpanded ? '×' : '@'}
-                        </button>
-
-                        <nav class="social-links" class:mobile-expanded={socialExpanded} aria-label="Social">
-                                <span class="social-label">find me elsewhere</span>
-                                {#each socialLinks as link}
-                                        <a href={link.url} target="_blank" rel="noopener" data-brand={link.label}>{link.label}</a>
-                                {/each}
+                                <!-- External Links Inlined -->
+                                {#if socialLinks.length > 0}
+                                        <span class="nav-sep"></span>
+                                        {#each socialLinks as link}
+                                                <a href={link.url} target="_blank" rel="noopener" class="nav-link external" data-brand={link.label}>
+                                                        {link.label}
+                                                </a>
+                                        {/each}
+                                {/if}
                         </nav>
                 </div>
         </div>
@@ -300,9 +308,37 @@
                 </div>
         </div>
 </footer>
+{/if}
 
 <style>
-        :global(.admin-highlight) {
+	.maintenance-lockscreen {
+		position: fixed;
+		inset: 0;
+		background: var(--color-bg);
+		z-index: 9999;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		text-align: center;
+	}
+	.lock-inner {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-md);
+		font-family: var(--font-mono);
+	}
+	.lock-inner h2 {
+		font-size: var(--font-size-xl);
+		color: var(--color-accent);
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+	}
+	.lock-inner p {
+		color: var(--color-text-subtle);
+		font-size: var(--font-size-sm);
+	}
+
+	:global(.admin-highlight) {
                 outline: 2px dashed #2563EB;
                 outline-offset: 4px;
                 transition: outline-color 0.3s ease;
@@ -433,9 +469,63 @@
                 transform-origin: left;
         }
 
-        /* Nav group - contains nav + @ toggle inline */
+        .nav-sep {
+                width: 1px;
+                background: var(--border-color-subtle);
+                margin: 0 var(--space-2xs);
+                align-self: stretch;
+        }
+
+        .nav-link.external {
+                font-family: var(--font-mono);
+                font-size: var(--font-size-xs);
+        }
+
+        .nav-link.external::after {
+                display: none;
+        }
+
+        /* Brand gradient hover effects for external inline links */
+        .nav-link.external:hover {
+                background: transparent;
+                background-clip: text;
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                color: transparent;
+                text-shadow: none;
+        }
+
+        .nav-link.external[data-brand="soundcloud"]:hover {
+                background-image: linear-gradient(135deg, #ff5500, #ff8800);
+        }
+        .nav-link.external[data-brand="imdb"]:hover {
+                background-image: linear-gradient(135deg, #F5C518, #E2B616);
+        }
+        .nav-link.external[data-brand="github"]:hover {
+                background-image: linear-gradient(135deg, #24292f, #57606a);
+        }
+        :global([data-theme="darkroom"]) .nav-link.external[data-brand="github"]:hover {
+                background-image: linear-gradient(135deg, #f0f6fc, #8b949e);
+        }
+        .nav-link.external[data-brand="linkedin"]:hover {
+                background-image: linear-gradient(135deg, #0077b5, #00a0dc);
+        }
+        .nav-link.external[data-brand="instagram"]:hover {
+                background-image: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+        }
+        .nav-link.external[data-brand="x"]:hover {
+                background-image: linear-gradient(135deg, #000000, #333333);
+        }
+        :global([data-theme="darkroom"]) .nav-link.external[data-brand="x"]:hover {
+                background-image: linear-gradient(135deg, #ffffff, #cccccc);
+        }
+        .nav-link.external[data-brand="email"]:hover {
+                background-image: linear-gradient(135deg, #2563EB, #1D4ED8);
+        }
+
+        /* Nav group - contains nav */
         .header-nav-group {
-                position: relative; /* Anchor for dropdown */
+                position: relative;
                 display: flex;
                 align-items: center;
                 gap: var(--space-sm);
@@ -445,117 +535,6 @@
                 .header-nav-group {
                         gap: var(--space-lg);
                 }
-        }
-
-        .social-toggle {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                width: 24px;
-                height: 24px;
-                font-family: var(--font-mono);
-                font-size: var(--font-size-xs);
-                font-weight: 600;
-                color: var(--color-text);
-                background: transparent;
-                border: 1px solid var(--color-text-muted);
-                border-radius: var(--radius-sm);
-                cursor: pointer;
-                transition: all var(--duration-fast) var(--easing);
-                flex-shrink: 0;
-        }
-
-        .social-toggle:hover {
-                color: var(--color-accent);
-                border-color: var(--color-accent);
-        }
-
-        /* Social links — always behind @ toggle (all viewports) */
-        .social-links {
-                display: none;
-        }
-
-        .social-label {
-                display: none;
-        }
-
-        .social-links a {
-                font-family: var(--font-mono);
-                font-size: var(--font-size-xs);
-                font-weight: 500;
-                color: var(--color-text-muted);
-                padding: var(--space-xs) var(--space-sm);
-                border-radius: var(--radius-sm);
-                transition: all var(--duration-fast) var(--easing);
-                white-space: nowrap;
-        }
-
-        .social-links a:hover {
-                background: var(--color-surface);
-                color: var(--color-accent);
-        }
-
-        /* Dropdown — all viewports */
-        .social-links.mobile-expanded {
-                display: flex;
-                flex-direction: column;
-                position: absolute;
-                top: 100%;
-                right: 0;
-                margin-top: var(--space-xs);
-                background: var(--color-bg);
-                border: 1px solid var(--border-color);
-                border-radius: var(--radius-md);
-                padding: var(--space-xs);
-                z-index: 200;
-                box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-                gap: 2px;
-                min-width: 140px;
-        }
-
-        .social-links.mobile-expanded a {
-                display: block;
-                width: 100%;
-        }
-
-        /* Brand gradient hover effects in dropdown */
-        .social-links a[data-brand]:hover {
-                background: transparent;
-                background-clip: text;
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-                color: transparent;
-        }
-
-        .social-links a[data-brand="soundcloud"]:hover {
-                background-image: linear-gradient(135deg, #ff5500, #ff8800);
-        }
-        .social-links a[data-brand="imdb"]:hover {
-                background-image: linear-gradient(135deg, #F5C518, #E2B616);
-        }
-        .social-links a[data-brand="github"]:hover {
-                background-image: linear-gradient(135deg, #24292f, #57606a);
-        }
-        :global([data-theme="darkroom"]) .social-links a[data-brand="github"]:hover {
-                background-image: linear-gradient(135deg, #f0f6fc, #8b949e);
-        }
-        .social-links a[data-brand="linkedin"]:hover {
-                background-image: linear-gradient(135deg, #0077b5, #00a0dc);
-        }
-        .social-links a[data-brand="instagram"]:hover {
-                background-image: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
-        }
-        .social-links a[data-brand="x"]:hover {
-                /* X brand — bold black */
-                background-image: linear-gradient(135deg, #000000, #333333);
-        }
-        :global([data-theme="darkroom"]) .social-links a[data-brand="x"]:hover {
-                /* Invert for dark mode */
-                background-image: linear-gradient(135deg, #ffffff, #cccccc);
-        }
-        .social-links a[data-brand="email"]:hover {
-                /* Accent blue — matching the donut accent color */
-                background-image: linear-gradient(135deg, #2563EB, #1D4ED8);
         }
 
         /* Mobile responsive adjustments */

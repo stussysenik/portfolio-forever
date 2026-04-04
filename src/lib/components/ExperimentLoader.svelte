@@ -64,7 +64,7 @@
         on:error={handleIframeError}
         class="experiment-iframe"
         class:loading={isLoading}
-      />
+      ></iframe>
 
       {#if isLoading}
         <div class="loading-overlay">

@@ -53,7 +53,7 @@
 			}
 		} catch (e: any) {
 			if (e.message?.includes('publishable')) {
-				authError = 'Clerk not configured. Add PUBLIC_CLERK_PUBLISHABLE_KEY to .env.local';
+				authError = 'Clerk not configured. Add NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY to .env.local';
 			} else {
 				authError = `Auth error: ${e.message}`;
 			}

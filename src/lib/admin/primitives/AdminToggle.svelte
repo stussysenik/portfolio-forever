@@ -14,13 +14,6 @@
 		checked = !checked;
 		dispatch('change', { checked });
 	}
-
-	function handleKeydown(e: KeyboardEvent) {
-		if (e.key === 'Enter' || e.key === ' ') {
-			e.preventDefault();
-			toggle();
-		}
-	}
 </script>
 
 <button
@@ -30,11 +23,10 @@
 	class:blue={color === 'blue'}
 	class:disabled
 	role="switch"
-	aria-pressed={checked}
+	aria-checked={checked}
 	aria-label={label}
 	{disabled}
 	on:click={toggle}
-	on:keydown={handleKeydown}
 >
 	<span class="toggle-track">
 		<span class="toggle-thumb"></span>

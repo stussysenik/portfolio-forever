@@ -259,7 +259,7 @@
   .notes-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    auto-rows: 1fr; /* Force rows to be equal height */
+    grid-auto-rows: 1fr; /* Force rows to be equal height */
     gap: var(--space-md);
   }
 

@@ -4,6 +4,8 @@
 	export let userName: string = '';
 	export let userImage: string = '';
 
+	$: void userImage;
+
 	let isDark = false;
 	let columns = 12;
 

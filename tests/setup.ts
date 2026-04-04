@@ -9,8 +9,12 @@ import { test as base, expect } from "@playwright/test";
 import type { Page, Locator } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 
+type TestFixtures = {
+	makeAxeBuilder: () => AxeBuilder;
+};
+
 // Custom test fixture with accessibility testing
-export const test = base.extend({
+export const test = base.extend<TestFixtures>({
         /**
          * Accessibility testing fixture
          * @example
@@ -159,14 +163,14 @@ export class TestUtils {
                         .all();
                 for (const button of buttons) {
                         const hasAccessibleName = await button.evaluate(
-                                (el: HTMLElement) => {
+                                (el: HTMLElement | SVGElement) => {
                                         return (
                                                 el.getAttribute("aria-label") ||
                                                 el.getAttribute(
                                                         "aria-labelledby",
                                                 ) ||
                                                 el.textContent?.trim() ||
-                                                el.title ||
+                                                el.getAttribute("title") ||
                                                 ""
                                         );
                                 },

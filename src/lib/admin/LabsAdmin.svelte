@@ -130,7 +130,7 @@
 						<button class="btn-sm" on:click={cancelEdit}>Cancel</button>
 					</div>
 				{:else}
-					<p class="card-desc" role="button" tabindex="0" on:click={() => startEdit(entry._id, 'description', entry.description)} on:keydown={a11yClick(() => startEdit(entry._id, 'description', entry.description))}>{entry.description}</p>
+					<button type="button" class="card-desc inline-edit-btn" on:click={() => startEdit(entry._id, 'description', entry.description)}>{entry.description}</button>
 				{/if}
 
 				<div class="card-tools" style="margin-top: var(--space-xs);">
@@ -139,7 +139,7 @@
 							<input class="field-input-sm" bind:value={editBuffer} placeholder={field} on:keydown={(e) => { if (e.key === 'Enter') saveEdit(entry._id); if (e.key === 'Escape') cancelEdit(); }} />
 							<button class="btn-sm btn-save" on:click={() => saveEdit(entry._id)}>&#10003;</button>
 						{:else}
-							<span class="tool-tag clickable" on:click={() => startEdit(entry._id, field, entry[field] || '')}>{field.replace('Url', '')}: {entry[field] ? '✓' : '—'}</span>
+							<button type="button" class="tool-tag clickable tool-tag-btn" on:click={() => startEdit(entry._id, field, entry[field] || '')}>{field.replace('Url', '')}: {entry[field] ? '✓' : '—'}</button>
 						{/if}
 					{/each}
 				</div>
@@ -149,14 +149,14 @@
 						<input class="field-input-sm" bind:value={editBuffer} placeholder="comma-separated tags" on:keydown={(e) => { if (e.key === 'Enter') saveEdit(entry._id); if (e.key === 'Escape') cancelEdit(); }} />
 						<button class="btn-sm btn-save" on:click={() => saveEdit(entry._id)}>&#10003;</button>
 					{:else}
-						<span class="tool-tag clickable" on:click={() => startEdit(entry._id, 'tags', (entry.tags || []).join(', '))}>tags: {(entry.tags || []).join(', ') || '—'}</span>
+						<button type="button" class="tool-tag clickable tool-tag-btn" on:click={() => startEdit(entry._id, 'tags', (entry.tags || []).join(', '))}>tags: {(entry.tags || []).join(', ') || '—'}</button>
 					{/if}
 
 					{#if editingId === entry._id && editingField === 'requiredFeatures'}
 						<input class="field-input-sm" bind:value={editBuffer} placeholder="comma-separated features" on:keydown={(e) => { if (e.key === 'Enter') saveEdit(entry._id); if (e.key === 'Escape') cancelEdit(); }} />
 						<button class="btn-sm btn-save" on:click={() => saveEdit(entry._id)}>&#10003;</button>
 					{:else}
-						<span class="tool-tag clickable" on:click={() => startEdit(entry._id, 'requiredFeatures', (entry.requiredFeatures || []).join(', '))}>features: {(entry.requiredFeatures || []).join(', ') || '—'}</span>
+						<button type="button" class="tool-tag clickable tool-tag-btn" on:click={() => startEdit(entry._id, 'requiredFeatures', (entry.requiredFeatures || []).join(', '))}>features: {(entry.requiredFeatures || []).join(', ') || '—'}</button>
 					{/if}
 				</div>
 			</div>

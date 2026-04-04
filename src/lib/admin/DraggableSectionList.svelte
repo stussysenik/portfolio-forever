@@ -223,6 +223,7 @@
 	on:drop={onDrop}
 	role="listbox"
 	aria-label="Page sections"
+	tabindex="0"
 >
 	{#each sorted as section, i}
 		{@const def = getTypeDef(section.sectionType)}
@@ -249,8 +250,8 @@
 			on:keydown={(e) => onCardKeydown(e, i)}
 			role="option"
 			tabindex="0"
+			aria-selected={expandedIndex === i}
 			aria-grabbed={grabbed === i}
-			aria-expanded={expandedIndex === i}
 			aria-label="{def.label} section — press Space to grab, arrow keys to move"
 		>
 			<span class="drag-handle" aria-hidden="true">&#9776;</span>

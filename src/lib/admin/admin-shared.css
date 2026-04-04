@@ -27,6 +27,33 @@
 :global(.card-desc:hover) { color: var(--color-text); }
 :global(.card-tools) { display: flex; flex-wrap: wrap; gap: var(--space-xs); margin-top: var(--space-sm); }
 :global(.tool-tag) { font-size: var(--font-size-xs); padding: 2px 8px; border-radius: 2px; background: var(--color-bg-alt); color: var(--color-text-muted); }
+:global(.inline-edit-btn) {
+	appearance: none;
+	-webkit-appearance: none;
+	border: none;
+	background: none;
+	padding: 0;
+	font: inherit;
+	color: inherit;
+	text-align: left;
+}
+:global(.inline-edit-btn.card-desc) { width: 100%; }
+:global(.tool-tag-btn) {
+	appearance: none;
+	-webkit-appearance: none;
+	border: none;
+	font: inherit;
+	color: inherit;
+	text-align: left;
+	cursor: pointer;
+	display: inline-flex;
+	align-items: center;
+}
+:global(.inline-edit-btn:focus-visible),
+:global(.tool-tag-btn:focus-visible) {
+	outline: 2px solid var(--color-accent);
+	outline-offset: 2px;
+}
 
 /* Reorder controls */
 :global(.reorder-btns) { display: flex; flex-direction: column; gap: 1px; }
@@ -53,6 +80,8 @@
 /* Field rows (used in SiteConfigAdmin, DisplayAdmin, appearance pickers) */
 :global(.field-row) { display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-sm) 0; }
 :global(.field-label) { font-family: var(--font-mono); font-size: var(--font-size-xs); font-weight: 600; text-transform: uppercase; color: var(--color-text-muted); min-width: 70px; }
+:global(.field-value) { flex: 1; cursor: pointer; padding: 2px 4px; border-radius: var(--radius-sm); }
+:global(.field-value:hover) { background: var(--color-bg-alt); }
 
 /* Sliders */
 :global(.slider-row) { display: flex; align-items: center; gap: var(--space-sm); flex: 1; }
@@ -198,3 +227,11 @@
 	font-family: var(--font-mono);
 	font-size: var(--font-size-xs);
 }
+
+/* Reused compact cards & list editors */
+:global(.card-compact) { display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-sm) var(--space-md); }
+:global(.highlights-editor) { margin-top: var(--space-sm); }
+:global(.highlight-row) { display: flex; align-items: center; gap: var(--space-xs); margin-bottom: var(--space-xs); }
+:global(.highlight-actions) { display: flex; gap: var(--space-xs); margin-top: var(--space-xs); }
+:global(.lang-name) { font-weight: 600; cursor: pointer; }
+:global(.lang-name:hover) { color: var(--color-accent); }

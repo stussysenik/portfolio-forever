@@ -19,10 +19,6 @@
 		if (e.key === 'Escape') close();
 	}
 
-	function handleBackdropClick() {
-		close();
-	}
-
 	function handleTouchStart(e: TouchEvent) {
 		dragging = true;
 		startY = e.touches[0].clientY;
@@ -64,14 +60,21 @@
 <svelte:window on:keydown={open ? handleKeydown : undefined} />
 
 {#if open}
-	<div class="sheet-backdrop" on:click={handleBackdropClick} role="presentation">
+	<div class="sheet-backdrop" role="presentation">
+		<button
+			type="button"
+			class="sheet-dismiss"
+			tabindex="-1"
+			aria-label={title ? `Close ${title}` : 'Close bottom sheet'}
+			on:click={close}
+		></button>
 		<div
 			class="sheet"
 			bind:this={sheetEl}
-			on:click|stopPropagation
 			role="dialog"
 			aria-modal="true"
 			aria-label={title}
+			tabindex="-1"
 		>
 			<!-- svelte-ignore a11y-no-static-element-interactions -->
 			<div
@@ -106,6 +109,15 @@
 		animation: fadeIn 120ms ease;
 	}
 
+	.sheet-dismiss {
+		position: absolute;
+		inset: 0;
+		border: none;
+		background: transparent;
+		padding: 0;
+		cursor: pointer;
+	}
+
 	.sheet {
 		position: fixed;
 		bottom: 0;
@@ -122,6 +134,8 @@
 		transform: translateY(0);
 		transition: transform 120ms ease;
 		will-change: transform;
+		z-index: 1;
+		overscroll-behavior: contain;
 	}
 
 	.sheet-handle-area {

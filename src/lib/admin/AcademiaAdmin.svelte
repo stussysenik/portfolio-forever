@@ -127,7 +127,7 @@
 						<button class="btn-sm" on:click={cancelEdit}>Cancel</button>
 					</div>
 				{:else}
-					<p class="card-desc" role="button" tabindex="0" on:click={() => startEdit(entry._id, 'description', entry.description || '')} on:keydown={a11yClick(() => startEdit(entry._id, 'description', entry.description || ''))}>{entry.description || '(click to add description)'}</p>
+					<button type="button" class="card-desc inline-edit-btn" on:click={() => startEdit(entry._id, 'description', entry.description || '')}>{entry.description || '(click to add description)'}</button>
 				{/if}
 
 				<!-- Links row -->
@@ -137,9 +137,9 @@
 							<input class="field-input-sm" bind:value={editBuffer} placeholder="{urlField}" on:keydown={(e) => { if (e.key === 'Enter') saveAcademicEdit(entry._id); if (e.key === 'Escape') cancelEdit(); }} />
 							<button class="btn-sm btn-save" on:click={() => saveAcademicEdit(entry._id)}>&#10003;</button>
 						{:else}
-							<span class="tool-tag" on:click={() => startEdit(entry._id, urlField, entry[urlField] || '')} style="cursor:pointer;">
+							<button type="button" class="tool-tag tool-tag-btn" on:click={() => startEdit(entry._id, urlField, entry[urlField] || '')}>
 								{urlField.replace('Url', '')}: {entry[urlField] ? '✓' : '—'}
-							</span>
+							</button>
 						{/if}
 					{/each}
 				</div>
@@ -308,24 +308,6 @@
 		display: flex;
 		gap: var(--space-xs);
 		margin-top: var(--space-xs);
-	}
-
-	.btn {
-		padding: 6px 14px;
-		border-radius: var(--radius-sm);
-		font-size: var(--font-size-sm);
-		font-weight: 500;
-		border: 1px solid var(--border-color);
-		background: var(--color-bg);
-		color: var(--color-text);
-		cursor: pointer;
-		text-decoration: none;
-		display: inline-flex;
-		align-items: center;
-	}
-
-	.btn:hover {
-		border-color: var(--color-text-muted);
 	}
 
 	.btn-sm {

@@ -67,6 +67,7 @@
 			<button
 				class="popover-dot"
 				role="option"
+				aria-selected={false}
 				aria-label={color}
 				style="background: {COLOR_CSS[color]}"
 				on:click={() => handleColorPick(color)}

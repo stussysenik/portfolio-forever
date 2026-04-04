@@ -9,12 +9,36 @@
   let elevating = false;
   let currentFloor = 0;
   let totalFloors = 0;
+  let elevatorFrame: number | null = null;
+  let prefersReducedMotion = false;
 
   let mainAudio: HTMLAudioElement | null = null;
   let dingAudio: HTMLAudioElement | null = null;
 
+  type NavigatorHints = Navigator & {
+    connection?: { saveData?: boolean };
+  };
+
   const ELEVATOR_MUSIC = 'https://tholman.com/elevator.js/music/elevator.mp3';
   const DING_SOUND = 'https://tholman.com/elevator.js/music/ding.mp3';
+
+  function shouldAutoMute(): boolean {
+    const connection = (navigator as NavigatorHints).connection;
+    return prefersReducedMotion || connection?.saveData === true;
+  }
+
+  function ensureAudio() {
+    if (!browser) return;
+    if (!mainAudio) {
+      mainAudio = new Audio(ELEVATOR_MUSIC);
+      mainAudio.loop = true;
+      mainAudio.volume = 0.4;
+    }
+    if (!dingAudio) {
+      dingAudio = new Audio(DING_SOUND);
+      dingAudio.volume = 0.6;
+    }
+  }
 
   function handleScroll() {
     visible = window.scrollY > showAfter;
@@ -26,6 +50,12 @@
 
   function elevate() {
     if (elevating || !browser) return;
+
+    if (prefersReducedMotion) {
+      window.scrollTo(0, 0);
+      currentFloor = 0;
+      return;
+    }
     
     elevating = true;
     const startPosition = window.scrollY;
@@ -37,10 +67,10 @@
     const scaleFactor = Math.sqrt(startPosition) * 30;
     const duration = Math.min(baseDuration + scaleFactor, 6000);
     const startTime = performance.now();
-    
-    // Floor tick interval
-    const floorInterval = duration / (totalFloors + 1);
-    let lastFloorTick = startTime;
+
+    if (soundEnabled) {
+      ensureAudio();
+    }
 
     if (soundEnabled && mainAudio) {
       mainAudio.currentTime = 0;
@@ -60,10 +90,11 @@
       currentFloor = Math.floor(newPosition / 200);
 
       if (progress < 1) {
-        requestAnimationFrame(animateLoop);
+        elevatorFrame = requestAnimationFrame(animateLoop);
       } else {
         elevating = false;
         currentFloor = 0;
+        elevatorFrame = null;
         
         if (mainAudio) {
           mainAudio.pause();
@@ -77,12 +108,16 @@
       }
     }
 
-    requestAnimationFrame(animateLoop);
+    elevatorFrame = requestAnimationFrame(animateLoop);
   }
 
   function toggleSound(e: MouseEvent) {
     e.stopPropagation();
     soundEnabled = !soundEnabled;
+
+    if (soundEnabled) {
+      ensureAudio();
+    }
     
     if (!soundEnabled && mainAudio && !mainAudio.paused) {
       mainAudio.pause();
@@ -92,13 +127,9 @@
 
   onMount(() => {
     if (!browser) return;
-    
-    mainAudio = new Audio(ELEVATOR_MUSIC);
-    mainAudio.loop = true;
-    mainAudio.volume = 0.4;
-    
-    dingAudio = new Audio(DING_SOUND);
-    dingAudio.volume = 0.6;
+
+    prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    soundEnabled = !shouldAutoMute();
     
     window.addEventListener('scroll', handleScroll, { passive: true });
     handleScroll();
@@ -107,6 +138,10 @@
   onDestroy(() => {
     if (!browser) return;
     window.removeEventListener('scroll', handleScroll);
+
+    if (elevatorFrame !== null) {
+      cancelAnimationFrame(elevatorFrame);
+    }
     
     if (mainAudio) {
       mainAudio.pause();
@@ -117,33 +152,32 @@
 </script>
 
 {#if visible}
-  <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <!-- svelte-ignore a11y-no-static-element-interactions -->
-  <div
-    class="elevator"
-    class:elevating
-    on:click={elevate}
-    role="button"
-    tabindex="0"
-    aria-label="Take elevator to top"
-  >
-    <span class="elevator-panel">
-      <span class="floor-display">
-        {#if elevating}
-          <span class="floor-num">{currentFloor}</span>
-        {:else}
-          <span class="arrow">↑</span>
-        {/if}
-      </span>
-      <span class="elevator-label">
-        {#if elevating}
-          going up
-        {:else}
-          lobby
-        {/if}
-      </span>
-    </span>
+  <div class="elevator" class:elevating>
     <button
+      type="button"
+      class="elevator-action"
+      on:click={elevate}
+      aria-label="Take elevator to top"
+    >
+      <span class="elevator-panel">
+        <span class="floor-display">
+          {#if elevating}
+            <span class="floor-num">{currentFloor}</span>
+          {:else}
+            <span class="arrow">↑</span>
+          {/if}
+        </span>
+        <span class="elevator-label">
+          {#if elevating}
+            going up
+          {:else}
+            lobby
+          {/if}
+        </span>
+      </span>
+    </button>
+    <button
+      type="button"
       class="sound-btn"
       on:click={toggleSound}
       aria-label={soundEnabled ? 'Mute' : 'Unmute'}
@@ -180,6 +214,19 @@
     transition: border-color var(--duration-fast) var(--easing);
   }
 
+  .elevator-action {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+
   @keyframes arrive {
     to {
       opacity: 1;
@@ -189,6 +236,12 @@
 
   .elevator:hover {
     border-color: var(--color-text-muted);
+  }
+
+  .elevator-action:focus-visible,
+  .sound-btn:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
   }
 
   .elevator-panel {
@@ -320,6 +373,22 @@
       width: 16px;
       height: 16px;
       font-size: 10px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .elevator,
+    .floor-num,
+    .elevating .elevator-label {
+      animation: none;
+    }
+
+    .arrow,
+    .elevator,
+    .sound-btn,
+    .sound-icon,
+    .elevator-label {
+      transition: none;
     }
   }
 </style>

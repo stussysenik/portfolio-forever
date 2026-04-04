@@ -94,7 +94,7 @@
 						<button class="btn-sm" on:click={cancelEdit}>Cancel</button>
 					</div>
 				{:else}
-					<p class="card-desc" role="button" tabindex="0" on:click={() => startEdit(entry._id, 'excerpt', entry.excerpt || '')} on:keydown={a11yClick(() => startEdit(entry._id, 'excerpt', entry.excerpt || ''))}>{entry.excerpt || '(click to add excerpt)'}</p>
+					<button type="button" class="card-desc inline-edit-btn" on:click={() => startEdit(entry._id, 'excerpt', entry.excerpt || '')}>{entry.excerpt || '(click to add excerpt)'}</button>
 				{/if}
 
 				{#if editingId === entry._id && editingField === 'content'}
@@ -104,9 +104,9 @@
 						<button class="btn-sm" on:click={cancelEdit}>Cancel</button>
 					</div>
 				{:else}
-					<p class="card-desc content-preview" role="button" tabindex="0" on:click={() => startEdit(entry._id, 'content', entry.content || '')} on:keydown={a11yClick(() => startEdit(entry._id, 'content', entry.content || ''))} style="margin-top: var(--space-sm);">
+					<button type="button" class="card-desc content-preview inline-edit-btn" on:click={() => startEdit(entry._id, 'content', entry.content || '')} style="margin-top: var(--space-sm);">
 						{entry.content ? (entry.content.length > 120 ? entry.content.slice(0, 120) + '...' : entry.content) : '(click to add content)'}
-					</p>
+					</button>
 				{/if}
 
 				<div class="card-tools" style="margin-top: var(--space-xs);">
@@ -114,14 +114,14 @@
 						<input class="field-input-sm" bind:value={editBuffer} placeholder="comma-separated tags" on:keydown={(e) => { if (e.key === 'Enter') saveEdit(entry._id); if (e.key === 'Escape') cancelEdit(); }} />
 						<button class="btn-sm btn-save" on:click={() => saveEdit(entry._id)}>&#10003;</button>
 					{:else}
-						<span class="tool-tag clickable" on:click={() => startEdit(entry._id, 'tags', (entry.tags || []).join(', '))}>tags: {(entry.tags || []).join(', ') || '—'}</span>
+						<button type="button" class="tool-tag clickable tool-tag-btn" on:click={() => startEdit(entry._id, 'tags', (entry.tags || []).join(', '))}>tags: {(entry.tags || []).join(', ') || '—'}</button>
 					{/if}
 
 					{#if editingId === entry._id && editingField === 'coverImage'}
 						<input class="field-input-sm" bind:value={editBuffer} placeholder="Cover image URL" on:keydown={(e) => { if (e.key === 'Enter') saveEdit(entry._id); if (e.key === 'Escape') cancelEdit(); }} />
 						<button class="btn-sm btn-save" on:click={() => saveEdit(entry._id)}>&#10003;</button>
 					{:else}
-						<span class="tool-tag clickable" on:click={() => startEdit(entry._id, 'coverImage', entry.coverImage || '')}>cover: {entry.coverImage ? '✓' : '—'}</span>
+						<button type="button" class="tool-tag clickable tool-tag-btn" on:click={() => startEdit(entry._id, 'coverImage', entry.coverImage || '')}>cover: {entry.coverImage ? '✓' : '—'}</button>
 					{/if}
 				</div>
 			</div>

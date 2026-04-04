@@ -208,6 +208,7 @@
 		margin: 0;
 	}
 	.vp-input[type=number] {
+		appearance: textfield;
 		-moz-appearance: textfield;
 	}
 

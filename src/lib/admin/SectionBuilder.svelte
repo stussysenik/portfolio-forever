@@ -8,7 +8,6 @@
 
 	export let page: any = null;
 	export let featureFlags: any[] = [];
-	export let entriesByTable: Record<string, any[]> = {};
 	export let client: any;
 	export let api: any;
 
@@ -50,8 +49,9 @@
 		if (!page?.pageId) return;
 		try {
 			const newOrder = e.detail.order;
+			const sortedSections = [...sections].sort((a: any, b: any) => a.order - b.order);
 			const reordered = newOrder.map((oldIdx: number, newIdx: number) => ({
-				...sections.sort((a: any, b: any) => a.order - b.order)[oldIdx],
+				...sortedSections[oldIdx],
 				order: newIdx,
 			}));
 			await client.mutation(api.pages.upsert, {

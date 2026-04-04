@@ -19,17 +19,6 @@
 
 	const dispatch = createEventDispatcher<{ close: void }>();
 
-	function handleBackdropClick() {
-		dispatch('close');
-	}
-
-	function handleBackdropKeydown(e: KeyboardEvent) {
-		if (e.key === 'Enter' || e.key === ' ') {
-			e.preventDefault();
-			dispatch('close');
-		}
-	}
-
 	onMount(() => {
 		const handler = (e: KeyboardEvent) => {
 			if (open && e.key === 'Escape') {
@@ -42,23 +31,24 @@
 </script>
 
 {#if open}
-	<div
+	<button
+		type="button"
 		class="drawer-backdrop"
 		class:visible={open}
-		on:click={handleBackdropClick}
-		on:keydown={handleBackdropKeydown}
-		role="button"
+		on:click={() => dispatch('close')}
 		tabindex="-1"
 		aria-label="Close settings"
-	></div>
+	></button>
 {/if}
 
-<aside
+<div
 	class="drawer"
 	class:open
 	role="dialog"
+	aria-modal="true"
 	aria-label="Settings"
 	aria-hidden={!open}
+	tabindex="-1"
 >
 	<div class="drawer-header">
 		<span class="drawer-title">Settings</span>
@@ -114,7 +104,7 @@
 			</div>
 		</section>
 	</div>
-</aside>
+</div>
 
 <style>
 	/* ── Backdrop ── */
