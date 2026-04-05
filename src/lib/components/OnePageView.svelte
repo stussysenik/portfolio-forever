@@ -246,7 +246,11 @@
 
 <svelte:window on:keydown={handleKeydown} on:scroll={handleScroll} />
 
-<div class="one-page" class:reader-mode={$isReaderMode}>
+<div
+  class="one-page"
+  class:reader-mode={$isReaderMode}
+  style:--color-accent={homePage?.themeOverrides?.accentColor ?? null}
+>
   <!-- Section nav (scroll spy) -->
   <nav class="section-nav" aria-label="Page sections">
     {#each sectionOrder as id}

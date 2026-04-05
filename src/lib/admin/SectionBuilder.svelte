@@ -92,6 +92,20 @@
 		dispatch('opensettings');
 	}
 
+	async function handleAccentChange(color: string | null) {
+		if (!page?.pageId) return;
+		const themeOverrides = { ...(page?.themeOverrides ?? {}), accentColor: color };
+		if (color === null) delete themeOverrides.accentColor;
+		try {
+			await client.mutation(api.pages.upsert, {
+				...stripConvexMeta(page),
+				themeOverrides,
+			});
+		} catch (err: any) {
+			toast.error(err.message || 'Failed to update accent color');
+		}
+	}
+
 	async function handleParticleChange(e: CustomEvent<{ value: string | string[] }>) {
 		if (!page?.sections?.length) return;
 		const newParticles = Array.isArray(e.detail.value) ? e.detail.value : [e.detail.value];
@@ -127,6 +141,19 @@
 					<span class="badge badge-nav">NAV</span>
 				{/if}
 				<span class="badge badge-count">{sections.length} section{sections.length !== 1 ? 's' : ''}</span>
+			</div>
+			<div class="page-accent">
+				<label class="field-label" for="page-accent-color">ACCENT</label>
+				<input
+					id="page-accent-color"
+					type="color"
+					value={page?.themeOverrides?.accentColor ?? '#2563EB'}
+					on:input={(e) => handleAccentChange(e.currentTarget.value)}
+					class="accent-picker"
+				/>
+				{#if page?.themeOverrides?.accentColor}
+					<button class="accent-reset" on:click={() => handleAccentChange(null)} title="Reset to default">x</button>
+				{/if}
 			</div>
 		</div>
 		<div class="header-bottom">
@@ -263,6 +290,55 @@
 		background: color-mix(in oklch, var(--admin-blue, #2563EB), transparent 85%);
 		color: var(--admin-blue, #2563EB);
 		border: 1px solid color-mix(in oklch, var(--admin-blue, #2563EB), transparent 60%);
+	}
+
+	/* ── Accent color ── */
+	.page-accent {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		margin-left: auto;
+	}
+
+	.page-accent .field-label {
+		font-family: var(--font-mono);
+		font-size: 7px;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		color: var(--color-text-subtle);
+	}
+
+	.accent-picker {
+		width: 20px;
+		height: 20px;
+		padding: 0;
+		border: 1px solid var(--border-color-subtle);
+		border-radius: 2px;
+		cursor: pointer;
+		background: none;
+	}
+
+	.accent-picker::-webkit-color-swatch-wrapper {
+		padding: 0;
+	}
+
+	.accent-picker::-webkit-color-swatch {
+		border: none;
+		border-radius: 1px;
+	}
+
+	.accent-reset {
+		font-family: var(--font-mono);
+		font-size: 8px;
+		color: var(--color-text-subtle);
+		background: none;
+		border: none;
+		cursor: pointer;
+		padding: 2px 4px;
+	}
+
+	.accent-reset:hover {
+		color: var(--color-danger, #ef4444);
 	}
 
 	/* ── Builder sections ── */
