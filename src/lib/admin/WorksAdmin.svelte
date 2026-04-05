@@ -76,16 +76,16 @@
 	}
 
 	async function moveWorkEntry(id: string, direction: -1 | 1) {
-		const sorted = [...entries].sort((a, b) => a.order - b.order);
+		const sorted = [...entries].sort((a: any, b: any) => a.order - b.order);
 		const idx = sorted.findIndex((e: any) => e._id === id);
-		const swapIdx = idx + direction;
-		if (swapIdx < 0 || swapIdx >= sorted.length) return;
-		await client.mutation(api.works.reorderEntries, {
-			updates: [
-				{ id: sorted[idx]._id, order: swapIdx },
-				{ id: sorted[swapIdx]._id, order: idx },
-			],
-		});
+		const newIdx = idx + direction;
+		if (newIdx < 0 || newIdx >= sorted.length) return;
+		// Move element to new position
+		const [moved] = sorted.splice(idx, 1);
+		sorted.splice(newIdx, 0, moved);
+		// Renumber all entries sequentially (0, 1, 2, 3...)
+		const updates = sorted.map((e: any, i: number) => ({ id: e._id, order: i }));
+		await client.mutation(api.works.reorderEntries, { updates });
 	}
 </script>
 
@@ -122,6 +122,15 @@
 		<div class="card" class:hidden-entry={!entry.visible}>
 			<div class="card-header">
 				<div class="card-title-row">
+					{#if entry.preview}
+						<div class="works-thumb">
+							<img src={entry.preview} alt={entry.title} loading="lazy" />
+						</div>
+					{:else}
+						<div class="works-thumb works-thumb--empty">
+							<span>no preview</span>
+						</div>
+					{/if}
 					<div class="reorder-btns">
 						<button class="btn-icon" on:click={() => moveWorkEntry(entry._id, -1)} disabled={idx === 0}>&#8593;</button>
 						<button class="btn-icon" on:click={() => moveWorkEntry(entry._id, 1)} disabled={idx === entries.length - 1}>&#8595;</button>
@@ -215,6 +224,35 @@
 
 <style>
 	/* Shared admin styles come from admin-shared.css */
+
+	.works-thumb {
+		width: 48px;
+		height: 32px;
+		border-radius: 2px;
+		overflow: hidden;
+		flex-shrink: 0;
+		border: 1px solid var(--border-color-subtle);
+	}
+
+	.works-thumb img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	.works-thumb--empty {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: var(--color-bg-alt);
+	}
+
+	.works-thumb--empty span {
+		font-size: 5px;
+		font-family: var(--font-mono);
+		color: var(--color-text-subtle);
+		text-transform: uppercase;
+	}
 
 	.tool-tag-btn {
 		cursor: pointer;
