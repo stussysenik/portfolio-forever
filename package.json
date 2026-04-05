@@ -53,8 +53,6 @@
         "dependencies": {
                 "@clerk/clerk-js": "^6.3.3",
                 "@mux/mux-player": "^3.11.7",
-                "@portabletext/svelte": "^3.0.1",
-                "@sanity/client": "^7.13.2",
                 "convex": "^1.34.1",
                 "fengari-web": "^0.1.4",
                 "posthog-js": "^1.364.1"

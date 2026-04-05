@@ -2,6 +2,7 @@
 	import { formatDate, getHighlight, works as staticWorks } from "$lib/data/content";
 	import { getHighlightTextColor } from "$lib/utils/contrast";
 	import AsciiDonut from "$lib/components/AsciiDonut.svelte";
+	import AsciiWave from "$lib/components/AsciiWave.svelte";
 	import Elevator from "$lib/components/Elevator.svelte";
 	import HeroPositioningBlock from "$lib/components/blocks/HeroPositioningBlock.svelte";
 	import OutcomeBlock from "$lib/components/blocks/OutcomeBlock.svelte";
@@ -13,6 +14,10 @@
 
 	export let id = "hero";
 
+	let heroConfig: any = null;
+	$: showDonut = heroConfig?.showAsciiDonut ?? false;
+	$: showWave = heroConfig?.showAsciiWave ?? false;
+
 	let profileData: any = {
 		name: "Stüssy Senik",
 		taglines: [{ lang: "de", text: "Design Engineer · Creative Producer" }],
@@ -20,6 +25,7 @@
 		location: "NYC / PRAGUE",
 	};
 	let works: any[] = staticWorks;
+	let caseStudies: any[] = [];
 
 	onMount(() => {
 		const client = getConvexClient();
@@ -36,7 +42,13 @@
 		const unsub2 = client.onUpdate(api.works.getVisibleWorks, {}, (data: any) => {
 			works = Array.isArray(data) ? data : staticWorks;
 		});
-		return () => { unsub1(); unsub2(); };
+		const unsub3 = client.onUpdate(api.hero.getHeroConfig, {}, (data: any) => {
+			heroConfig = data;
+		});
+		const unsub4 = client.onUpdate(api.heroCaseStudies.getVisible, {}, (data: any) => {
+			if (data) caseStudies = data;
+		});
+		return () => { unsub1(); unsub2(); unsub3(); unsub4(); };
 	});
 </script>
 
@@ -52,9 +64,17 @@
 		</header>
 	{/if}
 
+	{#if showDonut || showWave}
+		<div class="hero-ascii-art">
+			{#if showDonut}<AsciiDonut />{/if}
+			{#if showWave}<AsciiWave />{/if}
+		</div>
+	{/if}
+
 	<div class="page-sections">
 
-		<!-- The Case Studies (Immediate Evidence Density) -->
+		<!-- The Case Studies (Immediate Evidence Density) — data-driven from Convex -->
+		{#if caseStudies.length > 0}
 		<section class="section pt-xl">
 			<header class="section-header">
 				<span class="section-marker">&#9670;</span>
@@ -62,48 +82,29 @@
 			</header>
 
 			<div class="flex flex-col gap-2xl">
-				<!-- Case Study 1: Attendu -->
-				<div class="case-study pb-lg border-b border-border-color-subtle">
-					<div class="mb-md">
-						<h3 class="text-xl weight-bold tracking-tight mb-2xs">Attendu Platform Overhaul</h3>
-						{#if $isScreenPass || $isDeepDive || $isFullArchive}
-							<div class="flex gap-lg flex-wrap mb-sm">
-								<MetadataBlock label="Time to Ship" value="2 weeks" />
-								<MetadataBlock label="Role" value="Lead Design Engineer" />
-								<MetadataBlock label="Framework" value="SvelteKit + Tailwind" />
-							</div>
-						{/if}
+				{#each caseStudies as cs, i (cs._id ?? i)}
+					<div class="case-study pb-lg" class:border-b={i < caseStudies.length - 1} class:border-border-color-subtle={i < caseStudies.length - 1}>
+						<div class="mb-md">
+							<h3 class="text-xl weight-bold tracking-tight mb-2xs">{cs.title}</h3>
+							{#if $isScreenPass || $isDeepDive || $isFullArchive}
+								<div class="flex gap-lg flex-wrap mb-sm">
+									{#if cs.timeToShip}<MetadataBlock label="Time to Ship" value={cs.timeToShip} />{/if}
+									{#if cs.role}<MetadataBlock label="Role" value={cs.role} />{/if}
+									{#if cs.framework}<MetadataBlock label="Framework" value={cs.framework} />{/if}
+								</div>
+							{/if}
+						</div>
+
+						<OutcomeBlock
+							problem={cs.problem}
+							constraint={cs.constraint}
+							result={cs.result}
+						/>
 					</div>
-
-					<!-- Outcomes explicitly front-loaded -->
-					<OutcomeBlock
-						problem="Aesthetics were high, but conversion funnel lacked trust signals."
-						constraint="Strict 2-week timeline before Series A raise."
-						result="Increased demo conversions by 42% post-rebuild."
-					/>
-				</div>
-
-				<!-- Case Study 2: Claude Code Elixir -->
-				<div class="case-study pb-lg">
-					<div class="mb-md">
-						<h3 class="text-xl weight-bold tracking-tight mb-2xs">Claude Code Elixir Runtime</h3>
-						{#if $isScreenPass || $isDeepDive || $isFullArchive}
-							<div class="flex gap-lg flex-wrap mb-sm">
-								<MetadataBlock label="Time to Ship" value="3 days" />
-								<MetadataBlock label="Role" value="Architect" />
-								<MetadataBlock label="Framework" value="Elixir/OTP + Zig" />
-							</div>
-						{/if}
-					</div>
-
-					<OutcomeBlock
-						problem="Need for an extremely reliable local-first runtime without JS lockouts."
-						constraint="OTP concurrency limits & native OS file access."
-						result="Zero-downtime robust recovery model scaled to 10k messages."
-					/>
-				</div>
+				{/each}
 			</div>
 		</section>
+		{/if}
 
 		<!-- Only render standard arrays if we aren't in strict 5-min Screen Pass -->
 		{#if !$isScreenPass}
@@ -162,6 +163,14 @@
 		justify-content: center;
 		min-height: 40vh;
 		padding: var(--space-2xl) 0;
+	}
+
+	.hero-ascii-art {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: var(--space-lg);
+		margin: var(--space-xl) 0;
 	}
 
 	.case-study {

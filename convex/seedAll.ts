@@ -284,6 +284,85 @@ export const seedLabs = mutation({
 	},
 });
 
+export const seedBlog = mutation({
+	handler: async (ctx) => {
+		const existing = await ctx.db.query("blogPosts").first();
+		if (existing) return "Blog already seeded";
+
+		const posts = [
+			{
+				title: "Building a Portfolio with SvelteKit + Convex",
+				slug: "sveltekit-convex-portfolio",
+				content: "<h2>Why SvelteKit + Convex?</h2><p>After years of fighting with SSR, hydration mismatches, and stale data, I rebuilt my portfolio on a stack that just works. SvelteKit handles routing and rendering. Convex handles everything else — real-time data, mutations, subscriptions — with zero boilerplate.</p><p>The result: a portfolio that updates live when I edit it from the admin panel. No deploy needed. No cache invalidation. Just change and see.</p><h2>Architecture</h2><p>The key insight: every piece of content lives in Convex. Pages are composed of sections. Sections reference data tables. The admin panel writes to Convex; the frontend subscribes to changes. It's reactive all the way down.</p>",
+				excerpt: "How real-time data and composable sections make a portfolio that updates itself.",
+				tags: ["sveltekit", "convex", "architecture"],
+				publishedAt: "2026-03-15",
+				visible: true,
+			},
+			{
+				title: "ASCII Art Algorithms for the Web",
+				slug: "ascii-art-algorithms",
+				content: "<h2>The Spinning Donut</h2><p>Andy Sloane's donut.c is a masterpiece of mathematical art — a torus rendered entirely in ASCII characters using nothing but trigonometry and a z-buffer. I ported it to TypeScript and Zig for my portfolio's hero section.</p><p>The algorithm works by sampling points on a torus surface, projecting them to 2D, and selecting a character based on surface luminance. The character set <code>.,-~:;=!*%#</code> maps darkness to density.</p><h2>Wave Fields</h2><p>For variety, I added a wave field generator: a 2D grid where each cell's character is determined by layered sine waves. The effect is hypnotic — like watching the ocean rendered in monospace.</p>",
+				excerpt: "Porting donut.c to the browser and inventing new ASCII animations.",
+				tags: ["ascii", "algorithms", "creative-coding"],
+				publishedAt: "2026-03-20",
+				visible: true,
+			},
+			{
+				title: "On Design Engineering",
+				slug: "on-design-engineering",
+				content: "<h2>The Gap</h2><p>Design engineering sits in the gap between design and engineering — not as a compromise, but as its own discipline. A design engineer doesn't just implement mockups. They understand the material (code, browsers, interaction models) well enough to make design decisions in the medium itself.</p><p>The best interfaces I've built weren't pixel-perfect reproductions of Figma files. They were collaborations where the design evolved through implementation — where the constraints of the medium informed the design as much as the design informed the code.</p><h2>What It Takes</h2><p>Typography. Color theory. Motion design. Accessibility. Performance. State management. API design. These aren't separate concerns — they're facets of the same craft.</p>",
+				excerpt: "Design engineering as its own discipline, not a compromise between design and code.",
+				tags: ["design", "engineering", "craft"],
+				publishedAt: "2026-04-01",
+				visible: true,
+			},
+		];
+
+		for (let i = 0; i < posts.length; i++) {
+			await ctx.db.insert("blogPosts", { ...posts[i], order: i });
+		}
+		return `Seeded ${posts.length} blog posts`;
+	},
+});
+
+export const seedHeroCaseStudies = mutation({
+	handler: async (ctx) => {
+		const existing = await ctx.db.query("heroCaseStudies").first();
+		if (existing) return "Hero case studies already seeded";
+
+		const studies = [
+			{
+				title: "Attendu Platform Overhaul",
+				role: "Lead Design Engineer",
+				timeToShip: "2 weeks",
+				framework: "SvelteKit + Tailwind",
+				problem: "Aesthetics were high, but conversion funnel lacked trust signals.",
+				constraint: "Strict 2-week timeline before Series A raise.",
+				result: "Increased demo conversions by 42% post-rebuild.",
+				order: 0,
+				visible: true,
+			},
+			{
+				title: "Claude Code Elixir Runtime",
+				role: "Architect",
+				timeToShip: "3 days",
+				framework: "Elixir/OTP + Zig",
+				problem: "Need for an extremely reliable local-first runtime without JS lockouts.",
+				constraint: "OTP concurrency limits & native OS file access.",
+				result: "Zero-downtime robust recovery model scaled to 10k messages.",
+				order: 1,
+				visible: true,
+			},
+		];
+
+		for (const study of studies) {
+			await ctx.db.insert("heroCaseStudies", study);
+		}
+		return `Seeded ${studies.length} hero case studies`;
+	},
+});
+
 export const seedMinor = mutation({
 	handler: async (ctx) => {
 		const existing = await ctx.db.query("minorEntries").first();

@@ -193,6 +193,7 @@ export default defineSchema({
 	heroConfig: defineTable({
 		showVelocity: v.optional(v.boolean()),
 		showAsciiDonut: v.optional(v.boolean()),
+		showAsciiWave: v.optional(v.boolean()),
 		showPixelArt: v.optional(v.boolean()),
 		layout: v.optional(v.string()),
 		accentColor: v.optional(v.string()),
@@ -244,6 +245,19 @@ export default defineSchema({
 		tags: v.array(v.string()),
 		memoryBudget: v.number(),
 		requiredFeatures: v.array(v.string()),
+		order: v.number(),
+		visible: v.boolean(),
+	}).index("by_order", ["order"]),
+
+	// Hero case studies — data-driven flagship shipments
+	heroCaseStudies: defineTable({
+		title: v.string(),
+		role: v.optional(v.string()),
+		timeToShip: v.optional(v.string()),
+		framework: v.optional(v.string()),
+		problem: v.string(),
+		constraint: v.string(),
+		result: v.string(),
 		order: v.number(),
 		visible: v.boolean(),
 	}).index("by_order", ["order"]),

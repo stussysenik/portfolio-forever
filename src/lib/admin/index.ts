@@ -37,6 +37,7 @@ export { default as GalleryAdmin } from './GalleryAdmin.svelte';
 export { default as MinorAdmin } from './MinorAdmin.svelte';
 export { default as LabsAdmin } from './LabsAdmin.svelte';
 export { default as BlogAdmin } from './BlogAdmin.svelte';
+export { default as HeroCaseStudyAdmin } from './HeroCaseStudyAdmin.svelte';
 export { default as ContentHub } from './ContentHub.svelte';
 export { default as PagePanel } from './PagePanel.svelte';
 export { default as EntryTable } from './EntryTable.svelte';

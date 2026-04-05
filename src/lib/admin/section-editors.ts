@@ -22,6 +22,17 @@ export interface SectionEditorDef {
 
 export const sectionEditors: Record<string, SectionEditorDef> = {
 	'hero': {
+		columns: [
+			{ key: 'title', label: 'Case Study' },
+			{ key: 'role', label: 'Role', width: '80px' },
+		],
+		mutations: {
+			create: 'heroCaseStudies:createEntry',
+			update: 'heroCaseStudies:updateEntry',
+			delete: 'heroCaseStudies:deleteEntry',
+			toggleVisibility: 'heroCaseStudies:toggleVisibility',
+			getFull: 'heroCaseStudies:getFull',
+		},
 		defaultConfig: { layout: 'default' },
 	},
 	'works-grid': {

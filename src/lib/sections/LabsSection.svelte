@@ -60,17 +60,6 @@
     </p>
   </header>
 
-  <nav class="feature-legend" aria-label="Feature icons legend">
-    <span class="legend-label">LEGEND:</span>
-    <div class="legend-items">
-      <span class="legend-item"><span class="legend-icon">◆</span> WebGPU</span>
-      <span class="legend-item"><span class="legend-icon">◇</span> WebGL2</span>
-      <span class="legend-item"><span class="legend-icon">⬡</span> WASM</span>
-      <span class="legend-item"><span class="legend-icon">⟐</span> SharedArrayBuffer</span>
-      <span class="legend-item"><span class="legend-icon">♪</span> AudioWorklet</span>
-    </div>
-  </nav>
-
   <div class="labs-grid">
     {#each sortedLabs as lab (lab.slug)}
       {@const support = featureSupport[lab.slug] || { supported: true, missing: [] }}
@@ -127,20 +116,6 @@
       </article>
     {/each}
   </div>
-
-  <aside class="compatibility-notice">
-    <h3 class="notice-title">BROWSER REQUIREMENTS</h3>
-    <p class="notice-text">
-      Most experiments require modern browsers with WebGPU support.
-      Chrome 113+ recommended. Safari support is limited.
-    </p>
-    <div class="browser-grid">
-      <span class="browser chrome">Chrome 113+</span>
-      <span class="browser edge">Edge 113+</span>
-      <span class="browser firefox">Firefox (flag)</span>
-      <span class="browser safari">Safari 18+</span>
-    </div>
-  </aside>
 </div>
 
 <style>
@@ -186,40 +161,6 @@
   .labs-subtitle {
     color: var(--color-text-subtle);
     font-size: var(--font-size-xs);
-  }
-
-  .feature-legend {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: var(--space-sm);
-    margin-bottom: var(--space-xl);
-    padding: var(--space-md);
-    background: var(--color-surface);
-    border-radius: var(--radius-md);
-  }
-
-  .legend-label {
-    font-size: var(--font-size-xs);
-    color: var(--color-text-subtle);
-    text-transform: uppercase;
-    letter-spacing: var(--letter-spacing-wide);
-  }
-
-  .legend-items {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-md);
-  }
-
-  .legend-item {
-    font-size: var(--font-size-xs);
-    color: var(--color-text-muted);
-  }
-
-  .legend-icon {
-    color: var(--color-accent);
-    margin-right: var(--space-xs);
   }
 
   .labs-grid {
@@ -364,42 +305,4 @@
     font-size: var(--font-size-xs);
     color: var(--color-text-subtle);
   }
-
-  .compatibility-notice {
-    padding: var(--space-lg);
-    background: var(--color-surface);
-    border-radius: var(--radius-md);
-    border: var(--border-width) solid var(--border-color);
-  }
-
-  .notice-title {
-    font-size: var(--font-size-xs);
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: var(--letter-spacing-wide);
-    color: var(--color-text-subtle);
-    margin-bottom: var(--space-sm);
-  }
-
-  .notice-text {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-muted);
-    margin-bottom: var(--space-md);
-  }
-
-  .browser-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-md);
-  }
-
-  .browser {
-    font-size: var(--font-size-xs);
-    padding: var(--space-xs) var(--space-sm);
-    border-radius: var(--radius-sm);
-    background: var(--color-bg);
-  }
-
-  .browser.chrome, .browser.edge { color: hsl(140, 60%, 50%); }
-  .browser.firefox, .browser.safari { color: hsl(45, 100%, 50%); }
 </style>

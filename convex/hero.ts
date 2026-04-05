@@ -14,6 +14,7 @@ export const upsertHeroConfig = mutation({
         id: v.optional(v.id("heroConfig")),
         showVelocity: v.optional(v.boolean()),
         showAsciiDonut: v.optional(v.boolean()),
+        showAsciiWave: v.optional(v.boolean()),
         showPixelArt: v.optional(v.boolean()),
         layout: v.optional(v.string()),
         accentColor: v.optional(v.string()),
@@ -67,6 +68,7 @@ export const upsertHeroConfig = mutation({
         return await ctx.db.insert("heroConfig", {
             showVelocity: args.showVelocity ?? false,
             showAsciiDonut: args.showAsciiDonut ?? true,
+            showAsciiWave: args.showAsciiWave ?? false,
             showPixelArt: args.showPixelArt ?? false,
             layout: args.layout ?? "default",
             accentColor: args.accentColor,

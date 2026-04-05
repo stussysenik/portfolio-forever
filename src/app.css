@@ -27,18 +27,18 @@
   --section-gap: var(--space-3xl);
 
   /* === Fluid Typography — Modular Scale (golden ratio inspired) === */
-  --font-size-3xs: clamp(0.5rem, 0.46rem + 0.13vw, 1.5rem);
-  --font-size-2xs: clamp(0.563rem, 0.52rem + 0.18vw, 1.7rem);
-  --font-size-xs: clamp(0.688rem, 0.64rem + 0.2vw, 2rem);
-  --font-size-sm: clamp(0.813rem, 0.76rem + 0.25vw, 2.5rem);
-  --font-size-base: clamp(1rem, 0.95rem + 0.25vw, 3rem);
-  --font-size-lg: clamp(1.125rem, 1rem + 0.5vw, 4rem);
-  --font-size-xl: clamp(1.5rem, 1.25rem + 0.85vw, 6rem);
-  --font-size-2xl: clamp(2rem, 1.6rem + 1.3vw, 8rem);
-  --font-size-3xl: clamp(2.5rem, 1.95rem + 1.8vw, 10rem);
-  --font-size-4xl: clamp(3.25rem, 2.4rem + 2.6vw, 14rem);
-  --font-size-display: clamp(4rem, 2.8rem + 4.2vw, 20rem);
-  --font-size-hero: clamp(5rem, 3.5rem + 5.5vw, 28rem);
+  --font-size-3xs: clamp(0.5rem, 0.46rem + 0.13vw, 0.625rem);
+  --font-size-2xs: clamp(0.563rem, 0.52rem + 0.18vw, 0.75rem);
+  --font-size-xs: clamp(0.688rem, 0.64rem + 0.2vw, 0.875rem);
+  --font-size-sm: clamp(0.813rem, 0.76rem + 0.25vw, 1rem);
+  --font-size-base: clamp(1rem, 0.95rem + 0.25vw, 1.25rem);
+  --font-size-lg: clamp(1.125rem, 1rem + 0.5vw, 1.5rem);
+  --font-size-xl: clamp(1.5rem, 1.25rem + 0.85vw, 2.25rem);
+  --font-size-2xl: clamp(2rem, 1.6rem + 1.3vw, 3rem);
+  --font-size-3xl: clamp(2.5rem, 1.95rem + 1.8vw, 4rem);
+  --font-size-4xl: clamp(3.25rem, 2.4rem + 2.6vw, 5rem);
+  --font-size-display: clamp(4rem, 2.8rem + 4.2vw, 8rem);
+  --font-size-hero: clamp(5rem, 3.5rem + 5.5vw, 12rem);
 
   /* === Typography === */
   --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', 'Cascadia Code', monospace;

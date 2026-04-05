@@ -170,32 +170,45 @@
                 margin-left: auto;
         }
 
-        /* Grid */
+        /* Grid — mobile-first responsive */
         .projects-grid {
                 display: grid;
                 grid-template-columns: 1fr;
-                gap: var(--space-xl);
+                gap: var(--space-lg);
+        }
+
+        @media (min-width: 480px) {
+                .projects-grid {
+                        grid-template-columns: repeat(min(var(--grid-cols, 2), 2), 1fr);
+                }
         }
 
         @media (min-width: 768px) {
                 .projects-grid {
                         grid-template-columns: repeat(var(--grid-cols, 2), 1fr);
+                        gap: var(--space-xl);
                 }
         }
 
-        /* List mode: single column, horizontal cards */
+        /* List mode */
         .projects-grid.list-mode {
                 grid-template-columns: 1fr;
         }
 
         .list-mode .project-card {
-                flex-direction: row;
-                align-items: center;
+                gap: var(--space-sm);
         }
 
-        .list-mode .project-embed {
-                max-width: 200px;
-                flex-shrink: 0;
+        @media (min-width: 600px) {
+                .list-mode .project-card {
+                        flex-direction: row;
+                        align-items: center;
+                }
+
+                .list-mode .project-embed {
+                        max-width: 200px;
+                        flex-shrink: 0;
+                }
         }
 
         /* Card */

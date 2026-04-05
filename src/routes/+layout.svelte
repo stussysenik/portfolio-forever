@@ -43,6 +43,7 @@
 
         let navItems: { href: string; label: string }[] = staticNav;
         let siteConfigData: any = null;
+        let profileName: string = siteConfig.name;
         let PixelCanvasComponent: any = null;
         let pixelCanvasPromise: Promise<void> | null = null;
 
@@ -110,6 +111,12 @@
                                         featureFlags.set(map);
                                 }
                         });
+                        // Subscribe to profile name for nav
+                        unsubProfile = client.onUpdate(api.cv.getVisibleCV, {}, (data: any) => {
+                                if (data?.profile?.name) {
+                                        profileName = data.profile.name;
+                                }
+                        });
                 } catch (e) {
                         // Convex not available — default to multi-page
                         console.warn("Convex siteConfig not available, using multi-page mode");
@@ -131,11 +138,13 @@
         let unsubSiteConfig: (() => void) | undefined;
         let unsubNavItems: (() => void) | undefined;
         let unsubFlags: (() => void) | undefined;
+        let unsubProfile: (() => void) | undefined;
         let adminMessageHandler: ((e: MessageEvent) => void) | undefined;
         onDestroy(() => {
                 unsubSiteConfig?.();
                 unsubNavItems?.();
                 unsubFlags?.();
+                unsubProfile?.();
                 if (adminMessageHandler) window.removeEventListener('message', adminMessageHandler);
         });
 
@@ -248,7 +257,7 @@
 
 <header class="header">
         <div class="header-inner">
-                <a href="/" class="header-name">{siteConfig.name}</a>
+                <a href="/" class="header-name">{profileName}</a>
 
                 <div class="header-nav-group">
                         <!-- Main navigation -->
@@ -414,27 +423,34 @@
         .nav {
                 display: flex;
                 flex-wrap: wrap;
+                gap: var(--space-2xs) var(--space-xs);
                 justify-content: center;
-                gap: var(--space-xs);
         }
 
         @media (min-width: 768px) {
                 .nav {
-                        margin-left: 0; /* Remove force right */
-                        margin-right: 0;
-                        gap: var(--space-lg);
+                        gap: var(--space-sm) var(--space-md);
+                }
+                .nav-link {
+                        font-size: var(--font-size-sm);
+                }
+        }
+
+        @media (min-width: 1024px) {
+                .nav {
+                        gap: var(--space-sm) var(--space-lg);
                 }
         }
 
         .nav-link {
-                font-size: var(--font-size-sm);
+                font-size: var(--font-size-xs);
                 font-weight: var(--font-weight-medium);
                 color: var(--color-text-secondary);
                 text-transform: lowercase;
-                padding: var(--space-xs) 0;
+                padding: var(--space-2xs) 0;
                 position: relative;
                 transition: color var(--duration-fast) var(--easing);
-                text-shadow: 0 0 8px var(--color-bg);
+                white-space: nowrap;
         }
 
         .nav-link:hover {
@@ -541,46 +557,11 @@
         @media (max-width: 1024px) {
                 .header-inner {
                         gap: var(--space-sm);
-                        justify-content: space-between; /* Ensure logo/nav are balanced */
+                        justify-content: space-between;
                 }
 
                 .header-nav-group {
-                        gap: var(--space-md); /* Increased gap for Pro Max sizes */
-                }
-
-                .nav {
-                        gap: var(--space-xs);
-                }
-        }
-
-        /* Mobile nav: wrap + scroll fallback */
-        @media (max-width: 767px) {
-                .nav {
-                        overflow-x: auto;
-                        -webkit-overflow-scrolling: touch;
-                        scrollbar-width: none; /* Firefox */
-                        -ms-overflow-style: none; /* IE */
-                }
-                .nav::-webkit-scrollbar { display: none; }
-
-                .nav-link {
-                        font-size: var(--font-size-xs);
-                }
-        }
-
-        /* Tight spacing for small screens (iPhone SE, etc) */
-        @media (max-width: 380px) {
-                 .header-inner {
-                        gap: var(--space-xs);
-                }
-                .header-nav-group {
-                        gap: var(--space-xs);
-                }
-                .nav {
-                        gap: var(--space-2xs);
-                }
-                .nav-link {
-                        font-size: var(--font-size-2xs);
+                        gap: var(--space-md);
                 }
         }
 
