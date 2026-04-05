@@ -11,6 +11,7 @@
 		newpage: void;
 		toggleflag: { key: string; category: string };
 		reorderpages: { pageIds: string[] };
+		togglepage: { pageId: string; visible: boolean };
 	}>();
 
 	let dragIndex: number | null = null;
@@ -110,14 +111,47 @@
 						<span class="home-card-route">/ &middot; root page</span>
 					</div>
 				</div>
-				<span
-					class="home-card-dot"
-					class:home-card-dot--visible={homePage.visible}
-					class:home-card-dot--hidden={!homePage.visible}
-				></span>
+				<button
+					class="page-dot-btn"
+					on:click|stopPropagation={() => dispatch('togglepage', { pageId: 'home', visible: !homePage.visible })}
+					title={homePage.visible ? 'Click to hide page' : 'Click to show page'}
+					aria-label={homePage.visible ? 'Hide Home' : 'Show Home'}
+				>
+					<span
+						class="home-card-dot"
+						class:home-card-dot--visible={homePage.visible}
+						class:home-card-dot--hidden={!homePage.visible}
+					></span>
+				</button>
 			</button>
 		</div>
 	{/if}
+
+	<!-- FLAGS section — promoted above pages -->
+	<div class="sidebar-section flags-section">
+		<span class="admin-label admin-label--xs sidebar-heading">FLAGS</span>
+		<div class="flags-list">
+			{#each DEFAULT_FLAGS as flag}
+				<button
+					class="flag-item"
+					class:flag-item--on={isFlagEnabled(flag.key)}
+					on:click={() => dispatch('toggleflag', { key: flag.key, category: flag.category })}
+					aria-label="Toggle {flag.label}"
+					aria-checked={isFlagEnabled(flag.key)}
+					role="switch"
+					title={FLAG_DESCRIPTIONS[flag.key] ?? flag.label}
+				>
+					<span
+						class="flag-dot"
+						class:flag-dot--on={isFlagEnabled(flag.key)}
+						class:flag-dot--off={!isFlagEnabled(flag.key)}
+					></span>
+					<span class="flag-label">{flag.label}</span>
+					<span class="flag-desc">{FLAG_DESCRIPTIONS[flag.key]?.split('(')[0]?.trim() ?? ''}</span>
+				</button>
+			{/each}
+		</div>
+	</div>
 
 	<!-- PAGES section -->
 	<div class="sidebar-section">
@@ -143,11 +177,14 @@
 						on:click={() => dispatch('selectpage', { pageId: page.pageId })}
 					>
 						<span class="page-row-label">
-							{#if page.visible}
-								<span class="page-dot page-dot--visible" title="Visible"></span>
-							{:else}
-								<span class="page-dot page-dot--hidden" title="Hidden"></span>
-							{/if}
+							<button
+								class="page-dot-btn"
+								on:click|stopPropagation={() => dispatch('togglepage', { pageId: page.pageId, visible: !page.visible })}
+								title={page.visible ? 'Click to hide page' : 'Click to show page'}
+								aria-label={page.visible ? 'Hide ' + page.label : 'Show ' + page.label}
+							>
+								<span class="page-dot" class:page-dot--visible={page.visible} class:page-dot--hidden={!page.visible}></span>
+							</button>
 							{page.label}
 						</span>
 						{#if count > 0}
@@ -160,30 +197,6 @@
 		<button class="new-page-btn" on:click={() => dispatch('newpage')}>
 			+ New Page
 		</button>
-	</div>
-
-	<!-- FLAGS section -->
-	<div class="sidebar-section flags-section">
-		<span class="admin-label admin-label--xs sidebar-heading">FLAGS</span>
-		<div class="flags-grid">
-			{#each DEFAULT_FLAGS as flag}
-				<button
-					class="flag-item"
-					on:click={() => dispatch('toggleflag', { key: flag.key, category: flag.category })}
-					aria-label="Toggle {flag.label}"
-					aria-checked={isFlagEnabled(flag.key)}
-					role="switch"
-					title={FLAG_DESCRIPTIONS[flag.key] ?? flag.label}
-				>
-					<span
-						class="flag-dot"
-						class:flag-dot--on={isFlagEnabled(flag.key)}
-						class:flag-dot--off={!isFlagEnabled(flag.key)}
-					></span>
-					<span class="flag-label">{flag.label}</span>
-				</button>
-			{/each}
-		</div>
 	</div>
 </nav>
 
@@ -367,6 +380,24 @@
 		background: var(--color-text-subtle, #444);
 	}
 
+	.page-dot-btn {
+		background: none;
+		border: none;
+		padding: 4px;
+		margin: -4px;
+		cursor: pointer;
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.page-dot-btn:hover .page-dot,
+	.page-dot-btn:hover .home-card-dot {
+		transform: scale(1.5);
+		transition: transform 120ms ease;
+	}
+
 	.page-row-count {
 		font-size: var(--admin-text-2xs, 7px);
 		color: var(--color-text-subtle, #444);
@@ -402,17 +433,18 @@
 		border-color: var(--admin-blue, #2563EB);
 	}
 
-	/* Flags section — pinned to bottom */
+	/* Flags section — promoted above pages */
 	.flags-section {
-		margin-top: auto;
-		padding-top: var(--admin-space-4, 16px);
-		border-top: 1px solid var(--border-color-subtle, #1a1a1a);
+		padding-top: var(--admin-space-3, 12px);
+		border-bottom: 1px solid var(--border-color-subtle, #1a1a1a);
+		padding-bottom: var(--admin-space-3, 12px);
+		margin-bottom: var(--admin-space-2, 8px);
 	}
 
-	.flags-grid {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: var(--admin-space-1, 4px);
+	.flags-list {
+		display: flex;
+		flex-direction: column;
+		gap: 1px;
 	}
 
 	.flag-item {
@@ -426,10 +458,15 @@
 		border-radius: 2px;
 		transition: background var(--admin-transition, 120ms ease);
 		text-align: left;
+		width: 100%;
 	}
 
 	.flag-item:hover {
 		background: var(--color-bg-alt, #111);
+	}
+
+	.flag-item--on {
+		background: rgba(68, 214, 44, 0.04);
 	}
 
 	.flag-dot {
@@ -454,5 +491,16 @@
 		text-transform: uppercase;
 		letter-spacing: 0.06em;
 		color: var(--color-text-muted, #666);
+	}
+
+	.flag-desc {
+		font-family: var(--font-mono);
+		font-size: 6px;
+		color: var(--color-text-subtle, #444);
+		margin-left: auto;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		max-width: 80px;
 	}
 </style>

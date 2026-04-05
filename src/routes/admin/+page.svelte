@@ -46,6 +46,22 @@
 		}
 	}
 
+	async function handleTogglePage(e: CustomEvent<{ pageId: string; visible: boolean }>) {
+		const { pageId, visible } = e.detail;
+		const page = pages.find((p: any) => p.pageId === pageId);
+		if (!page) return;
+		try {
+			await client.mutation(api.pages.upsert, {
+				...stripConvexMeta(page),
+				visible,
+				navVisible: visible ? (page.navVisible ?? true) : false,
+			});
+			toast.success(`${page.label}: ${visible ? 'VISIBLE' : 'HIDDEN'}`);
+		} catch (err: any) {
+			toast.error(err.message || 'Failed to toggle page visibility');
+		}
+	}
+
 	async function handleReorderPages(e: CustomEvent<{ pageIds: string[] }>) {
 		const { pageIds } = e.detail;
 		try {
@@ -95,6 +111,8 @@
 			try {
 				await client.mutation(api.pages.ensureSeeded, {});
 			} catch (_) { /* already seeded */ }
+			try { await client.mutation(api.seedAll.seedBlog, {}); } catch (_) { /* already seeded */ }
+			try { await client.mutation(api.seedAll.seedHeroCaseStudies, {}); } catch (_) { /* already seeded */ }
 
 			if (disposed) return;
 
@@ -130,6 +148,9 @@
 				client.onUpdate(api.cv.getFullCV, {}, (data: any) => {
 					if (data) entriesByTable = { ...entriesByTable, cvEntries: data.entries ?? [] };
 				}),
+				client.onUpdate(api.heroCaseStudies.getFull, {}, (data: any) => {
+					if (data) entriesByTable = { ...entriesByTable, heroCaseStudies: data };
+				}),
 			];
 		};
 
@@ -155,6 +176,7 @@
 	{registrySections}
 	on:selectpage={handleSelectPage}
 	on:toggleflag={handleToggleFlag}
+	on:togglepage={handleTogglePage}
 	on:reorderpages={handleReorderPages}
 	on:opensettings={() => (settingsOpen = true)}
 >

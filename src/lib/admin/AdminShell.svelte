@@ -253,6 +253,7 @@
 			on:selectpage={handleSelectPage}
 			on:newpage
 			on:toggleflag
+			on:togglepage
 			on:reorderpages
 		/>
 		<div class="sidebar-footer">

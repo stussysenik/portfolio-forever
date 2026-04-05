@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { AdminToggle, AdminSlider, AdminChipGroup, BoxModelDiagram, ChangeBadge, ResetButton } from '$lib/admin/primitives';
+	import TypographyControls from '$lib/admin/TypographyControls.svelte';
 	import { sectionTypeRegistry } from '$lib/sections/registry';
 	import { sectionEditors } from '$lib/admin/section-editors';
-	import { VIEW_MODES, DEFAULTS } from '$lib/admin/constants';
+	import { VIEW_MODES, DEFAULTS, TYPOGRAPHY_DEFAULTS } from '$lib/admin/constants';
 
 	export let section: any = null;
 	export let sectionIndex: number = 0;
@@ -51,6 +52,13 @@
 	$: heroNameLetterSpacing = heroConfig?.heroNameLetterSpacing ?? DEFAULTS.hero.heroNameLetterSpacing;
 	$: heroNameLineHeight = heroConfig?.heroNameLineHeight ?? DEFAULTS.hero.heroNameLineHeight;
 	$: heroNameTextWrap = heroConfig?.heroNameTextWrap ?? DEFAULTS.hero.heroNameTextWrap;
+
+	// Section-level typography (non-hero sections)
+	$: sectionTypography = config?.typography ?? {};
+	$: sectionFontSize = sectionTypography.fontSize ?? TYPOGRAPHY_DEFAULTS.fontSize;
+	$: sectionFontWeight = sectionTypography.fontWeight ?? TYPOGRAPHY_DEFAULTS.fontWeight;
+	$: sectionLetterSpacing = sectionTypography.letterSpacing ?? TYPOGRAPHY_DEFAULTS.letterSpacing;
+	$: sectionLineHeight = sectionTypography.lineHeight ?? TYPOGRAPHY_DEFAULTS.lineHeight;
 
 	// Data-backed
 	$: isDataBacked = ['works-grid', 'gallery', 'blog-feed'].includes(sectionType);
@@ -133,6 +141,37 @@
 		} catch (_) { /* ignore */ }
 	}
 
+	async function setSectionTypography(field: string, value: any) {
+		try {
+			await client.mutation(api.pages.updateSectionConfig, {
+				pageId,
+				sectionIndex,
+				config: { ...config, typography: { ...sectionTypography, [field]: value } },
+			});
+		} catch (_) { /* ignore */ }
+	}
+
+	async function resetSectionTypography() {
+		try {
+			await client.mutation(api.pages.updateSectionConfig, {
+				pageId,
+				sectionIndex,
+				config: { ...config, typography: { ...TYPOGRAPHY_DEFAULTS } },
+			});
+		} catch (_) { /* ignore */ }
+	}
+
+	async function applySpacingPreset(top: number, bottom: number) {
+		try {
+			await client.mutation(api.pages.updateSectionSpacing, {
+				pageId,
+				sectionIndex,
+				spacingBefore: top,
+				spacingAfter: bottom,
+			});
+		} catch (_) { /* ignore */ }
+	}
+
 	async function setViewMode(mode: string) {
 		try {
 			await client.mutation(api.pages.updateSectionConfig, {
@@ -153,17 +192,7 @@
 </script>
 
 <div class="inline-config">
-	<!-- CSS Box Model Inspector -->
-	<div class="config-row">
-		<BoxModelDiagram
-			margin={boxMargin}
-			padding={boxPadding}
-			label={typeDef.label}
-			on:change={handleBoxModelChange}
-		/>
-	</div>
-
-	<!-- Common: Visibility -->
+	<!-- 1. Visibility — always first -->
 	<div class="config-row config-row--split">
 		<span class="field-label">VISIBLE</span>
 		<AdminToggle
@@ -175,7 +204,7 @@
 		/>
 	</div>
 
-	<!-- Hero typography -->
+	<!-- 2. Content: Hero typography -->
 	{#if sectionType === 'hero'}
 		<div class="config-row">
 			<div class="control-header">
@@ -253,9 +282,52 @@
 				on:change={(e) => setHeroConfig('heroNameTextWrap', e.detail.value)}
 			/>
 		</div>
+
+		<div class="config-row">
+			<div class="control-header">
+				<span class="field-label">HERO VISUALS</span>
+			</div>
+		</div>
+
+		<div class="config-row config-row--split">
+			<span class="field-label">ASCII DONUT</span>
+			<AdminToggle
+				checked={heroConfig?.showAsciiDonut ?? false}
+				size="sm"
+				color="green"
+				label="Show ASCII Donut"
+				on:change={() => setHeroConfig('showAsciiDonut', !(heroConfig?.showAsciiDonut ?? false))}
+			/>
+		</div>
+
+		<div class="config-row config-row--split">
+			<span class="field-label">ASCII WAVE</span>
+			<AdminToggle
+				checked={heroConfig?.showAsciiWave ?? false}
+				size="sm"
+				color="green"
+				label="Show ASCII Wave"
+				on:change={() => setHeroConfig('showAsciiWave', !(heroConfig?.showAsciiWave ?? false))}
+			/>
+		</div>
 	{/if}
 
-	<!-- Data-backed: View Mode -->
+	<!-- 2b. Content: Non-hero typography controls -->
+	{#if sectionType !== 'hero'}
+		<div class="config-row">
+			<TypographyControls
+				fontSize={sectionFontSize}
+				fontWeight={sectionFontWeight}
+				letterSpacing={sectionLetterSpacing}
+				lineHeight={sectionLineHeight}
+				defaults={TYPOGRAPHY_DEFAULTS}
+				on:change={(e) => setSectionTypography(e.detail.field, e.detail.value)}
+				on:reset={resetSectionTypography}
+			/>
+		</div>
+	{/if}
+
+	<!-- 3. View Mode (data-backed sections only) -->
 	{#if isDataBacked}
 		<div class="config-row">
 			<span class="field-label">VIEW MODE</span>
@@ -266,6 +338,37 @@
 			/>
 		</div>
 	{/if}
+
+	<!-- 4. Spacing — collapsible, secondary -->
+	<details class="spacing-details">
+		<summary class="field-label spacing-summary">SPACING</summary>
+		<div class="config-row" style="margin-top: 8px;">
+			<div class="spacing-presets">
+				<span class="field-label">PRESETS</span>
+				<div class="preset-chips">
+					{#each [
+						{ label: 'none', top: 0, bottom: 0 },
+						{ label: 'sm', top: 16, bottom: 16 },
+						{ label: 'md', top: 32, bottom: 32 },
+						{ label: 'lg', top: 64, bottom: 64 },
+						{ label: 'xl', top: 96, bottom: 96 },
+					] as preset}
+						<button
+							class="preset-chip"
+							class:preset-chip--active={boxMargin.top === preset.top && boxMargin.bottom === preset.bottom}
+							on:click={() => applySpacingPreset(preset.top, preset.bottom)}
+						>{preset.label}</button>
+					{/each}
+				</div>
+			</div>
+			<BoxModelDiagram
+				margin={boxMargin}
+				padding={boxPadding}
+				label={typeDef.label}
+				on:change={handleBoxModelChange}
+			/>
+		</div>
+	</details>
 </div>
 
 <style>
@@ -308,5 +411,71 @@
 
 	.control-header .field-label {
 		flex: 1;
+	}
+
+	.spacing-details {
+		border-top: 1px solid color-mix(in oklch, var(--bento-blue, #2563EB) 10%, transparent);
+		padding-top: 8px;
+		margin-top: 4px;
+	}
+
+	.spacing-summary {
+		cursor: pointer;
+		user-select: none;
+		list-style: none;
+		display: flex;
+		align-items: center;
+		gap: 4px;
+	}
+
+	.spacing-summary::before {
+		content: '>';
+		font-size: 7px;
+		transition: transform 120ms ease;
+	}
+
+	.spacing-details[open] .spacing-summary::before {
+		transform: rotate(90deg);
+	}
+
+	.spacing-summary::-webkit-details-marker {
+		display: none;
+	}
+
+	.spacing-presets {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+		margin-bottom: 8px;
+	}
+
+	.preset-chips {
+		display: flex;
+		gap: 2px;
+	}
+
+	.preset-chip {
+		font-family: var(--font-mono);
+		font-size: 7px;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		padding: 2px 6px;
+		border: 1px solid var(--border-color-subtle);
+		border-radius: 2px;
+		background: transparent;
+		color: var(--color-text-muted);
+		cursor: pointer;
+		transition: all 120ms ease;
+	}
+
+	.preset-chip:hover {
+		border-color: var(--admin-blue, #2563EB);
+		color: var(--admin-blue, #2563EB);
+	}
+
+	.preset-chip--active {
+		background: var(--admin-blue, #2563EB);
+		color: white;
+		border-color: var(--admin-blue, #2563EB);
 	}
 </style>
