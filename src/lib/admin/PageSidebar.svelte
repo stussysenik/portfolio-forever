@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
+	import FlagsCell from './controls/FlagsCell.svelte';
 
 	export let pages: any[] = [];
 	export let activePageId: string = '';
@@ -51,36 +52,16 @@
 		dropIndex = null;
 	}
 
-	const DEFAULT_FLAGS = [
-		{ key: 'pixel-engine', label: 'Pixel Engine', category: 'visual' },
-		{ key: 'ascii-donut', label: 'ASCII Donut', category: 'visual' },
-		{ key: 'parallax', label: 'Parallax', category: 'visual' },
-		{ key: 'view-transitions', label: 'View Trans.', category: 'visual' },
-		{ key: 'wip-banner', label: 'WIP Banner', category: 'layout' },
-		{ key: 'elevator', label: 'Elevator', category: 'visual' },
-		{ key: 'terminal-matrix', label: 'Terminal Mtx', category: 'visual' },
-		{ key: 'os-desktop', label: 'OS Desktop', category: 'visual' },
-		{ key: 'social-links', label: 'Social Links', category: 'layout' },
-		{ key: 'command-palette', label: 'Cmd Palette', category: 'layout' },
-	];
-
-	const FLAG_DESCRIPTIONS: Record<string, string> = {
-		'pixel-engine': 'WebGL particle overlay (electrons, wanderers, cards)',
-		'ascii-donut': 'Rotating ASCII donut animation in hero',
-		'parallax': 'Parallax scroll effect on sections',
-		'view-transitions': 'Smooth page transitions (View Transitions API)',
-		'wip-banner': 'Show "Work in Progress" banner at top',
-		'elevator': 'Back-to-top elevator button with music',
-		'terminal-matrix': 'Matrix rain effect in terminal page',
-		'os-desktop': 'Desktop OS simulation mode',
-		'social-links': 'Show social media links in footer',
-		'command-palette': 'Vim-style command palette (Cmd+K)',
-	};
-
 	$: homePage = pages.find((p) => p.pageId === 'home') ?? null;
 	$: sortedPages = [...pages]
 		.filter((p) => p.pageId !== 'home')
 		.sort((a, b) => (a.navOrder ?? 0) - (b.navOrder ?? 0));
+
+	/** Build a Record<string, boolean> from the raw flags array */
+	$: flagsRecord = featureFlags.reduce((acc: Record<string, boolean>, f: any) => {
+		acc[f.key] = f.enabled;
+		return acc;
+	}, {} as Record<string, boolean>);
 
 	function getEntryCount(page: any): number {
 		if (!page?.sections?.length) return 0;
@@ -89,9 +70,8 @@
 		return entriesByTable[dt]?.length ?? 0;
 	}
 
-	function isFlagEnabled(key: string): boolean {
-		const flag = featureFlags.find((f: any) => f.key === key);
-		return flag ? flag.enabled : true;
+	function handleFlagToggle(e: CustomEvent<{ key: string; category: string }>) {
+		dispatch('toggleflag', e.detail);
 	}
 </script>
 
@@ -130,30 +110,10 @@
 		</div>
 	{/if}
 
-	<!-- FLAGS section — promoted above pages -->
+	<!-- FLAGS section — paginated by category -->
 	<div class="sidebar-section flags-section">
 		<span class="admin-label admin-label--xs sidebar-heading">FLAGS</span>
-		<div class="flags-list">
-			{#each DEFAULT_FLAGS as flag}
-				<button
-					class="flag-item"
-					class:flag-item--on={isFlagEnabled(flag.key)}
-					on:click={() => dispatch('toggleflag', { key: flag.key, category: flag.category })}
-					aria-label="Toggle {flag.label}"
-					aria-checked={isFlagEnabled(flag.key)}
-					role="switch"
-					title={FLAG_DESCRIPTIONS[flag.key] ?? flag.label}
-				>
-					<span
-						class="flag-dot"
-						class:flag-dot--on={isFlagEnabled(flag.key)}
-						class:flag-dot--off={!isFlagEnabled(flag.key)}
-					></span>
-					<span class="flag-label">{flag.label}</span>
-					<span class="flag-desc">{FLAG_DESCRIPTIONS[flag.key]?.split('(')[0]?.trim() ?? ''}</span>
-				</button>
-			{/each}
-		</div>
+		<FlagsCell flags={flagsRecord} on:toggle={handleFlagToggle} />
 	</div>
 
 	<!-- PAGES section -->
@@ -439,74 +399,11 @@
 		border-color: var(--admin-blue, #2563EB);
 	}
 
-	/* Flags section — promoted above pages */
+	/* Flags section — paginated by category */
 	.flags-section {
 		padding-top: var(--admin-space-3, 12px);
 		border-bottom: 1px solid var(--border-color-subtle, #1a1a1a);
 		padding-bottom: var(--admin-space-3, 12px);
 		margin-bottom: var(--admin-space-2, 8px);
-	}
-
-	.flags-list {
-		display: flex;
-		flex-direction: column;
-		gap: 1px;
-	}
-
-	.flag-item {
-		display: flex;
-		align-items: center;
-		gap: var(--admin-space-2, 8px);
-		padding: var(--admin-space-1, 4px) var(--admin-space-2, 8px);
-		background: transparent;
-		border: none;
-		cursor: pointer;
-		border-radius: 2px;
-		transition: background var(--admin-transition, 120ms ease);
-		text-align: left;
-		width: 100%;
-	}
-
-	.flag-item:hover {
-		background: var(--color-bg-alt, #111);
-	}
-
-	.flag-item--on {
-		background: rgba(68, 214, 44, 0.04);
-	}
-
-	.flag-dot {
-		width: 8px;
-		height: 8px;
-		border-radius: 50%;
-		flex-shrink: 0;
-		transition: background var(--admin-transition, 120ms ease);
-	}
-
-	.flag-dot--on {
-		background: var(--admin-green, #44D62C);
-	}
-
-	.flag-dot--off {
-		background: var(--color-text-subtle, #444);
-	}
-
-	.flag-label {
-		font-family: var(--font-mono);
-		font-size: var(--admin-text-2xs, 7px);
-		text-transform: uppercase;
-		letter-spacing: 0.06em;
-		color: var(--color-text-muted, #666);
-	}
-
-	.flag-desc {
-		font-family: var(--font-mono);
-		font-size: 6px;
-		color: var(--color-text-subtle, #444);
-		margin-left: auto;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		max-width: 80px;
 	}
 </style>

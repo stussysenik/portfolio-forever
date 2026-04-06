@@ -5,6 +5,7 @@
 	import FlagsCell from './controls/FlagsCell.svelte';
 	import OrderCell from './controls/OrderCell.svelte';
 	import AnimationsCell from './controls/AnimationsCell.svelte';
+	import { toast } from '$lib/stores/toast';
 
 	export let open: boolean = false;
 	export let client: any;
@@ -16,6 +17,24 @@
 	export let siteConfig: any = null;
 	export let featureFlags: any[] = [];
 	export let registrySections: any[] = [];
+
+	/** Build Record<string, boolean> for FlagsCell */
+	$: flagsRecord = featureFlags.reduce((acc: Record<string, boolean>, f: any) => {
+		acc[f.key] = f.enabled;
+		return acc;
+	}, {} as Record<string, boolean>);
+
+	async function handleFlagToggle(e: CustomEvent<{ key: string; category: string }>) {
+		const { key, category } = e.detail;
+		const flag = featureFlags.find((f: any) => f.key === key);
+		const newState = !(flag?.enabled ?? true);
+		try {
+			await client.mutation(api.siteConfig.setFeatureFlag, { key, enabled: newState, category });
+			toast.success(`${key}: ${newState ? 'ON' : 'OFF'}`);
+		} catch (err: any) {
+			toast.error(err.message || 'Failed to toggle flag');
+		}
+	}
 
 	const dispatch = createEventDispatcher<{ close: void }>();
 
@@ -84,7 +103,7 @@
 		<section class="drawer-section">
 			<h3 class="drawer-section-label">Flags</h3>
 			<div class="drawer-section-body">
-				<FlagsCell flags={featureFlags} {client} {api} />
+				<FlagsCell flags={flagsRecord} on:toggle={handleFlagToggle} />
 			</div>
 		</section>
 
