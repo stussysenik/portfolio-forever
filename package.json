@@ -26,6 +26,8 @@
                 "quota:install": "bun scripts/claude-quota-ledger.ts install-launchd",
                 "quota:uninstall": "bun scripts/claude-quota-ledger.ts uninstall-launchd",
                 "sync": "svelte-kit sync || echo ''",
+                "capture-previews": "bun scripts/capture-previews.ts",
+                "record-previews": "bun scripts/record-previews.ts",
                 "storybook": "storybook dev -p 6006",
                 "build-storybook": "storybook build"
         },

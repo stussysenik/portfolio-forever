@@ -78,6 +78,8 @@ export default defineSchema({
 		url: v.string(),
 		category: v.optional(v.string()),
 		preview: v.optional(v.string()),
+		previewMode: v.optional(v.union(v.literal("live"), v.literal("static"), v.literal("video"))),
+		videoPreview: v.optional(v.string()),
 		viewport: v.optional(v.number()),
 		cam: v.optional(v.string()),
 		objectPosition: v.optional(v.string()),

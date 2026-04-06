@@ -9,6 +9,7 @@
  */
 
 import type * as academia from "../academia.js";
+import type * as adminHistory from "../adminHistory.js";
 import type * as blog from "../blog.js";
 import type * as cv from "../cv.js";
 import type * as display from "../display.js";
@@ -17,6 +18,7 @@ import type * as gifts from "../gifts.js";
 import type * as github from "../github.js";
 import type * as helpers from "../helpers.js";
 import type * as hero from "../hero.js";
+import type * as heroCaseStudies from "../heroCaseStudies.js";
 import type * as labs from "../labs.js";
 import type * as languages from "../languages.js";
 import type * as likes from "../likes.js";
@@ -40,6 +42,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   academia: typeof academia;
+  adminHistory: typeof adminHistory;
   blog: typeof blog;
   cv: typeof cv;
   display: typeof display;
@@ -48,6 +51,7 @@ declare const fullApi: ApiFromModules<{
   github: typeof github;
   helpers: typeof helpers;
   hero: typeof hero;
+  heroCaseStudies: typeof heroCaseStudies;
   labs: typeof labs;
   languages: typeof languages;
   likes: typeof likes;

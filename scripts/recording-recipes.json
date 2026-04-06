@@ -1,0 +1,116 @@
+{
+  "defaults": {
+    "duration": 6000,
+    "viewport": { "width": 1280, "height": 800 },
+    "deviceScaleFactor": 2
+  },
+  "recipes": [
+    {
+      "title": "BYOA — Build Your Own Algorithm",
+      "url": "https://mymind-clone-production.up.railway.app/landing",
+      "duration": 7000,
+      "actions": [
+        { "type": "wait", "ms": 2000 },
+        { "type": "scroll", "y": 400, "smooth": true },
+        { "type": "wait", "ms": 2000 },
+        { "type": "scroll", "y": 400, "smooth": true }
+      ]
+    },
+    {
+      "title": "iPod emulator",
+      "url": "https://ipod-music.vercel.app",
+      "duration": 6000,
+      "actions": [
+        { "type": "wait", "ms": 2000 },
+        { "type": "click", "x": 360, "y": 440 },
+        { "type": "wait", "ms": 2000 }
+      ]
+    },
+    {
+      "title": "spinning wheel AR face filter lottery",
+      "url": "https://spinning-wheel-filter.vercel.app",
+      "duration": 5000,
+      "actions": [
+        { "type": "wait", "ms": 4000 }
+      ]
+    },
+    {
+      "title": "uyr-problem",
+      "url": "https://uyr-problem.vercel.app",
+      "duration": 6000,
+      "actions": [
+        { "type": "wait", "ms": 1500 },
+        { "type": "scroll", "y": 300, "smooth": true },
+        { "type": "wait", "ms": 2000 },
+        { "type": "scroll", "y": 300, "smooth": true }
+      ]
+    },
+    {
+      "title": "infinite checklist",
+      "url": "https://infinite-checklist.vercel.app",
+      "duration": 6000,
+      "actions": [
+        { "type": "wait", "ms": 2000 },
+        { "type": "click", "x": 640, "y": 400 },
+        { "type": "wait", "ms": 2000 }
+      ]
+    },
+    {
+      "title": "typewriter that doesn't delete, or can't go back",
+      "url": "https://clean-writer.vercel.app",
+      "duration": 6000,
+      "actions": [
+        { "type": "wait", "ms": 1500 },
+        { "type": "click", "x": 640, "y": 300 },
+        { "type": "type", "text": "the details matter", "delay": 120 },
+        { "type": "wait", "ms": 1500 }
+      ]
+    },
+    {
+      "title": "ARE YOU HAVING A CREATIVE BLOCK?",
+      "url": "https://creative-block.vercel.app",
+      "duration": 5000,
+      "actions": [
+        { "type": "wait", "ms": 2000 },
+        { "type": "click", "x": 640, "y": 400 },
+        { "type": "wait", "ms": 2000 }
+      ]
+    },
+    {
+      "title": "AR b-boy filter",
+      "url": "https://bboy-filter.vercel.app",
+      "duration": 4000,
+      "actions": [
+        { "type": "wait", "ms": 3000 }
+      ]
+    },
+    {
+      "title": "PH-213 - Electricity, Current and Magnetism concepts viz",
+      "url": "https://ph213.vercel.app",
+      "duration": 6000,
+      "actions": [
+        { "type": "wait", "ms": 1500 },
+        { "type": "scroll", "y": 200, "smooth": true },
+        { "type": "wait", "ms": 2000 },
+        { "type": "click", "x": 640, "y": 400 },
+        { "type": "wait", "ms": 1500 }
+      ]
+    },
+    {
+      "title": "DVD corner video animation",
+      "url": "https://dvd-video-animation.vercel.app",
+      "duration": 8000,
+      "actions": [
+        { "type": "wait", "ms": 7000 }
+      ]
+    },
+    {
+      "title": "@WAVELENGTH RADIO",
+      "url": "https://wavelength-radio.vercel.app",
+      "duration": 7000,
+      "actions": [
+        { "type": "wait", "ms": 6000 }
+      ]
+    }
+  ]
+}

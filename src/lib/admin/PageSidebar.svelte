@@ -99,10 +99,13 @@
 	<!-- Home card — pinned above PAGES -->
 	{#if homePage}
 		<div class="sidebar-section">
-			<button
+			<div
 				class="home-card"
 				class:home-card--active={activePageId === 'home'}
+				role="button"
+				tabindex="0"
 				on:click={() => dispatch('selectpage', { pageId: 'home' })}
+				on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); dispatch('selectpage', { pageId: 'home' }); } }}
 			>
 				<div class="home-card-main">
 					<span class="home-card-icon">&#8962;</span>
@@ -123,7 +126,7 @@
 						class:home-card-dot--hidden={!homePage.visible}
 					></span>
 				</button>
-			</button>
+			</div>
 		</div>
 	{/if}
 
@@ -177,14 +180,17 @@
 						on:click={() => dispatch('selectpage', { pageId: page.pageId })}
 					>
 						<span class="page-row-label">
-							<button
+							<span
 								class="page-dot-btn"
+								role="button"
+								tabindex="-1"
 								on:click|stopPropagation={() => dispatch('togglepage', { pageId: page.pageId, visible: !page.visible })}
+								on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); dispatch('togglepage', { pageId: page.pageId, visible: !page.visible }); } }}
 								title={page.visible ? 'Click to hide page' : 'Click to show page'}
 								aria-label={page.visible ? 'Hide ' + page.label : 'Show ' + page.label}
 							>
 								<span class="page-dot" class:page-dot--visible={page.visible} class:page-dot--hidden={!page.visible}></span>
-							</button>
+							</span>
 							{page.label}
 						</span>
 						{#if count > 0}

@@ -52,6 +52,16 @@
 		});
 	}
 
+	async function togglePreviewMode(id: string, current: string | undefined) {
+		const cycle = ['live', 'static', 'video'];
+		const idx = cycle.indexOf(current || 'live');
+		const next = cycle[(idx + 1) % cycle.length];
+		await client.mutation(api.works.updateEntry, {
+			id: id as Id<"worksEntries">, previewMode: next as any,
+		});
+		toast.success(`Preview: ${next}`);
+	}
+
 	async function deleteWorkEntry(id: string) {
 		await client.mutation(api.works.deleteEntry, { id: id as Id<"worksEntries"> });
 		toast.success('Project deleted');
@@ -174,10 +184,20 @@
 
 			<div class="card-body">
 				<div class="card-tools" style="margin-top: var(--space-xs);">
+					<button
+						class="tool-tag tool-tag-btn"
+						class:mode-live={!entry.previewMode || entry.previewMode === 'live'}
+						class:mode-static={entry.previewMode === 'static'}
+						class:mode-video={entry.previewMode === 'video'}
+						on:click={() => togglePreviewMode(entry._id, entry.previewMode)}
+						title="Cycle: live → static → video"
+					>
+						{entry.previewMode || 'live'}
+					</button>
 					<button class="tool-tag tool-tag-btn" on:click={() => toggleExpand(entry._id)}>
 					Preview {expandedId === entry._id ? '\u25B4' : '\u25BE'}
 				</button>
-				{#each ['viewport', 'cam', 'muxPlaybackId'] as field}
+				{#each ['viewport', 'cam', 'videoPreview', 'muxPlaybackId'] as field}
 						{#if editingId === entry._id && editingField === field}
 							<input class="field-input-sm" bind:value={editBuffer} on:keydown={(e) => { if (e.key === 'Enter') saveWorkEdit(entry._id); if (e.key === 'Escape') cancelEdit(); }} />
 							<button class="btn-sm btn-save" on:click={() => saveWorkEdit(entry._id)}>&#10003;</button>
@@ -263,6 +283,22 @@
 	.tool-tag-btn:hover {
 		border-color: var(--bento-blue, #2563EB);
 		color: var(--color-text);
+	}
+
+	/* Preview mode toggle indicators */
+	.mode-live {
+		border-color: var(--bento-green, #16a34a);
+		color: var(--bento-green, #16a34a);
+	}
+
+	.mode-static {
+		border-color: var(--color-text-muted);
+		color: var(--color-text-muted);
+	}
+
+	.mode-video {
+		border-color: #8B5CF6;
+		color: #8B5CF6;
 	}
 
 	/* ── Expandable preview panel ── */
