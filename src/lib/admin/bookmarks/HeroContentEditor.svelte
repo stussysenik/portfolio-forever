@@ -1,5 +1,6 @@
 <script lang="ts">
 	import HeroCaseStudyAdmin from '$lib/admin/HeroCaseStudyAdmin.svelte';
+	import AdminChipGroup from '$lib/admin/primitives/AdminChipGroup.svelte';
 
 	// ── Props ──────────────────────────────────────────────────────────────────
 
@@ -52,6 +53,29 @@
      HERO CONTENT EDITOR — profile fields + case studies
 ════════════════════════════════════════════════════════════════════════════ -->
 <div class="hero-content-editor">
+
+	<!-- ── LAYOUT ───────────────────────────────────────────────────────────── -->
+	<div class="group">
+		<span class="group-label">LAYOUT</span>
+		<AdminChipGroup
+			options={[
+				{ id: 'default', label: 'default' },
+				{ id: 'diptych', label: 'diptych' },
+				{ id: 'editorial', label: 'editorial' },
+				{ id: 'stacked', label: 'stacked' },
+			]}
+			value={heroConfig?.layout ?? 'default'}
+			mode="exclusive"
+			color="blue"
+			equalWidth={true}
+			on:change={(e) => {
+				client.mutation(api.hero.upsertHeroConfig, {
+					id: heroConfig?._id,
+					layout: e.detail.value
+				});
+			}}
+		/>
+	</div>
 
 	<!-- ── PROFILE ──────────────────────────────────────────────────────────── -->
 	<div class="group">

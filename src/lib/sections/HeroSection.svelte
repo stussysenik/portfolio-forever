@@ -13,6 +13,7 @@
 	let heroConfig: any = null;
 	$: showDonut = heroConfig?.showAsciiDonut ?? true;
 	$: showWave = heroConfig?.showAsciiWave ?? false;
+	$: layout = heroConfig?.layout ?? 'default';
 
 	let profileData: any = {
 		name: "Stüssy Senik",
@@ -74,7 +75,7 @@
 
 <!-- Hero - Breathing Space -->
 <section {id}>
-<header class="hero">
+<header class="hero" class:hero--diptych={layout === 'diptych'} class:hero--editorial={layout === 'editorial'} class:hero--stacked={layout === 'stacked'}>
 	<div class="hero-content">
 		<div class="hero-main">
 			<h1 class="hero-name">{profileData.name}</h1>
@@ -194,6 +195,63 @@
 		align-items: flex-start;
 		flex-direction: column;
 		gap: var(--space-lg);
+	}
+
+	/* ── DIPTYCH: book-spread, edge-aligned, no gap ────────────────── */
+	.hero--diptych {
+		flex-wrap: nowrap;
+		gap: 0;
+		align-items: stretch;
+	}
+	.hero--diptych .hero-content {
+		flex: 1 1 50%;
+		max-width: none;
+	}
+	.hero--diptych .hero-visual {
+		flex: 1 1 50%;
+	}
+	.hero--diptych .hero-name {
+		font-size: var(--font-size-3xl, clamp(2rem, 5vw, 3.5rem));
+	}
+
+	@media (max-width: 767px) {
+		.hero--diptych {
+			flex-wrap: wrap;
+			gap: var(--space-xl);
+		}
+		.hero--diptych .hero-content,
+		.hero--diptych .hero-visual {
+			flex: 1 1 100%;
+		}
+	}
+
+	/* ── EDITORIAL: full-width name, vertical flow ────────────────── */
+	.hero--editorial {
+		flex-direction: column;
+		gap: var(--space-xl);
+	}
+	.hero--editorial .hero-content {
+		max-width: none;
+		flex: none;
+	}
+	.hero--editorial .hero-name {
+		font-size: clamp(3rem, 8vw, 6rem);
+		line-height: 0.9;
+	}
+
+	/* ── STACKED: centered vertically ─────────────────────────────── */
+	.hero--stacked {
+		flex-direction: column;
+		align-items: center;
+		text-align: center;
+		gap: var(--space-xl);
+	}
+	.hero--stacked .hero-content {
+		align-items: center;
+		text-align: center;
+	}
+	.hero--stacked .hero-bio {
+		text-align: center;
 	}
 
 	.hero-main {
