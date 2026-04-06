@@ -33,14 +33,14 @@
 - [x] Refactor `AdminShell.svelte` topbar: add overflow chip, hide theme/font at <1024px
 - [x] Add overflow dropdown component for collapsed theme/font selectors
 
-## Phase 5: Wire History + Reset — 43% DONE
+## Phase 5: Wire History + Reset — 100% DONE
 - [x] Update `convex/hero.ts` mutations to write `adminHistory` entries on changes
 - [x] Update `convex/siteConfig.ts` to write history on flag/config changes
 - [x] Update `convex/sectionRegistry.ts` to write history on section config changes
-- [ ] Wire ChangeBadge + ResetButton into `PagePanel.svelte` control headers (imported but unused)
-- [ ] Wire ChangeBadge + ResetButton into `SectionConfigPanel.svelte` hero controls (partially done)
-- [ ] Wire HistoryPopover to badge click events (component exists, not connected)
-- [ ] Wire ResetButton to reset mutations using `DEFAULTS` map
+- [x] Wire ChangeBadge + ResetButton into `PagePanel.svelte` (viewMode + particles controls)
+- [x] Wire ChangeBadge + ResetButton into `SectionConfigPanel.svelte` (all 5 hero typography controls)
+- [x] Wire HistoryPopover to badge click events (fetches from adminHistory.getRecent)
+- [x] Wire ResetButton to reset mutations using `DEFAULTS` map
 
 ## Phase 6: Test Audit — 0% DONE
 - [ ] Update `tests/e2e/admin.spec.ts` selectors for new chip markup
@@ -54,5 +54,5 @@
 ---
 
 ## Summary
-**Total**: 37 tasks | **Done**: 24/37 (65%) | **Remaining**: 13 tasks
-**Critical gaps**: Phase 5 UI wiring (history + reset), Phase 4a flag pagination, Phase 6 tests
+**Total**: 37 tasks | **Done**: 31/37 (84%) | **Remaining**: 6 tasks
+**Remaining gaps**: Phase 1 lastModified field, Phase 3 PageSidebar chip migration, Phase 4a flag pagination (agent in progress), Phase 6 tests
