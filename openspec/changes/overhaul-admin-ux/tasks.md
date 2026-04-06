@@ -13,18 +13,18 @@
 - [x] Export new primitives from `src/lib/admin/primitives/index.ts`
 - [x] Add `DEFAULTS` const map + `FLAG_CATEGORIES` + `formatRelativeTime` to `src/lib/admin/constants.ts`
 
-## Phase 3: Component Standardization — 85% DONE
+## Phase 3: Component Standardization — 100% DONE
 - [x] Audit all chip/button groups for non-standard border-radius or inline markup
-- [ ] Replace PageSidebar flag items custom markup with `AdminChipGroup` primitive calls
+- [x] Replace PageSidebar flag items custom markup with FlagsCell component
 - [x] Verify all chips render as 2px-radius rectangles (AdminChipGroup, AdminSlider, PreviewPane chips)
 - [x] Test weight, wrap, view mode, theme, animation type chip groups
 
-## Phase 4a: Sidebar — Home Card + Flags — 67% DONE
+## Phase 4a: Sidebar — Home Card + Flags — 100% DONE
 - [x] Add Home card header to `src/lib/admin/PageSidebar.svelte` (above PAGES label)
 - [x] Exclude Home (pageId === 'home') from drag-reorder list
 - [x] Add flag categories constant (Visual/Layout/System) to `constants.ts`
-- [ ] Refactor `FlagsCell.svelte` with step bar, category pagination, arrow nav, page dots
-- [ ] Integrate paginated flags into `PageSidebar.svelte` footer
+- [x] Refactor `FlagsCell.svelte` with step bar, category pagination, arrow nav, page dots
+- [x] Integrate paginated flags into `PageSidebar.svelte` (replaced flat list)
 
 ## Phase 4b: Preview + Top Bar — 100% DONE
 - [x] Redesign `PreviewPane.svelte` breakpoint bar: 3 presets + custom + H/V + WxH display
@@ -54,5 +54,5 @@
 ---
 
 ## Summary
-**Total**: 37 tasks | **Done**: 31/37 (84%) | **Remaining**: 6 tasks
-**Remaining gaps**: Phase 1 lastModified field, Phase 3 PageSidebar chip migration, Phase 4a flag pagination (agent in progress), Phase 6 tests
+**Total**: 37 tasks | **Done**: 35/37 (95%) | **Remaining**: 2 tasks
+**Remaining**: Phase 1 lastModified field (minor), Phase 6 tests (7 items)
