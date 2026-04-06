@@ -4,7 +4,7 @@
 	import { sectionTypeRegistry } from '$lib/sections/registry';
 	import { VIEW_MODES, stripConvexMeta, DEFAULTS } from '$lib/admin/constants';
 	import { ParticlesCell, ColorStrip } from '$lib/admin/controls';
-	import { ChangeBadge, ResetButton } from '$lib/admin/primitives';
+	import { ChangeBadge, ResetButton, HistoryPopover } from '$lib/admin/primitives';
 	import EntryTable from '$lib/admin/EntryTable.svelte';
 	import SectionPicker from '$lib/admin/SectionPicker.svelte';
 
@@ -16,6 +16,37 @@
 
 	let showSectionPicker = false;
 	let colorFilter: string | null = null;
+
+	// History popover state
+	let historyField: string = '';
+	let historyEntries: Array<{ oldValue: any; newValue: any; timestamp: number }> = [];
+	let historyOpen: boolean = false;
+
+	async function openHistory(table: string, field: string) {
+		historyField = field;
+		try {
+			historyEntries = await client.query(api.adminHistory.getRecent, { table, field });
+		} catch (_) {
+			historyEntries = [];
+		}
+		historyOpen = true;
+	}
+
+	function closeHistory() {
+		historyOpen = false;
+		historyField = '';
+		historyEntries = [];
+	}
+
+	async function handleRestore(e: CustomEvent<{ oldValue: any; newValue: any; timestamp: number }>) {
+		const { oldValue } = e.detail;
+		if (historyField === 'viewMode') {
+			updateSectionConfig('viewMode', oldValue);
+		} else if (historyField === 'particles') {
+			updateSectionConfig('particles', oldValue);
+		}
+		closeHistory();
+	}
 
 	$: sectionDef = sectionTypeRegistry[page?.sections?.[0]?.sectionType] ?? null;
 	$: dataTable = sectionDef?.dataTable ?? page?.sections?.[0]?.dataTable ?? '';
@@ -140,14 +171,26 @@
 				<button class="chip" on:click={cycleViewMode}>
 					{currentViewMode} ▾
 				</button>
-				<ChangeBadge
-					timestamp={null}
-					isDefault={isViewModeDefault}
-				/>
-				<ResetButton
-					visible={!isViewModeDefault}
-					on:reset={resetViewMode}
-				/>
+				<div class="badge-group">
+					<ChangeBadge
+						timestamp={null}
+						isDefault={isViewModeDefault}
+						on:click={() => openHistory('sectionConfig', 'viewMode')}
+					/>
+					<ResetButton
+						visible={!isViewModeDefault}
+						on:reset={resetViewMode}
+					/>
+					{#if historyOpen && historyField === 'viewMode'}
+						<HistoryPopover
+							entries={historyEntries}
+							open={true}
+							field="viewMode"
+							on:close={closeHistory}
+							on:restore={handleRestore}
+						/>
+					{/if}
+				</div>
 			{/if}
 			<button
 				class="chip"
@@ -182,14 +225,26 @@
 	<!-- Particle animations -->
 	<div class="control-header">
 		<span class="control-label">PARTICLES</span>
-		<ChangeBadge
-			timestamp={null}
-			isDefault={isParticlesDefault}
-		/>
-		<ResetButton
-			visible={!isParticlesDefault}
-			on:reset={resetParticles}
-		/>
+		<div class="badge-group">
+			<ChangeBadge
+				timestamp={null}
+				isDefault={isParticlesDefault}
+				on:click={() => openHistory('sectionConfig', 'particles')}
+			/>
+			<ResetButton
+				visible={!isParticlesDefault}
+				on:reset={resetParticles}
+			/>
+			{#if historyOpen && historyField === 'particles'}
+				<HistoryPopover
+					entries={historyEntries}
+					open={true}
+					field="particles"
+					on:close={closeHistory}
+					on:restore={handleRestore}
+				/>
+			{/if}
+		</div>
 	</div>
 	<ParticlesCell
 		particles={pageParticles}
@@ -426,5 +481,13 @@
 		text-transform: uppercase;
 		letter-spacing: 0.5px;
 		color: var(--color-text-subtle, #666);
+	}
+
+	.badge-group {
+		display: flex;
+		align-items: center;
+		gap: 2px;
+		flex-shrink: 0;
+		position: relative;
 	}
 </style>

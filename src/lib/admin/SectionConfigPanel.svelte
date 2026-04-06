@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { createEventDispatcher, onMount } from 'svelte';
-	import { AdminToggle, AdminSlider, AdminChipGroup, ChangeBadge, ResetButton } from '$lib/admin/primitives';
+	import { AdminToggle, AdminSlider, AdminChipGroup, ChangeBadge, ResetButton, HistoryPopover } from '$lib/admin/primitives';
 	import { sectionTypeRegistry } from '$lib/sections/registry';
 	import { sectionEditors } from '$lib/admin/section-editors';
 	import { VIEW_MODES, DEFAULTS } from '$lib/admin/constants';
@@ -15,6 +15,45 @@
 
 	// Hero config from Convex subscription
 	let heroConfig: any = null;
+
+	// Per-field history popover state
+	let historyField: string = '';
+	let historyEntries: Array<{ oldValue: any; newValue: any; timestamp: number }> = [];
+	let historyOpen: boolean = false;
+
+	// Per-field default checks
+	$: isSizeDefault = (heroConfig?.heroNameSize ?? DEFAULTS.hero.heroNameSize) === DEFAULTS.hero.heroNameSize;
+	$: isWeightDefault = (heroConfig?.heroNameWeight ?? DEFAULTS.hero.heroNameWeight) === DEFAULTS.hero.heroNameWeight;
+	$: isTrackingDefault = Math.abs((heroConfig?.heroNameLetterSpacing ?? DEFAULTS.hero.heroNameLetterSpacing) - DEFAULTS.hero.heroNameLetterSpacing) <= 0.001;
+	$: isLeadingDefault = Math.abs((heroConfig?.heroNameLineHeight ?? DEFAULTS.hero.heroNameLineHeight) - DEFAULTS.hero.heroNameLineHeight) <= 0.01;
+	$: isWrapDefault = (heroConfig?.heroNameTextWrap ?? DEFAULTS.hero.heroNameTextWrap) === DEFAULTS.hero.heroNameTextWrap;
+
+	async function openHistory(field: string) {
+		historyField = field;
+		try {
+			historyEntries = await client.query(api.adminHistory.getRecent, {
+				table: 'heroConfig',
+				field,
+			});
+		} catch (_) {
+			historyEntries = [];
+		}
+		historyOpen = true;
+	}
+
+	function closeHistory() {
+		historyOpen = false;
+		historyField = '';
+		historyEntries = [];
+	}
+
+	async function handleRestore(e: CustomEvent<{ oldValue: any; newValue: any; timestamp: number }>) {
+		const { oldValue } = e.detail;
+		if (historyField) {
+			await setHeroConfig(historyField, oldValue);
+		}
+		closeHistory();
+	}
 
 	// Whether all hero typography fields match their defaults
 	$: isHeroDefault = heroConfig
@@ -172,23 +211,67 @@
 		<div class="config-grid">
 			<!-- Size -->
 			<div class="config-field config-full-width">
-				<AdminSlider
-					label="SIZE"
-					value={heroNameSize}
-					min={2}
-					max={12}
-					step={0.5}
-					width="fill"
-					format={(v) => v + 'rem'}
-					showReset={heroNameSize !== DEFAULTS.hero.heroNameSize}
-					resetValue={DEFAULTS.hero.heroNameSize}
-					on:change={(e) => setHeroConfig('heroNameSize', e.detail.value)}
-				/>
+				<div class="field-header">
+					<AdminSlider
+						label="SIZE"
+						value={heroNameSize}
+						min={2}
+						max={12}
+						step={0.5}
+						width="fill"
+						format={(v) => v + 'rem'}
+						showReset={heroNameSize !== DEFAULTS.hero.heroNameSize}
+						resetValue={DEFAULTS.hero.heroNameSize}
+						on:change={(e) => setHeroConfig('heroNameSize', e.detail.value)}
+					/>
+					<div class="field-badges">
+						<ChangeBadge
+							timestamp={heroConfig?.lastModified ?? null}
+							isDefault={isSizeDefault}
+							on:click={() => openHistory('heroNameSize')}
+						/>
+						<ResetButton
+							visible={!isSizeDefault}
+							on:reset={() => setHeroConfig('heroNameSize', DEFAULTS.hero.heroNameSize)}
+						/>
+						{#if historyOpen && historyField === 'heroNameSize'}
+							<HistoryPopover
+								entries={historyEntries}
+								open={true}
+								field="heroNameSize"
+								on:close={closeHistory}
+								on:restore={handleRestore}
+							/>
+						{/if}
+					</div>
+				</div>
 			</div>
 
 			<!-- Weight -->
 			<div class="config-field config-full-width">
-				<span class="field-label">WEIGHT</span>
+				<div class="field-header">
+					<span class="field-label">WEIGHT</span>
+					<div class="field-badges">
+						<ChangeBadge
+							timestamp={heroConfig?.lastModified ?? null}
+							isDefault={isWeightDefault}
+							on:click={() => openHistory('heroNameWeight')}
+						/>
+						<ResetButton
+							visible={!isWeightDefault}
+							on:reset={() => setHeroConfig('heroNameWeight', DEFAULTS.hero.heroNameWeight)}
+						/>
+						{#if historyOpen && historyField === 'heroNameWeight'}
+							<HistoryPopover
+								entries={historyEntries}
+								open={true}
+								field="heroNameWeight"
+								on:close={closeHistory}
+								on:restore={handleRestore}
+							/>
+						{/if}
+					</div>
+				</div>
 				<AdminChipGroup
 					options={WEIGHT_OPTIONS}
 					value={String(heroNameWeight)}
@@ -198,39 +281,105 @@
 
 			<!-- Tracking -->
 			<div class="config-field config-full-width">
-				<AdminSlider
-					label="TRACKING"
-					value={heroNameLetterSpacing}
-					min={-0.1}
-					max={0.05}
-					step={0.01}
-					width="fill"
-					format={(v) => v.toFixed(2) + 'em'}
-					showReset={Math.abs(heroNameLetterSpacing - DEFAULTS.hero.heroNameLetterSpacing) > 0.001}
-					resetValue={DEFAULTS.hero.heroNameLetterSpacing}
-					on:change={(e) => setHeroConfig('heroNameLetterSpacing', e.detail.value)}
-				/>
+				<div class="field-header">
+					<AdminSlider
+						label="TRACKING"
+						value={heroNameLetterSpacing}
+						min={-0.1}
+						max={0.05}
+						step={0.01}
+						width="fill"
+						format={(v) => v.toFixed(2) + 'em'}
+						showReset={Math.abs(heroNameLetterSpacing - DEFAULTS.hero.heroNameLetterSpacing) > 0.001}
+						resetValue={DEFAULTS.hero.heroNameLetterSpacing}
+						on:change={(e) => setHeroConfig('heroNameLetterSpacing', e.detail.value)}
+					/>
+					<div class="field-badges">
+						<ChangeBadge
+							timestamp={heroConfig?.lastModified ?? null}
+							isDefault={isTrackingDefault}
+							on:click={() => openHistory('heroNameLetterSpacing')}
+						/>
+						<ResetButton
+							visible={!isTrackingDefault}
+							on:reset={() => setHeroConfig('heroNameLetterSpacing', DEFAULTS.hero.heroNameLetterSpacing)}
+						/>
+						{#if historyOpen && historyField === 'heroNameLetterSpacing'}
+							<HistoryPopover
+								entries={historyEntries}
+								open={true}
+								field="heroNameLetterSpacing"
+								on:close={closeHistory}
+								on:restore={handleRestore}
+							/>
+						{/if}
+					</div>
+				</div>
 			</div>
 
 			<!-- Leading -->
 			<div class="config-field config-full-width">
-				<AdminSlider
-					label="LEADING"
-					value={heroNameLineHeight}
-					min={0.8}
-					max={2}
-					step={0.05}
-					width="fill"
-					format={(v) => v.toFixed(2)}
-					showReset={Math.abs(heroNameLineHeight - DEFAULTS.hero.heroNameLineHeight) > 0.01}
-					resetValue={DEFAULTS.hero.heroNameLineHeight}
-					on:change={(e) => setHeroConfig('heroNameLineHeight', e.detail.value)}
-				/>
+				<div class="field-header">
+					<AdminSlider
+						label="LEADING"
+						value={heroNameLineHeight}
+						min={0.8}
+						max={2}
+						step={0.05}
+						width="fill"
+						format={(v) => v.toFixed(2)}
+						showReset={Math.abs(heroNameLineHeight - DEFAULTS.hero.heroNameLineHeight) > 0.01}
+						resetValue={DEFAULTS.hero.heroNameLineHeight}
+						on:change={(e) => setHeroConfig('heroNameLineHeight', e.detail.value)}
+					/>
+					<div class="field-badges">
+						<ChangeBadge
+							timestamp={heroConfig?.lastModified ?? null}
+							isDefault={isLeadingDefault}
+							on:click={() => openHistory('heroNameLineHeight')}
+						/>
+						<ResetButton
+							visible={!isLeadingDefault}
+							on:reset={() => setHeroConfig('heroNameLineHeight', DEFAULTS.hero.heroNameLineHeight)}
+						/>
+						{#if historyOpen && historyField === 'heroNameLineHeight'}
+							<HistoryPopover
+								entries={historyEntries}
+								open={true}
+								field="heroNameLineHeight"
+								on:close={closeHistory}
+								on:restore={handleRestore}
+							/>
+						{/if}
+					</div>
+				</div>
 			</div>
 
 			<!-- Wrap -->
 			<div class="config-field config-full-width">
-				<span class="field-label">WRAP</span>
+				<div class="field-header">
+					<span class="field-label">WRAP</span>
+					<div class="field-badges">
+						<ChangeBadge
+							timestamp={heroConfig?.lastModified ?? null}
+							isDefault={isWrapDefault}
+							on:click={() => openHistory('heroNameTextWrap')}
+						/>
+						<ResetButton
+							visible={!isWrapDefault}
+							on:reset={() => setHeroConfig('heroNameTextWrap', DEFAULTS.hero.heroNameTextWrap)}
+						/>
+						{#if historyOpen && historyField === 'heroNameTextWrap'}
+							<HistoryPopover
+								entries={historyEntries}
+								open={true}
+								field="heroNameTextWrap"
+								on:close={closeHistory}
+								on:restore={handleRestore}
+							/>
+						{/if}
+					</div>
+				</div>
 				<AdminChipGroup
 					options={WRAP_OPTIONS}
 					value={heroNameTextWrap}
@@ -400,5 +549,24 @@
 
 	.control-header :global(.admin-label) {
 		flex: 1;
+	}
+
+	.field-header {
+		display: flex;
+		align-items: center;
+		gap: var(--admin-space-1, 4px);
+		position: relative;
+	}
+
+	.field-header :global(.admin-slider) {
+		flex: 1;
+	}
+
+	.field-badges {
+		display: flex;
+		align-items: center;
+		gap: 2px;
+		flex-shrink: 0;
+		position: relative;
 	}
 </style>
