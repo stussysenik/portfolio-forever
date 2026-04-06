@@ -5,6 +5,7 @@
 	import FlagsCell from './controls/FlagsCell.svelte';
 	import OrderCell from './controls/OrderCell.svelte';
 	import AnimationsCell from './controls/AnimationsCell.svelte';
+	import UiSettingsPanel from './UiSettingsPanel.svelte';
 	import { toast } from '$lib/stores/toast';
 
 	export let open: boolean = false;
@@ -17,6 +18,7 @@
 	export let siteConfig: any = null;
 	export let featureFlags: any[] = [];
 	export let registrySections: any[] = [];
+	export let heroConfig: any = null;
 
 	/** Build Record<string, boolean> for FlagsCell */
 	$: flagsRecord = featureFlags.reduce((acc: Record<string, boolean>, f: any) => {
@@ -96,6 +98,14 @@
 			<h3 class="drawer-section-label">Config</h3>
 			<div class="drawer-section-body">
 				<ConfigCell {siteConfig} {client} {api} />
+			</div>
+		</section>
+
+		<!-- UI Settings -->
+		<section class="drawer-section">
+			<h3 class="drawer-section-label">UI</h3>
+			<div class="drawer-section-body">
+				<UiSettingsPanel {client} {api} {siteConfig} {featureFlags} {heroConfig} />
 			</div>
 		</section>
 

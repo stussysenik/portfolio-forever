@@ -259,6 +259,7 @@
 	siteConfig={siteConfigData}
 	featureFlags={featureFlags}
 	registrySections={registrySections}
+	heroConfig={heroConfigData}
 	on:close={() => (settingsOpen = false)}
 />
 
