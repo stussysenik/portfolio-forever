@@ -7,6 +7,7 @@
 	import { onMount } from "svelte";
 	import { getConvexClient } from "$lib/convex";
 	import { api } from "$convex/_generated/api";
+	import { sameAsUrlToLabel } from "$lib/utils/social-links";
 
 	export let id = "hero";
 
@@ -23,32 +24,6 @@
 		sameAs: [] as string[],
 	};
 	let works: any[] = staticWorks;
-
-	/** Parse a sameAs URL into a short label for display */
-	function sameAsUrlToLabel(url: string): string {
-		if (url.startsWith('mailto:')) return 'email';
-		try {
-			const hostname = new URL(url).hostname.replace(/^www\./, '');
-			const known: Record<string, string> = {
-				'github.com': 'github',
-				'linkedin.com': 'linkedin',
-				'instagram.com': 'instagram',
-				'x.com': 'x',
-				'twitter.com': 'x',
-				'soundcloud.com': 'soundcloud',
-				'on.soundcloud.com': 'soundcloud',
-				'imdb.com': 'imdb',
-				'youtube.com': 'youtube',
-				'vimeo.com': 'vimeo',
-				'dribbble.com': 'dribbble',
-				'behance.net': 'behance',
-				'medium.com': 'medium',
-			};
-			return known[hostname] ?? hostname;
-		} catch {
-			return url;
-		}
-	}
 
 	onMount(() => {
 		const client = getConvexClient();

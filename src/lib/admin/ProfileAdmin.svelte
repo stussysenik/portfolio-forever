@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { toast } from '$lib/stores/toast';
+	import { sameAsUrlToLabel } from '$lib/utils/social-links';
 
 	export let client: any;
 	export let api: any;
@@ -131,30 +132,6 @@
 		}
 	}
 
-	/** Derive a short label from a URL for display in preview chips */
-	function labelFromUrl(url: string): string {
-		if (url.startsWith('mailto:')) return 'email';
-		try {
-			const hostname = new URL(url).hostname.replace(/^www\./, '');
-			const known: Record<string, string> = {
-				'github.com': 'github',
-				'linkedin.com': 'linkedin',
-				'instagram.com': 'instagram',
-				'x.com': 'x',
-				'twitter.com': 'x',
-				'soundcloud.com': 'soundcloud',
-				'imdb.com': 'imdb',
-				'youtube.com': 'youtube',
-				'vimeo.com': 'vimeo',
-				'dribbble.com': 'dribbble',
-				'behance.net': 'behance',
-				'medium.com': 'medium',
-			};
-			return known[hostname] ?? hostname;
-		} catch {
-			return url;
-		}
-	}
 </script>
 
 {#if profile}
@@ -284,7 +261,7 @@
 				<div class="taglines-preview">
 					{#if profile?.sameAs?.length}
 						{#each profile.sameAs as url}
-							<a href={url} target="_blank" rel="noopener" class="tagline-chip sameas-chip">{labelFromUrl(url)}</a>
+							<a href={url} target="_blank" rel="noopener" class="tagline-chip sameas-chip">{sameAsUrlToLabel(url)}</a>
 						{/each}
 					{:else}
 						<span class="field-value-muted">(none)</span>

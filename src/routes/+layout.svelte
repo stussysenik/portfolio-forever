@@ -16,6 +16,7 @@
         import { getConvexClient } from "$lib/convex";
         import { api } from "$convex/_generated/api";
         import Embellishments from "$lib/components/Embellishments.svelte";
+        import { parseSameAs } from "$lib/utils/social-links";
 
         // View Transitions API — smooth page-to-page animations
         onNavigate((navigation) => {
@@ -47,39 +48,6 @@
         let socialLinksData: { label: string; url: string }[] = socialLinks;
         let PixelCanvasComponent: any = null;
         let pixelCanvasPromise: Promise<void> | null = null;
-
-        /** Parse a sameAs URL array into {label, url} pairs for nav display */
-        function parseSameAs(urls: string[]): { label: string; url: string }[] {
-                return urls.map((url) => ({
-                        label: sameAsUrlToLabel(url),
-                        url,
-                }));
-        }
-
-        function sameAsUrlToLabel(url: string): string {
-                if (url.startsWith('mailto:')) return 'email';
-                try {
-                        const hostname = new URL(url).hostname.replace(/^www\./, '');
-                        const known: Record<string, string> = {
-                                'github.com': 'github',
-                                'linkedin.com': 'linkedin',
-                                'instagram.com': 'instagram',
-                                'x.com': 'x',
-                                'twitter.com': 'x',
-                                'soundcloud.com': 'soundcloud',
-                                'on.soundcloud.com': 'soundcloud',
-                                'imdb.com': 'imdb',
-                                'youtube.com': 'youtube',
-                                'vimeo.com': 'vimeo',
-                                'dribbble.com': 'dribbble',
-                                'behance.net': 'behance',
-                                'medium.com': 'medium',
-                        };
-                        return known[hostname] ?? hostname;
-                } catch {
-                        return url;
-                }
-        }
 
         $: currentPath = $page.url.pathname;
         $: pixelCanvasEnabled = ($featureFlags.get("pixel-engine") ?? false) && !$isReaderMode;
