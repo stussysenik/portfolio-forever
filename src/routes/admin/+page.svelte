@@ -2,6 +2,8 @@
 	import { onMount, getContext } from 'svelte';
 	import AdminShell from '$lib/admin/AdminShell.svelte';
 	import SectionBuilder from '$lib/admin/SectionBuilder.svelte';
+	import GlobalCompartment from '$lib/admin/GlobalCompartment.svelte';
+	import SectionCompartmentList from '$lib/admin/SectionCompartmentList.svelte';
 	import PreviewPane from '$lib/admin/PreviewPane.svelte';
 	import SectionPicker from '$lib/admin/SectionPicker.svelte';
 	import SettingsDrawer from '$lib/admin/SettingsDrawer.svelte';
@@ -15,6 +17,8 @@
 	let featureFlags: any[] = [];
 	let registrySections: any[] = [];
 	let entriesByTable: Record<string, any[]> = {};
+	let heroConfigData: any = null;
+	let cvProfileData: any = null;
 	let settingsOpen = false;
 
 	// Page & section selection state
@@ -22,6 +26,7 @@
 	let showSectionPicker = false;
 	let previewRefreshKey = 0;
 	let selectedSectionId = '';
+	let globalExpanded = false;
 
 	$: activePage = pages.find((p) => p.pageId === activePageId) ?? null;
 	$: previewRoute = activePage?.route ?? '/';
@@ -146,7 +151,13 @@
 					if (data) entriesByTable = { ...entriesByTable, academicEntries: data };
 				}),
 				client.onUpdate(api.cv.getFullCV, {}, (data: any) => {
-					if (data) entriesByTable = { ...entriesByTable, cvEntries: data.entries ?? [] };
+					if (data) {
+						entriesByTable = { ...entriesByTable, cvEntries: data.entries ?? [] };
+						cvProfileData = data.profile ?? null;
+					}
+				}),
+				client.onUpdate(api.hero.getHeroConfig, {}, (data: any) => {
+					heroConfigData = data ?? null;
 				}),
 				client.onUpdate(api.heroCaseStudies.getFull, {}, (data: any) => {
 					if (data) entriesByTable = { ...entriesByTable, heroCaseStudies: data };
@@ -180,8 +191,28 @@
 	on:reorderpages={handleReorderPages}
 	on:opensettings={() => (settingsOpen = true)}
 >
-	<!-- Builder pane (default slot) -->
+	<!-- Builder pane (default slot) — compartment system -->
 	{#if activePage}
+		<GlobalCompartment
+			{featureFlags}
+			siteConfig={siteConfigData}
+			expanded={globalExpanded}
+			{client}
+			{api}
+			on:toggle={() => (globalExpanded = !globalExpanded)}
+		/>
+		<SectionCompartmentList
+			sections={activePage.sections ?? []}
+			pageId={activePage.pageId}
+			page={activePage}
+			{entriesByTable}
+			{featureFlags}
+			siteConfig={siteConfigData}
+			heroConfig={heroConfigData}
+			cvProfile={cvProfileData}
+			{client}
+			{api}
+		/>
 		<SectionBuilder
 			page={activePage}
 			{featureFlags}

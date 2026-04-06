@@ -2,6 +2,8 @@
 	import { createEventDispatcher } from 'svelte';
 	import './tokens/admin-tokens.css';
 	import PageSidebar from './PageSidebar.svelte';
+	import PageBar from './PageBar.svelte';
+	import PreviewDrawer from './PreviewDrawer.svelte';
 
 	export let pages: any[] = [];
 	export let activePage: any = null;
@@ -23,6 +25,7 @@
 
 	let configOpen = false;
 	let overflowOpen = false;
+	let previewOpen = false;
 
 	// Read theme/font/mode from document for top bar chips
 	let currentTheme = '';
@@ -226,22 +229,13 @@
 		</div>
 	</header>
 
-	<!-- Mobile page pills (visible < 768px) -->
-	<nav class="mobile-pills" aria-label="Pages">
-		{#each pages as page (page.pageId)}
-			{@const count = getEntryCount(page)}
-			<button
-				class="pill"
-				class:pill-active={activePageId === page.pageId}
-				on:click={() => dispatch('selectpage', { pageId: page.pageId })}
-			>
-				{page.label}
-				{#if count > 0}
-					<span class="pill-count">{count}</span>
-				{/if}
-			</button>
-		{/each}
-	</nav>
+	<!-- Mobile page bar (visible < 768px) -->
+	<PageBar
+		{pages}
+		activePage={activePageId}
+		{entriesByTable}
+		on:selectpage
+	/>
 
 	<!-- Sidebar (visible >= 768px) -->
 	<aside class="sidebar">
@@ -270,6 +264,14 @@
 	<section class="preview">
 		<slot name="preview" />
 	</section>
+
+	<!-- Preview drawer (mobile/tablet only, hidden on desktop via CSS) -->
+	<PreviewDrawer
+		open={previewOpen}
+		siteUrl={typeof window !== 'undefined' ? window.location.origin : ''}
+		on:close={() => (previewOpen = false)}
+		on:open={() => (previewOpen = true)}
+	/>
 </div>
 
 <style>
@@ -446,72 +448,7 @@
 		flex-shrink: 0;
 	}
 
-	/* === Mobile pills === */
-	.mobile-pills {
-		grid-area: pills;
-		display: flex;
-		align-items: center;
-		gap: var(--admin-space-2, 8px);
-		padding: var(--admin-space-2, 8px) var(--admin-space-4, 16px);
-		overflow-x: auto;
-		-webkit-overflow-scrolling: touch;
-		scrollbar-width: none;
-		border-bottom: 1px solid var(--border-color-subtle, #1a1a1a);
-	}
-
-	.mobile-pills::-webkit-scrollbar {
-		display: none;
-	}
-
-	@media (min-width: 768px) {
-		.mobile-pills {
-			display: none;
-		}
-	}
-
-	.pill {
-		font-family: var(--font-mono);
-		font-size: var(--admin-text-xs, 9px);
-		text-transform: uppercase;
-		letter-spacing: 0.04em;
-		padding: 6px 14px;
-		border-radius: 2px;
-		border: 1px solid var(--border-color-subtle, #222);
-		background: transparent;
-		color: var(--color-text-muted, #666);
-		cursor: pointer;
-		white-space: nowrap;
-		transition: all var(--admin-transition, 120ms ease);
-		min-height: var(--admin-touch-min, 44px);
-		display: inline-flex;
-		align-items: center;
-		gap: var(--admin-space-1, 4px);
-	}
-
-	.pill:hover {
-		border-color: var(--color-text-muted, #666);
-		color: var(--color-text, #e5e5e5);
-	}
-
-	.pill-active {
-		background: var(--color-text, #e5e5e5);
-		color: var(--color-bg, #0a0a0a);
-		border-color: var(--color-text, #e5e5e5);
-	}
-
-	.pill-active:hover {
-		background: var(--color-text, #e5e5e5);
-		color: var(--color-bg, #0a0a0a);
-	}
-
-	.pill-count {
-		font-size: var(--admin-text-2xs, 7px);
-		color: var(--admin-green, #44D62C);
-	}
-
-	.pill-active .pill-count {
-		color: var(--admin-green, #44D62C);
-	}
+	/* Mobile pills styling now in PageBar.svelte */
 
 	/* === Sidebar === */
 	.sidebar {
@@ -545,7 +482,7 @@
 		grid-area: preview;
 		display: none;
 		overflow-y: auto;
-		border-left: 1px solid var(--border-color-subtle, #1a1a1a);
+		border-left: 3px solid var(--admin-blue, #2563EB);
 		background: var(--color-bg, #0a0a0a);
 	}
 

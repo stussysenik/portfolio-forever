@@ -162,20 +162,22 @@
 		</div>
 	</div>
 
-	<!-- Section list -->
-	<div class="builder-section">
-		<span class="admin-label admin-label--xs">SECTIONS</span>
-		<DraggableSectionList
-			{sections}
-			pageId={page?.pageId ?? ''}
-			{client}
-			{api}
-			on:reorder={handleReorder}
-			on:select={handleSelect}
-			on:delete={handleDelete}
-			on:add={handleAdd}
-		/>
-	</div>
+	<!-- Section list (hidden for single-hero pages — no reorder/add needed) -->
+	{#if !(sections.length === 1 && sections[0]?.sectionType === 'hero')}
+		<div class="builder-section">
+			<span class="admin-label admin-label--xs">SECTIONS</span>
+			<DraggableSectionList
+				{sections}
+				pageId={page?.pageId ?? ''}
+				{client}
+				{api}
+				on:reorder={handleReorder}
+				on:select={handleSelect}
+				on:delete={handleDelete}
+				on:add={handleAdd}
+			/>
+		</div>
+	{/if}
 
 	<!-- Particles section -->
 	{#if showParticles}

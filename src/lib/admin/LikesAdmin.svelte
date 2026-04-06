@@ -5,6 +5,7 @@
 	export let client: any;
 	export let api: any;
 	export let categories: any[];
+	export let compact: boolean = false;
 
 	let editingId: string | null = null;
 	let editingField: string | null = null;
@@ -79,12 +80,14 @@
 </script>
 
 <section class="admin-section">
+	{#if !compact}
 	<div class="section-header">
 		<h2 class="section-label">Likes</h2>
 		<span class="section-count">{categories.length}</span>
 		<button class="btn-sm btn-add" on:click={addLikesCategory}>+ Add Category</button>
 		<a href="/likes" class="btn-sm" target="_blank">View &rarr;</a>
 	</div>
+	{/if}
 
 	{#each [...categories].sort((a, b) => a.order - b.order) as cat, idx}
 		<div class="card" class:hidden-entry={!cat.visible}>

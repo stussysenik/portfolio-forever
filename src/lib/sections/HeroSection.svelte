@@ -165,6 +165,13 @@
 		padding: var(--space-2xl) 0;
 	}
 
+	@media (max-width: 480px) {
+		.hero-evidence {
+			min-height: 30vh;
+			padding: var(--space-lg) 0;
+		}
+	}
+
 	.hero-ascii-art {
 		display: flex;
 		flex-direction: column;

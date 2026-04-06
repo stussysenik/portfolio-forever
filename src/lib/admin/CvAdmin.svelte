@@ -7,6 +7,7 @@
 	export let sections: any[];
 	export let entries: any[];
 	export let languages: any[];
+	export let compact: boolean = false;
 
 	const SECTION_TYPES = ['work', 'education', 'award', 'publication', 'project'];
 
@@ -160,11 +161,13 @@
 <!-- CV Sections with Entries -->
 {#each sections.filter(s => s.visible) as section}
 <section class="admin-section">
+	{#if !compact}
 	<div class="section-header">
 		<h2 class="section-label">{section.name}</h2>
 		<span class="section-count">{entriesOfType(section.type).length}</span>
 		<button class="btn-sm btn-add" on:click={() => addEntry(section.type)}>+ Add</button>
 	</div>
+	{/if}
 
 	{#each entriesOfType(section.type) as entry, idx}
 		<div class="card" class:hidden-entry={!entry.visible}>
@@ -247,10 +250,12 @@
 
 <!-- Languages -->
 <section class="admin-section">
+	{#if !compact}
 	<div class="section-header">
 		<h2 class="section-label">Languages</h2>
 		<button class="btn-sm btn-add" on:click={addLanguage}>+ Add</button>
 	</div>
+	{/if}
 	<div class="languages-grid">
 		{#each languages as lang}
 			<div class="card card-compact">
@@ -274,9 +279,11 @@
 
 <!-- Add CV Section -->
 <section class="admin-section">
+	{#if !compact}
 	<div class="section-header">
 		<h2 class="section-label">Add CV Section</h2>
 	</div>
+	{/if}
 	<div class="add-section-grid">
 		{#each SECTION_TYPES.filter(t => !sections.some(s => s.type === t)) as type}
 			<button class="btn btn-outline" on:click={() => addSection(type)}>+ {type}</button>

@@ -5,6 +5,7 @@
 	export let client: any;
 	export let api: any;
 	export let giftsConfig: any;
+	export let compact: boolean = false;
 
 	let editingField: string | null = null;
 	let editBuffer = '';
@@ -43,6 +44,7 @@
 </script>
 
 <section class="admin-section">
+	{#if !compact}
 	<div class="section-header">
 		<h2 class="section-label">Gifts / The Promise</h2>
 		{#if !giftsConfig}
@@ -50,6 +52,7 @@
 		{/if}
 		<a href="/gifts" class="btn-sm" target="_blank">View &rarr;</a>
 	</div>
+	{/if}
 
 	{#if giftsConfig}
 		<div class="card">

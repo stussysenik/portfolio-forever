@@ -6,6 +6,7 @@
 	export let client: any;
 	export let api: any;
 	export let entries: any[];
+	export let compact: boolean = false;
 
 	let editingId: string | null = null;
 	let editingField: string | null = null;
@@ -64,12 +65,14 @@
 </script>
 
 <section class="admin-section">
+	{#if !compact}
 	<div class="section-header">
 		<h2 class="section-label">Labs / Experiments</h2>
 		<span class="section-count">{entries.length}</span>
 		<button class="btn-sm btn-add" on:click={addEntry}>+ Add</button>
 		<a href="/labs" class="btn-sm" target="_blank">View &rarr;</a>
 	</div>
+	{/if}
 
 	{#each [...entries].sort((a, b) => a.order - b.order) as entry, idx}
 		<div class="card" class:hidden-entry={!entry.visible}>

@@ -6,6 +6,7 @@
 	export let client: any;
 	export let api: any;
 	export let entries: any[];
+	export let compact: boolean = false;
 
 	let editingId: string | null = null;
 	let editingField: string | null = null;
@@ -43,12 +44,14 @@
 </script>
 
 <section class="admin-section blog-admin">
+	{#if !compact}
 	<div class="section-header">
 		<h2 class="section-label">Blog</h2>
 		<span class="section-count">{entries.length}</span>
 		<button class="btn-sm btn-add" on:click={addPost}>+ Add</button>
 		<a href="/blog" class="btn-sm" target="_blank">View &rarr;</a>
 	</div>
+	{/if}
 
 	{#each [...entries].sort((a, b) => (b.publishedAt ?? '').localeCompare(a.publishedAt ?? '')) as entry}
 		<div class="card" class:hidden-entry={!entry.visible}>

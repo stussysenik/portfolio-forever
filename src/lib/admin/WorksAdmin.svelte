@@ -6,6 +6,7 @@
 	export let client: any;
 	export let api: any;
 	export let entries: any[];
+	export let compact: boolean = false;
 
 	let editingId: string | null = null;
 	let editingField: string | null = null;
@@ -100,12 +101,14 @@
 </script>
 
 <section class="admin-section">
+	{#if !compact}
 	<div class="section-header">
 		<h2 class="section-label">Works / Projects</h2>
 		<span class="section-count">{entries.length}</span>
 		<button class="btn-sm btn-add" on:click={addWorkEntry}>+ Add</button>
 		<a href="/works" class="btn-sm" target="_blank">View &rarr;</a>
 	</div>
+	{/if}
 
 	{#if showNewForm}
 		<div class="new-form">
