@@ -1,25 +1,76 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
+  import { getConvexClient } from '$lib/convex';
+  import { api } from '$convex/_generated/api';
 
   export let id = "os";
   export let embedded = false;
 
-  let windows = [
-    { id: 1, title: 'Welcome.txt', content: 'Welcome to OS Mode.\nDouble click icons to open.\nDrag windows to organize.', x: 100, y: 100, z: 1 },
-    { id: 2, title: 'System Info', content: 'CPU: Neural Engine\nRAM: Infinite\nOS: S3NIK OS v1', x: 200, y: 200, z: 2 }
+  // ── Default data (fallback when Convex is unavailable) ──────────────
+  const DEFAULT_ICONS = [
+    { label: 'My Computer', icon: '\u{1F4BB}', content: 'Nothing here yet.', order: 0 },
+    { label: 'Trash', icon: '\u{1F5D1}\uFE0F', content: 'Empty.', order: 1 },
+    { label: 'Documents', icon: '\u{1F4C1}', content: 'CV.pdf\nProjects.txt', order: 2 },
+    { label: 'Exit OS', icon: '\u{1F50C}', action: 'exit', order: 3 },
   ];
+
+  const DEFAULT_WINDOWS = [
+    { title: 'Welcome.txt', content: 'Welcome to OS Mode.\nDouble click icons to open.\nDrag windows to organize.', x: 100, y: 100 },
+    { title: 'System Info', content: 'CPU: Neural Engine\nRAM: Infinite\nOS: S3NIK OS v1', x: 200, y: 200 },
+  ];
+
+  // ── Runtime state ──────────────────────────────────────────────────
+  let icons: Array<{ label: string; icon: string; content?: string; action?: string; order?: number }> = [...DEFAULT_ICONS];
+  let desktopColor = '#008080';
+
+  let windows: Array<{ id: number; title: string; content: string; x: number; y: number; z: number }> = DEFAULT_WINDOWS.map((w, i) => ({
+    ...w,
+    id: i + 1,
+    z: i + 1,
+  }));
 
   let activeWindowId = 2;
   let draggingId: number | null = null;
   let dragOffset = { x: 0, y: 0 };
 
-  // Icons
-  const icons = [
-    { label: 'My Computer', icon: '\u{1F4BB}', content: 'Nothing here yet.' },
-    { label: 'Trash', icon: '\u{1F5D1}\uFE0F', content: 'Empty.' },
-    { label: 'Documents', icon: '\u{1F4C1}', content: 'CV.pdf\nProjects.txt' },
-    { label: 'Exit OS', icon: '\u{1F50C}', action: 'exit' },
-  ];
+  // ── Subscribe to Convex ────────────────────────────────────────────
+  onMount(() => {
+    try {
+      const client = getConvexClient();
+      const unsub = client.onUpdate(api.os.getOsConfig, {}, (data) => {
+        if (data) {
+          // Replace icons with Convex data, sorted by order
+          const convexIcons = [...(data.icons ?? [])].sort((a: any, b: any) => (a.order ?? 0) - (b.order ?? 0));
+          if (convexIcons.length > 0) {
+            icons = convexIcons;
+          }
+
+          // Reset windows from Convex initial data
+          const convexWindows = data.initialWindows ?? [];
+          if (convexWindows.length > 0) {
+            windows = convexWindows.map((w: any, i: number) => ({
+              id: i + 1,
+              title: w.title,
+              content: w.content,
+              x: w.x,
+              y: w.y,
+              z: i + 1,
+            }));
+            activeWindowId = windows.length;
+          }
+
+          // Desktop color
+          if (data.desktopColor) {
+            desktopColor = data.desktopColor;
+          }
+        }
+      });
+      return () => unsub();
+    } catch {
+      // Convex unavailable — keep hardcoded defaults
+    }
+  });
 
   function handleIconClick(icon: any) {
     if (icon.action === 'exit') {
@@ -129,6 +180,7 @@
   style:--desktop-height={embedded ? '80vh' : 'calc(100vh - 100px)'}
   style:--desktop-top={embedded ? '0' : '100px'}
   style:--desktop-width={embedded ? '100%' : '100vw'}
+  style:--desktop-bg={desktopColor}
 >
 
   <div class="icons">
@@ -180,7 +232,7 @@
     position: var(--desktop-position, fixed);
     top: var(--desktop-top, 100px);
     left: 0;
-    background-color: #008080; /* Teal95 */
+    background-color: var(--desktop-bg, #008080); /* Teal95 */
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   }
 

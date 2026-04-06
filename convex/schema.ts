@@ -150,6 +150,35 @@ export default defineSchema({
 		visible: v.boolean(),
 	}).index("by_order", ["order"]),
 
+	// Process — editable process cycle phases
+	processConfig: defineTable({
+		phases: v.array(v.object({
+			label: v.string(),
+			description: v.optional(v.string()),
+			order: v.number(),
+		})),
+		visible: v.boolean(),
+	}),
+
+	// OS desktop config — icons + initial windows for Win95 simulation
+	osConfig: defineTable({
+		icons: v.array(v.object({
+			label: v.string(),
+			icon: v.string(),
+			content: v.optional(v.string()),
+			action: v.optional(v.string()),
+			order: v.number(),
+		})),
+		initialWindows: v.array(v.object({
+			title: v.string(),
+			content: v.string(),
+			x: v.number(),
+			y: v.number(),
+		})),
+		desktopColor: v.optional(v.string()),
+		visible: v.boolean(),
+	}),
+
 	// Gifts — editable manifesto content
 	giftsConfig: defineTable({
 		title: v.string(),
@@ -349,6 +378,31 @@ export default defineSchema({
 		newValue: v.any(),
 		timestamp: v.number(),
 	}).index("by_table_field", ["table", "field"]),
+
+	// Terminal — configurable data for the portfolio terminal
+	terminalConfig: defineTable({
+		fortunes: v.optional(v.array(v.string())),
+		asciiLogo: v.optional(v.string()),
+		neofetchFields: v.optional(v.array(v.object({
+			label: v.string(),
+			value: v.string(),
+		}))),
+		whoamiOutput: v.optional(v.string()),
+		projectUrls: v.optional(v.array(v.object({
+			name: v.string(),
+			url: v.string(),
+		}))),
+		skills: v.optional(v.array(v.object({
+			name: v.string(),
+			proficiency: v.number(),
+		}))),
+		packages: v.optional(v.array(v.object({
+			name: v.string(),
+			version: v.string(),
+			description: v.string(),
+		}))),
+		visible: v.boolean(),
+	}),
 
 	// GitHub projects — synced from GitHub API
 	githubProjects: defineTable({

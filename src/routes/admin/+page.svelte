@@ -162,6 +162,12 @@
 				client.onUpdate(api.heroCaseStudies.getFull, {}, (data: any) => {
 					if (data) entriesByTable = { ...entriesByTable, heroCaseStudies: data };
 				}),
+				client.onUpdate(api.process.getProcessConfig, {}, (data: any) => {
+					if (data) entriesByTable = { ...entriesByTable, processConfig: [data] };
+				}),
+				client.onUpdate(api.os.getOsConfig, {}, (data: any) => {
+					if (data) entriesByTable = { ...entriesByTable, osConfig: [data] };
+				}),
 			];
 		};
 

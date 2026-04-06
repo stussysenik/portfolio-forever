@@ -178,9 +178,17 @@ export const sectionEditors: Record<string, SectionEditorDef> = {
 		defaultConfig: {},
 	},
 	'process': {
+		mutations: {
+			update: 'process:upsertProcessConfig',
+			getFull: 'process:getProcessConfig',
+		},
 		defaultConfig: {},
 	},
 	'os': {
+		mutations: {
+			update: 'os:upsertOsConfig',
+			getFull: 'os:getOsConfig',
+		},
 		defaultConfig: {},
 	},
 };

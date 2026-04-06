@@ -32,8 +32,8 @@ export const sectionTypeRegistry: Record<string, SectionTypeDef> = {
 	'gifts':       { label: 'Gifts',       icon: '✦', category: 'content', dataTable: 'giftsConfig' },
 	'cv':          { label: 'CV',          icon: '≡', category: 'content', dataTable: 'cvEntries' },
 	'terminal':    { label: 'Terminal',    icon: '>', category: 'content' },
-	'process':     { label: 'Process',     icon: '⟳', category: 'content' },
-	'os':          { label: 'OS',          icon: '⊞', category: 'content' },
+	'process':     { label: 'Process',     icon: '⟳', category: 'content', dataTable: 'processConfig' },
+	'os':          { label: 'OS',          icon: '⊞', category: 'content', dataTable: 'osConfig' },
 
 	// Media sections (Phase 5 — stubs for now)
 	'media-block': { label: 'Media Block', icon: '▶', category: 'media', hasComponent: false },
