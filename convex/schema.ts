@@ -89,6 +89,9 @@ export default defineSchema({
 		month: v.optional(v.number()),
 		featured: v.optional(v.string()),
 		muxPlaybackId: v.optional(v.string()),
+		focalX: v.optional(v.number()),
+		focalY: v.optional(v.number()),
+		zoom: v.optional(v.number()),
 		order: v.number(),
 		visible: v.boolean(),
 		styleOverrides: v.optional(v.object({

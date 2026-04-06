@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { toast } from '$lib/stores/toast';
 	import type { Id } from '$convex/_generated/dataModel';
-	import PositionPicker from './controls/PositionPicker.svelte';
+	import CropTruthTable from './controls/CropTruthTable.svelte';
 
 	export let client: any;
 	export let api: any;
@@ -19,6 +19,42 @@
 	let newTitle = '';
 	let newUrl = '';
 	let newPreview = '';
+
+	/** Which entry's crop truth table is expanded (null = none) */
+	let expandedCropId: string | null = null;
+
+	function toggleCropTable(id: string) {
+		expandedCropId = expandedCropId === id ? null : id;
+	}
+
+	/**
+	 * Parse a legacy cam/objectPosition string like "center 30%" or "35% 20%"
+	 * into { focalX, focalY } (0-100). Returns defaults (50,50) on failure.
+	 */
+	function parseCamToFocal(cam: string | undefined): { focalX: number; focalY: number } {
+		if (!cam) return { focalX: 50, focalY: 50 };
+		const parts = cam.trim().split(/\s+/);
+		const parseVal = (s: string): number => {
+			if (s === 'left' || s === 'top') return 0;
+			if (s === 'center') return 50;
+			if (s === 'right' || s === 'bottom') return 100;
+			const n = parseFloat(s);
+			return isNaN(n) ? 50 : n;
+		};
+		return {
+			focalX: parseVal(parts[0] || 'center'),
+			focalY: parseVal(parts[1] || 'center'),
+		};
+	}
+
+	async function handleCropChange(entryId: string, detail: { focalX: number; focalY: number; zoom: number }) {
+		await client.mutation(api.works.updateEntry, {
+			id: entryId as Id<"worksEntries">,
+			focalX: detail.focalX,
+			focalY: detail.focalY,
+			zoom: detail.zoom,
+		});
+	}
 
 	function startEdit(id: string, field: string, currentValue: string) {
 		editingId = id; editingField = field; editBuffer = currentValue || '';
@@ -210,34 +246,23 @@
 							</button>
 						{/if}
 					{/each}
+					{#if entry.preview}
+						<button class="tool-tag crop-toggle" class:active={expandedCropId === entry._id} on:click={() => toggleCropTable(entry._id)}>
+							{expandedCropId === entry._id ? '- crop' : '+ crop'}
+						</button>
+					{/if}
 				</div>
 
-				{#if expandedId === entry._id}
-					<div class="preview-panel">
-						<div class="preview-field">
-							<span class="preview-label">Preview URL</span>
-							{#if editingId === entry._id && editingField === 'preview'}
-								<div class="preview-edit-row">
-									<input class="field-input-sm flex-1" bind:value={editBuffer} on:keydown={(e) => { if (e.key === 'Enter') saveWorkEdit(entry._id); if (e.key === 'Escape') cancelEdit(); }} />
-									<button class="btn-sm btn-save" on:click={() => saveWorkEdit(entry._id)}>&#10003;</button>
-								</div>
-							{:else}
-								<span class="preview-url" role="button" tabindex="0" on:click={() => startEdit(entry._id, 'preview', entry.preview || '')} on:keydown={a11yClick(() => startEdit(entry._id, 'preview', entry.preview || ''))}>
-									{entry.preview || '(none)'}
-								</span>
-							{/if}
-						</div>
-
-						{#if entry.preview}
-							<div class="preview-position">
-								<span class="preview-label">Position</span>
-								<PositionPicker
-									previewUrl={entry.preview}
-									value={entry.objectPosition || 'center top'}
-									onChange={(val) => saveObjectPosition(entry._id, val)}
-								/>
-							</div>
-						{/if}
+				{#if expandedCropId === entry._id && entry.preview}
+					{@const focal = entry.focalX != null ? { focalX: entry.focalX, focalY: entry.focalY } : parseCamToFocal(entry.cam)}
+					<div class="crop-table-wrapper">
+						<CropTruthTable
+							imageUrl={entry.preview}
+							focalX={focal.focalX}
+							focalY={focal.focalY}
+							zoom={entry.zoom ?? 1.0}
+							on:change={(e) => handleCropChange(entry._id, e.detail)}
+						/>
 					</div>
 				{/if}
 			</div>
@@ -385,5 +410,24 @@
 		display: flex;
 		gap: var(--space-xs);
 		margin-top: var(--space-xs);
+	}
+
+	.crop-toggle {
+		cursor: pointer;
+		font-family: var(--font-mono, monospace);
+		border: 1px dashed var(--border-color-subtle);
+		transition: border-color 0.15s ease, color 0.15s ease;
+	}
+
+	.crop-toggle:hover,
+	.crop-toggle.active {
+		border-color: var(--color-accent);
+		color: var(--color-accent);
+	}
+
+	.crop-table-wrapper {
+		margin-top: var(--space-md);
+		padding-top: var(--space-md);
+		border-top: 1px solid var(--border-color-subtle);
 	}
 </style>

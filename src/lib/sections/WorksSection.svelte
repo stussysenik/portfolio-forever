@@ -19,6 +19,9 @@
                 viewport?: number;
                 cam?: string;
                 objectPosition?: string;
+                focalX?: number;
+                focalY?: number;
+                zoom?: number;
         }
 
         /** Show static image only when explicitly set to 'static' and preview exists */
@@ -29,6 +32,23 @@
         /** Show video when mode is 'video' and videoPreview path exists */
         function useVideoPreview(p: Project): boolean {
                 return p.previewMode === 'video' && !!p.videoPreview;
+        }
+
+        /** Compute CSS object-position from focal point. Fallback: focal -> cam -> objectPosition -> "center top" */
+        function getObjectPosition(project: Project): string {
+                if (project.focalX != null && project.focalY != null) {
+                        return `${project.focalX}% ${project.focalY}%`;
+                }
+                return project.cam ?? project.objectPosition ?? 'center top';
+        }
+
+        /** Zoom transform when zoom > 1 */
+        function getZoomStyle(project: Project): string {
+                const zoom = project.zoom ?? 1.0;
+                if (zoom <= 1.0) return '';
+                const originX = project.focalX ?? 50;
+                const originY = project.focalY ?? 50;
+                return `transform: scale(${zoom}); transform-origin: ${originX}% ${originY}%;`;
         }
 
         let hoveredIndex: number = -1;
@@ -141,7 +161,7 @@
                                                         </a>
                                                 {:else if useStaticPreview(project)}
                                                         <a href={project.url} target="_blank" rel="noopener noreferrer" class="preview-link" aria-label="Visit {project.title}">
-                                                                <img src={project.preview} alt="Screenshot of {project.title}" class="preview-image" loading="lazy" on:load={() => handleLoad(i)} style:object-position={project.objectPosition || null} />
+                                                                <img src={project.preview} alt="Screenshot of {project.title}" class="preview-image" loading="lazy" on:load={() => handleLoad(i)} style="object-position: {getObjectPosition(project)}; {getZoomStyle(project)}" />
                                                         </a>
                                                 {:else}
                                                         <iframe
@@ -304,13 +324,14 @@
                 position: absolute;
                 inset: 0;
                 display: block;
+                overflow: hidden;
         }
 
         .preview-image {
                 width: 100%;
                 height: 100%;
                 object-fit: cover;
-                object-position: center top;
+                /* object-position set via inline style with focal point fallback chain */
         }
 
         /* Overlay for desktop - click to visit */
