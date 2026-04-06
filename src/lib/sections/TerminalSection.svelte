@@ -2,11 +2,13 @@
   import { onMount, onDestroy, tick } from 'svelte';
   import { goto } from '$app/navigation';
   import { profile } from '$lib/data/content';
+  import { getConvexClient } from '$lib/convex';
+  import { api } from '$convex/_generated/api';
   import {
-    executeCommand,
-    getCompletions,
+    createCommandRegistry,
     createShellState,
     type OutputLine,
+    type TerminalData,
   } from '$lib/terminal/commands';
 
   export let id = "terminal";
@@ -15,6 +17,11 @@
   let inputElement: HTMLInputElement;
   let matrixCanvas: HTMLCanvasElement;
   let matrixAnimId: number;
+
+  // Start with default registry — upgrades when Convex data arrives
+  let registry = createCommandRegistry();
+  let executeCmd = registry.executeCommand;
+  let getComps = registry.getCompletions;
 
   let state = createShellState();
   let cwdDisplay = state.cwd;
@@ -122,7 +129,7 @@
       if (command) {
         commandHistory.push(command);
         historyIndex = commandHistory.length;
-        const output = executeCommand(command, state);
+        const output = executeCmd(command, state);
         cwdDisplay = state.cwd;
         processOutput(output);
       }
@@ -132,7 +139,7 @@
       scrollToBottom();
     } else if (e.key === 'Tab') {
       e.preventDefault();
-      const completions = getCompletions(currentInput, state);
+      const completions = getComps(currentInput, state);
       if (completions.length === 1) {
         // Single match — auto-complete
         const parts = currentInput.split(/\s+/);
@@ -298,6 +305,23 @@
   onMount(() => {
     showWelcome();
     inputElement?.focus();
+
+    // Subscribe to Convex terminal config — hot-swap registry when data arrives
+    let unsub: (() => void) | undefined;
+    try {
+      const client = getConvexClient();
+      unsub = client.onUpdate(api.terminal.getTerminalConfig, {}, (data: any) => {
+        if (data) {
+          registry = createCommandRegistry(data as TerminalData);
+          executeCmd = registry.executeCommand;
+          getComps = registry.getCompletions;
+        }
+      });
+    } catch (_) {
+      // Convex not configured — keep using defaults
+    }
+
+    return () => { unsub?.(); };
   });
 
   $: if (activeAnimation && matrixCanvas && !animationRunning) {

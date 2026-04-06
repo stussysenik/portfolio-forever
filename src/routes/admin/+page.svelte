@@ -168,6 +168,9 @@
 				client.onUpdate(api.os.getOsConfig, {}, (data: any) => {
 					if (data) entriesByTable = { ...entriesByTable, osConfig: [data] };
 				}),
+				client.onUpdate(api.terminal.getTerminalConfig, {}, (data: any) => {
+					if (data) entriesByTable = { ...entriesByTable, terminalConfig: [data] };
+				}),
 			];
 		};
 

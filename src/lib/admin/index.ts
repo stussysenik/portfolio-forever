@@ -45,6 +45,7 @@ export { default as LabsAdmin } from './LabsAdmin.svelte';
 export { default as BlogAdmin } from './BlogAdmin.svelte';
 export { default as HeroCaseStudyAdmin } from './HeroCaseStudyAdmin.svelte';
 export { default as OsAdmin } from './OsAdmin.svelte';
+export { default as TerminalAdmin } from './TerminalAdmin.svelte';
 export { default as ContentHub } from './ContentHub.svelte';
 export { default as PagePanel } from './PagePanel.svelte';
 export { default as EntryTable } from './EntryTable.svelte';

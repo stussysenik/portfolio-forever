@@ -31,7 +31,7 @@ export const sectionTypeRegistry: Record<string, SectionTypeDef> = {
 	'labs':        { label: 'Labs',        icon: '⚗', category: 'content', dataTable: 'labEntries' },
 	'gifts':       { label: 'Gifts',       icon: '✦', category: 'content', dataTable: 'giftsConfig' },
 	'cv':          { label: 'CV',          icon: '≡', category: 'content', dataTable: 'cvEntries' },
-	'terminal':    { label: 'Terminal',    icon: '>', category: 'content' },
+	'terminal':    { label: 'Terminal',    icon: '>', category: 'content', dataTable: 'terminalConfig' },
 	'process':     { label: 'Process',     icon: '⟳', category: 'content', dataTable: 'processConfig' },
 	'os':          { label: 'OS',          icon: '⊞', category: 'content', dataTable: 'osConfig' },
 

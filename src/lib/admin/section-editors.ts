@@ -175,6 +175,10 @@ export const sectionEditors: Record<string, SectionEditorDef> = {
 		defaultConfig: {},
 	},
 	'terminal': {
+		mutations: {
+			update: 'terminal:upsertTerminalConfig',
+			getFull: 'terminal:getTerminalConfig',
+		},
 		defaultConfig: {},
 	},
 	'process': {

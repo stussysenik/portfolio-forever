@@ -14,6 +14,7 @@
 	import GiftsAdmin from '$lib/admin/GiftsAdmin.svelte';
 	import ProcessAdmin from '$lib/admin/ProcessAdmin.svelte';
 	import OsAdmin from '$lib/admin/OsAdmin.svelte';
+	import TerminalAdmin from '$lib/admin/TerminalAdmin.svelte';
 	import HeroContentEditor from './HeroContentEditor.svelte';
 
 	// ── Props ──────────────────────────────────────────────────────────────────
@@ -77,6 +78,9 @@
 
 	{:else if section?.sectionType === 'os'}
 		<OsAdmin osConfig={getEntries('osConfig')?.[0] ?? null} {client} {api} compact />
+
+	{:else if section?.sectionType === 'terminal'}
+		<TerminalAdmin terminalConfig={getEntries('terminalConfig')?.[0] ?? null} {client} {api} compact />
 
 	{:else}
 		<div class="no-editor">
