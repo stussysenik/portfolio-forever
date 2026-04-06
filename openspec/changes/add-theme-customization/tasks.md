@@ -152,13 +152,13 @@ Ordered task list for implementing theme customization with color palettes, font
 ---
 
 ### Task 4.5: Update Documentation
-- [ ] Update README to document 5 actual themes (not 3) and 9 fonts
-- [ ] Document keyboard shortcuts ('T' for theme, 'F' for font)
+- [x] Update README to document 5 actual themes (not 3) and 9 fonts
+- [x] Document keyboard shortcuts ('T' for theme, 'F' for font)
 
 ---
 
 ## Task Summary
 
 **Total Tasks**: 19
-**Completed**: 18/19 (95%)
-**Remaining**: 1 task (README update — 5 themes + 9 fonts + shortcuts)
+**Completed**: 19/19 (100%)
+**Remaining**: None — fully complete
