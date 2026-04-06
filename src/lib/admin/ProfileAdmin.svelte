@@ -14,6 +14,11 @@
 	let taglinesBuffer: { lang: string; text: string }[] = [];
 	let savingTaglines = false;
 
+	// SameAs (social links) editor state
+	let editingSameAs = false;
+	let sameAsBuffer: string[] = [];
+	let savingSameAs = false;
+
 	function startEdit(field: string, currentValue: string) {
 		editingField = field;
 		editBuffer = currentValue || '';
@@ -85,6 +90,69 @@
 			toast.error(`Save failed: ${e.message}`);
 		} finally {
 			savingTaglines = false;
+		}
+	}
+
+	// SameAs (social links) editor functions
+	function startEditSameAs() {
+		sameAsBuffer = [...(profile?.sameAs ?? [])];
+		editingSameAs = true;
+	}
+
+	function cancelEditSameAs() {
+		editingSameAs = false;
+		sameAsBuffer = [];
+	}
+
+	function addSameAs() {
+		sameAsBuffer = [...sameAsBuffer, ''];
+	}
+
+	function removeSameAs(index: number) {
+		sameAsBuffer = sameAsBuffer.filter((_, i) => i !== index);
+	}
+
+	async function saveSameAs() {
+		if (!profile) return;
+		savingSameAs = true;
+		try {
+			// Filter out empty URLs before saving
+			const cleaned = sameAsBuffer.filter((url) => url.trim() !== '');
+			await client.mutation(api.cv.updateProfile, {
+				id: profile._id,
+				sameAs: cleaned,
+			});
+			toast.success('Social links saved');
+			editingSameAs = false;
+		} catch (e: any) {
+			toast.error(`Save failed: ${e.message}`);
+		} finally {
+			savingSameAs = false;
+		}
+	}
+
+	/** Derive a short label from a URL for display in preview chips */
+	function labelFromUrl(url: string): string {
+		if (url.startsWith('mailto:')) return 'email';
+		try {
+			const hostname = new URL(url).hostname.replace(/^www\./, '');
+			const known: Record<string, string> = {
+				'github.com': 'github',
+				'linkedin.com': 'linkedin',
+				'instagram.com': 'instagram',
+				'x.com': 'x',
+				'twitter.com': 'x',
+				'soundcloud.com': 'soundcloud',
+				'imdb.com': 'imdb',
+				'youtube.com': 'youtube',
+				'vimeo.com': 'vimeo',
+				'dribbble.com': 'dribbble',
+				'behance.net': 'behance',
+				'medium.com': 'medium',
+			};
+			return known[hostname] ?? hostname;
+		} catch {
+			return url;
 		}
 	}
 </script>
@@ -177,6 +245,46 @@
 					{#if profile?.taglines?.length}
 						{#each profile.taglines as t}
 							<span class="tagline-chip"><span class="tagline-chip-lang">{t.lang}</span>{t.text}</span>
+						{/each}
+					{:else}
+						<span class="field-value-muted">(none)</span>
+					{/if}
+				</div>
+			{/if}
+		</div>
+		<!-- SameAs (social links) editor -->
+		<div class="field-row field-row--column">
+			<div class="taglines-header">
+				<span class="field-label">Social Links</span>
+				{#if !editingSameAs}
+					<button class="btn-sm" on:click={startEditSameAs}>Edit</button>
+				{/if}
+			</div>
+			{#if editingSameAs}
+				<div class="taglines-list">
+					{#each sameAsBuffer as url, i}
+						<div class="tagline-row">
+							<input
+								class="field-input sameas-url"
+								placeholder="https://..."
+								bind:value={sameAsBuffer[i]}
+							/>
+							<button class="btn-sm btn-remove" aria-label="Remove link" on:click={() => removeSameAs(i)}>&#10005;</button>
+						</div>
+					{/each}
+					<div class="taglines-footer">
+						<button class="btn-sm" on:click={addSameAs}>+ Add link</button>
+						<div class="field-actions">
+							<button class="btn-sm btn-save" on:click={saveSameAs} disabled={savingSameAs}>Save</button>
+							<button class="btn-sm" on:click={cancelEditSameAs}>Cancel</button>
+						</div>
+					</div>
+				</div>
+			{:else}
+				<div class="taglines-preview">
+					{#if profile?.sameAs?.length}
+						{#each profile.sameAs as url}
+							<a href={url} target="_blank" rel="noopener" class="tagline-chip sameas-chip">{labelFromUrl(url)}</a>
 						{/each}
 					{:else}
 						<span class="field-value-muted">(none)</span>
@@ -399,6 +507,22 @@
 		font-size: 10px;
 		text-transform: uppercase;
 		letter-spacing: 0.03em;
+	}
+
+	/* SameAs */
+	.sameas-url {
+		flex: 1;
+		min-width: 0;
+		font-size: 13px;
+	}
+
+	.sameas-chip {
+		text-decoration: none;
+		color: var(--color-text-secondary);
+	}
+
+	.sameas-chip:hover {
+		color: var(--color-text);
 	}
 
 	@media (max-width: 600px) {

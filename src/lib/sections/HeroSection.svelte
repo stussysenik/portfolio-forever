@@ -19,8 +19,35 @@
 		taglines: [{ lang: "de", text: "Design Engineer · Creative Producer" }],
 		shortBio: "Building at the intersection of engineering, creative production, and design — from code to camera",
 		location: "NYC / PRAGUE",
+		sameAs: [] as string[],
 	};
 	let works: any[] = staticWorks;
+
+	/** Parse a sameAs URL into a short label for display */
+	function sameAsUrlToLabel(url: string): string {
+		if (url.startsWith('mailto:')) return 'email';
+		try {
+			const hostname = new URL(url).hostname.replace(/^www\./, '');
+			const known: Record<string, string> = {
+				'github.com': 'github',
+				'linkedin.com': 'linkedin',
+				'instagram.com': 'instagram',
+				'x.com': 'x',
+				'twitter.com': 'x',
+				'soundcloud.com': 'soundcloud',
+				'on.soundcloud.com': 'soundcloud',
+				'imdb.com': 'imdb',
+				'youtube.com': 'youtube',
+				'vimeo.com': 'vimeo',
+				'dribbble.com': 'dribbble',
+				'behance.net': 'behance',
+				'medium.com': 'medium',
+			};
+			return known[hostname] ?? hostname;
+		} catch {
+			return url;
+		}
+	}
 
 	onMount(() => {
 		const client = getConvexClient();
@@ -31,6 +58,7 @@
 					taglines: data.profile.taglines || profileData.taglines,
 					shortBio: data.profile.shortBio || data.profile.summary,
 					location: data.profile.location || profileData.location,
+					sameAs: data.profile.sameAs || [],
 				};
 			}
 		});
@@ -101,23 +129,35 @@
 	<header class="section-header">
 		<span class="section-marker">&#9670;</span>
 		<h2 class="section-title">IDENTITY</h2>
+		{#if profileData.sameAs.length > 0}
+			<span class="section-count">{profileData.sameAs.length}</span>
+		{/if}
 	</header>
 	<div class="domains">
-		<span class="domain-group">
-			<a href="https://mxzou.com" target="_blank" rel="noopener noreferrer">mxzou.com</a>
-			<span class="domains-sep">&middot;</span>
-			<span class="domains-desc">main</span>
-		</span>
-		<span class="domain-group">
-			<a href="https://mengxuanzou.com" target="_blank" rel="noopener noreferrer">mengxuanzou.com</a>
-			<span class="domains-sep">&middot;</span>
-			<span class="domains-desc">filmmaking</span>
-		</span>
-		<span class="domain-group">
-			<a href="https://stussysenik.com" target="_blank" rel="noopener noreferrer">stussysenik.com</a>
-			<span class="domains-sep">&middot;</span>
-			<span class="domains-desc">dev + creative</span>
-		</span>
+		{#if profileData.sameAs.length > 0}
+			{#each profileData.sameAs as url}
+				<span class="domain-group">
+					<a href={url} target="_blank" rel="noopener noreferrer">{sameAsUrlToLabel(url)}</a>
+				</span>
+			{/each}
+		{:else}
+			<!-- SSR fallback: static domains -->
+			<span class="domain-group">
+				<a href="https://mxzou.com" target="_blank" rel="noopener noreferrer">mxzou.com</a>
+				<span class="domains-sep">&middot;</span>
+				<span class="domains-desc">main</span>
+			</span>
+			<span class="domain-group">
+				<a href="https://mengxuanzou.com" target="_blank" rel="noopener noreferrer">mengxuanzou.com</a>
+				<span class="domains-sep">&middot;</span>
+				<span class="domains-desc">filmmaking</span>
+			</span>
+			<span class="domain-group">
+				<a href="https://stussysenik.com" target="_blank" rel="noopener noreferrer">stussysenik.com</a>
+				<span class="domains-sep">&middot;</span>
+				<span class="domains-desc">dev + creative</span>
+			</span>
+		{/if}
 	</div>
 </section>
 </div>

@@ -44,8 +44,42 @@
         let navItems: { href: string; label: string }[] = staticNav;
         let siteConfigData: any = null;
         let profileName: string = siteConfig.name;
+        let socialLinksData: { label: string; url: string }[] = socialLinks;
         let PixelCanvasComponent: any = null;
         let pixelCanvasPromise: Promise<void> | null = null;
+
+        /** Parse a sameAs URL array into {label, url} pairs for nav display */
+        function parseSameAs(urls: string[]): { label: string; url: string }[] {
+                return urls.map((url) => ({
+                        label: sameAsUrlToLabel(url),
+                        url,
+                }));
+        }
+
+        function sameAsUrlToLabel(url: string): string {
+                if (url.startsWith('mailto:')) return 'email';
+                try {
+                        const hostname = new URL(url).hostname.replace(/^www\./, '');
+                        const known: Record<string, string> = {
+                                'github.com': 'github',
+                                'linkedin.com': 'linkedin',
+                                'instagram.com': 'instagram',
+                                'x.com': 'x',
+                                'twitter.com': 'x',
+                                'soundcloud.com': 'soundcloud',
+                                'on.soundcloud.com': 'soundcloud',
+                                'imdb.com': 'imdb',
+                                'youtube.com': 'youtube',
+                                'vimeo.com': 'vimeo',
+                                'dribbble.com': 'dribbble',
+                                'behance.net': 'behance',
+                                'medium.com': 'medium',
+                        };
+                        return known[hostname] ?? hostname;
+                } catch {
+                        return url;
+                }
+        }
 
         $: currentPath = $page.url.pathname;
         $: pixelCanvasEnabled = ($featureFlags.get("pixel-engine") ?? false) && !$isReaderMode;
@@ -111,10 +145,13 @@
                                         featureFlags.set(map);
                                 }
                         });
-                        // Subscribe to profile name for nav
+                        // Subscribe to profile for nav (name + social links)
                         unsubProfile = client.onUpdate(api.cv.getVisibleCV, {}, (data: any) => {
                                 if (data?.profile?.name) {
                                         profileName = data.profile.name;
+                                }
+                                if (data?.profile?.sameAs && Array.isArray(data.profile.sameAs)) {
+                                        socialLinksData = parseSameAs(data.profile.sameAs);
                                 }
                         });
                 } catch (e) {
@@ -278,9 +315,9 @@
                                 {/each}
 
                                 <!-- External Links Inlined -->
-                                {#if socialLinks.length > 0}
+                                {#if socialLinksData.length > 0}
                                         <span class="nav-sep"></span>
-                                        {#each socialLinks as link}
+                                        {#each socialLinksData as link}
                                                 <a href={link.url} target="_blank" rel="noopener" class="nav-link external" data-brand={link.label}>
                                                         {link.label}
                                                 </a>
