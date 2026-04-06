@@ -1,5 +1,45 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
+  import { getConvexClient } from '$lib/convex';
+  import { api } from '$convex/_generated/api';
+
   export let id = "process";
+
+  /** Default phases used when Convex has no data yet */
+  const DEFAULT_PHASES = [
+    { label: "IMAGINE", order: 0 },
+    { label: "RE-THINK", order: 1 },
+    { label: "SHIP", order: 2 },
+  ];
+
+  let phases: Array<{ label: string; description?: string; order: number }> = DEFAULT_PHASES;
+
+  onMount(() => {
+    const client = getConvexClient();
+    const unsub = client.onUpdate(api.process.getProcessConfig, {}, (data) => {
+      if (data && data.phases && data.phases.length > 0) {
+        phases = [...data.phases].sort((a, b) => a.order - b.order);
+      }
+    });
+    return () => unsub();
+  });
+
+  // SVG layout constants
+  const RECT_WIDTH = 180;
+  const RECT_HEIGHT = 60;
+  const RECT_X = 80;
+  const PHASE_SPACING = 100; // vertical distance between phase tops
+  const FIRST_Y = 20;
+  const CENTER_X = RECT_X + RECT_WIDTH / 2; // 170
+  const CYCLE_MARGIN = 60; // extra space below last phase for cycle-back arrow
+  const CYCLE_X = 40; // x-position of the left vertical line of cycle-back
+
+  // Derived SVG dimensions
+  $: lastPhaseY = FIRST_Y + (phases.length - 1) * PHASE_SPACING;
+  $: viewBoxHeight = lastPhaseY + RECT_HEIGHT + CYCLE_MARGIN;
+
+  // Build the aria label dynamically
+  $: ariaLabel = `Process: ${phases.map((p) => p.label).join(', ')}`;
 </script>
 
 <svelte:head>
@@ -7,43 +47,54 @@
   <meta name="description" content="How I work" />
 </svelte:head>
 
-
-
 <div class="process-cycle" {id}>
-  <svg class="process-svg" viewBox="0 0 300 380" aria-label="Process: Imagine, Re-think, Ship">
+  <svg class="process-svg" viewBox="0 0 300 {viewBoxHeight}" aria-label={ariaLabel}>
     <defs>
       <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
         <polygon points="0 0, 10 3.5, 0 7" fill="currentColor" />
       </marker>
     </defs>
 
-    <!-- Styles -->
     <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 
-      <!-- IMAGINE -->
-      <rect x="80" y="20" width="180" height="60" />
-      <text x="170" y="55" fill="currentColor" stroke="none" text-anchor="middle" font-family="monospace" font-weight="bold" font-size="24">IMAGINE</text>
+      {#each phases as phase, i}
+        <!-- Phase rectangle -->
+        {@const y = FIRST_Y + i * PHASE_SPACING}
+        <rect x={RECT_X} {y} width={RECT_WIDTH} height={RECT_HEIGHT} />
+        <text
+          x={CENTER_X}
+          y={y + RECT_HEIGHT / 2 + 8}
+          fill="currentColor"
+          stroke="none"
+          text-anchor="middle"
+          font-family="monospace"
+          font-weight="bold"
+          font-size="24"
+        >{phase.label}</text>
 
-      <!-- Arrow 1 -->
-      <line x1="170" y1="80" x2="170" y2="120" marker-end="url(#arrowhead)" />
+        <!-- Arrow to next phase (not after the last one) -->
+        {#if i < phases.length - 1}
+          <line
+            x1={CENTER_X}
+            y1={y + RECT_HEIGHT}
+            x2={CENTER_X}
+            y2={y + PHASE_SPACING}
+            marker-end="url(#arrowhead)"
+          />
+        {/if}
+      {/each}
 
-      <!-- RE-THINK -->
-      <rect x="80" y="120" width="180" height="60" />
-      <text x="170" y="155" fill="currentColor" stroke="none" text-anchor="middle" font-family="monospace" font-weight="bold" font-size="24">RE-THINK</text>
-
-      <!-- Arrow 2 -->
-      <line x1="170" y1="180" x2="170" y2="220" marker-end="url(#arrowhead)" />
-
-      <!-- SHIP -->
-      <rect x="80" y="220" width="180" height="60" />
-      <text x="170" y="255" fill="currentColor" stroke="none" text-anchor="middle" font-family="monospace" font-weight="bold" font-size="24">SHIP</text>
-
-      <!-- Cycle Path: Bottom of Ship -> Left -> Up -> Into Imagine -->
-      <!-- Coming out bottom of SHIP -->
-      <line x1="170" y1="280" x2="170" y2="340" />
-
-      <!-- Turn Left and go Up -->
-      <path d="M 170 340 L 40 340 L 40 50 L 70 50" marker-end="url(#arrowhead)" />
+      <!-- Cycle-back path: bottom of last phase -> down -> left -> up -> into left side of first phase -->
+      {#if phases.length > 1}
+        {@const lastBottom = lastPhaseY + RECT_HEIGHT}
+        {@const cycleBottom = lastBottom + (CYCLE_MARGIN - 20)}
+        {@const firstMidY = FIRST_Y + RECT_HEIGHT / 2}
+        <line x1={CENTER_X} y1={lastBottom} x2={CENTER_X} y2={cycleBottom} />
+        <path
+          d="M {CENTER_X} {cycleBottom} L {CYCLE_X} {cycleBottom} L {CYCLE_X} {firstMidY} L {RECT_X - 10} {firstMidY}"
+          marker-end="url(#arrowhead)"
+        />
+      {/if}
 
     </g>
   </svg>
