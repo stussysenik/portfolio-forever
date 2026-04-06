@@ -420,54 +420,11 @@
                 }
         }
 
-        .header-nav-group {
-                position: relative;
-                overflow: hidden;
-                width: 100%;
-        }
-
-        /* Fade edges when nav overflows */
-        .header-nav-group::before,
-        .header-nav-group::after {
-                content: '';
-                position: absolute;
-                top: 0;
-                bottom: 0;
-                width: 2rem;
-                z-index: 1;
-                pointer-events: none;
-                opacity: 0;
-                transition: opacity 200ms ease;
-        }
-
-        .header-nav-group::before {
-                left: 0;
-                background: linear-gradient(to right, var(--color-bg), transparent);
-        }
-
-        .header-nav-group::after {
-                right: 0;
-                background: linear-gradient(to left, var(--color-bg), transparent);
-        }
-
-        /* Show fades only when scrollable */
-        .header-nav-group:hover::after,
-        .header-nav-group:hover::before {
-                opacity: 1;
-        }
-
         .nav {
                 display: flex;
-                flex-wrap: nowrap;
-                gap: var(--space-2xs) var(--space-xs);
+                flex-wrap: wrap;
+                gap: var(--space-xs) var(--space-sm);
                 justify-content: center;
-                overflow-x: auto;
-                scrollbar-width: none;
-                -ms-overflow-style: none;
-        }
-
-        .nav::-webkit-scrollbar {
-                display: none;
         }
 
         @media (min-width: 768px) {
@@ -582,7 +539,6 @@
                 background-image: linear-gradient(135deg, #2563EB, #1D4ED8);
         }
 
-        /* Nav group - contains nav */
         .header-nav-group {
                 position: relative;
                 display: flex;
@@ -596,7 +552,6 @@
                 }
         }
 
-        /* Mobile responsive adjustments */
         @media (max-width: 1024px) {
                 .header-inner {
                         gap: var(--space-sm);

@@ -1,0 +1,46 @@
+language: en-US
+
+reviews:
+  profile: chill
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+  path_instructions:
+    - path: "convex/**"
+      instructions: >
+        Convex backend functions. Check for proper validators, index usage,
+        and mutation patterns. Verify v.optional() for nullable fields.
+        Ensure queries use proper pagination and don't fetch unbounded data.
+    - path: "src/lib/admin/**"
+      instructions: >
+        Admin UI components (SvelteKit + Svelte 4). Check for 44px minimum
+        touch targets, proper ARIA attributes, and consistent use of
+        admin-tokens.css design tokens. Verify Convex subscription cleanup
+        in onDestroy.
+    - path: "src/lib/sections/**"
+      instructions: >
+        Public-facing section components. Check for Convex subscription
+        patterns, loading/empty states, responsive CSS, and accessibility.
+        Sections should gracefully handle missing data.
+    - path: "src/routes/**"
+      instructions: >
+        SvelteKit routes. Check for proper SSR/SSG handling, data loading,
+        layout inheritance, and prerender configuration.
+    - path: "tests/**"
+      instructions: >
+        Playwright and Vitest tests. Check for reliable selectors (prefer
+        data-testid over CSS classes), proper assertion specificity, and
+        test isolation. E2E tests should not depend on execution order.
+    - path: "src/app.css"
+      instructions: >
+        Global CSS with design tokens (fluid typography, spacing, colors).
+        Check clamp() values for sane min/max bounds. Verify theme variables
+        are defined for all 4 themes.
+  auto_review:
+    enabled: true
+    drafts: false
+
+chat:
+  auto_reply: true

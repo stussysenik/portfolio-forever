@@ -37,5 +37,5 @@
 - [x] Register heroCaseStudies in `section-editors.ts`
 - [x] Create `HeroCaseStudyAdmin.svelte` for inline case study editing
 - [x] Export HeroCaseStudyAdmin from admin index.ts
-- [ ] Build verification (`vite build`)
-- [ ] Type check (`npx tsc --noEmit`)
+- [x] Build verification (`vite build`)
+- [x] Type check (`npx tsc --noEmit`)
