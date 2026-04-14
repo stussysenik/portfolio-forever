@@ -98,6 +98,29 @@ This document distills two parallel research passes into actionable principles. 
 
 ---
 
+## 6a. Content Sovereignty — the owner's rule
+
+This principle was not surfaced by the legends research. It came from the owner's lived experience of LLMs silently rewriting their content during what should have been layout/styling work. It's more important than any principle the research surfaced, and it governs every future decision in this project.
+
+> **Content is sacred. Configuration is malleable.**
+>
+> The owner authors every word, image, caption, bio, CV entry, and blog post in their own voice. Automation may freely edit *configuration* (variants, layouts, modes, presentation knobs) but must never silently write to *content* fields. When content must change, automation proposes — the owner disposes.
+
+**Architectural enforcement (not honor-system):**
+
+- Every schema field is classified `owner-only` | `llm-assisted` | `system`
+- LLMs and scripts write to Sanity drafts only, never to published documents
+- A `/admin` **Review Mode** kill switch freezes all content writes globally when the owner shares a review link
+- A Convex `auditLog` table records every mutation with source, diff, and one-click rollback
+- `.content` = sacred, `.config` = malleable — the type-level naming convention means every write path respects the split automatically
+- [`CONTENT_RULES.md`](../../../CONTENT_RULES.md) at the repo root is the canonical LLM boundary contract, referenced from `CLAUDE.md`, `AGENTS.md`, and `README.md`
+
+**Why this sits in the research doc:** the legends research is the *design* foundation, but content sovereignty is the *safety* foundation. Every future contributor (human or LLM) must understand both. The research tells you what to build; the content rules tell you what not to touch.
+
+**The failure mode we're preventing:** owner is sharing a `/cv` link with someone reviewing their work. Mid-review, the owner asks an LLM for help with a CSS tweak in another file. The LLM, being "helpful," also rewrites the CV headline in passing. The reviewer sees the change mid-read. This scenario is now architecturally impossible: Review Mode blocks content writes, draft-only writes mean even without Review Mode nothing hits published without explicit owner approval, the audit log makes any breach recoverable, and `CONTENT_RULES.md` tells every LLM session the rules before it acts.
+
+---
+
 ## 7. What the Research Rules Out
 
 - **Building our own WebSocket backend in Elixir** — Convex IS a managed reactive WebSocket backend. Reinvention costs weeks, buys nothing visitors can feel.

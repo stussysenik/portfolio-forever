@@ -18,7 +18,21 @@
 
 ---
 
+> ### ⚠ Content Sovereignty — read before making any change
+>
+> This repository is governed by **[`CONTENT_RULES.md`](./CONTENT_RULES.md)**. Every LLM session (Claude, Copilot, Cursor, future tooling) and every human contributor must read it before touching anything.
+>
+> **Core rule: Content is sacred, configuration is malleable.** Owner-authored words, images, captions, bios, CV entries, and blog posts are `owner-only` and must never be silently rewritten by automation. Automation may help with `llm-assisted` fields (variants, layouts, modes, presentation knobs). When unsure, assume owner-only and ask.
+>
+> A **Review Mode** kill switch in `/admin` freezes all content writes during review sessions — flip it on before sharing a link, off after.
+>
+> Full contract: [`CONTENT_RULES.md`](./CONTENT_RULES.md).
+
+---
+
 Personal portfolio built with SvelteKit 5, Sanity CMS, and a terminal-inspired design system. ASCII aesthetics, intentional typography, and obsessive attention to spacing.
+
+**Active redesign spec:** [`DOCS/superpowers/specs/2026-04-14-stussysenik-live-portfolio-design.md`](./DOCS/superpowers/specs/2026-04-14-stussysenik-live-portfolio-design.md) — configuration-first live portfolio with a draggable ASCII donut, Mux-powered gallery, and schema-driven modes.
 
 ## Routes
 

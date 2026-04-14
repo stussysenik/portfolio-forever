@@ -25,10 +25,11 @@ Transform the existing SvelteKit portfolio at `/Users/senik/Desktop/portfolio-fo
 - Generic dev-portfolio layouts (sidebar-nav screams engineer, not photographer)
 - Canned animation libraries for "delight" (interaction is procedural, not timeline)
 - Multi-runtime polyglot backends (Elixir/Python/Go on Railway) — solved problems stay solved
+- **Allowing automated tools (LLMs, scripts, CI) to publish owner-authored content changes.** Automation proposes drafts; the owner disposes. See *Content Sovereignty & Guardrails* below and the canonical [`CONTENT_RULES.md`](../../../CONTENT_RULES.md) at the repo root.
 
 ---
 
-## Core Principle — *zero design decisions at architecture time*
+## Core Principle 1 — *zero design decisions at architecture time*
 
 The spec defines the **vocabulary**. The owner speaks the **sentences** via the CMS.
 
@@ -37,6 +38,17 @@ The spec defines the **vocabulary**. The owner speaks the **sentences** via the 
 - The CMS decides *which variants are live right now*
 - Modes are preset bundles of section configurations, applied with one click, then freely overrideable
 - This spec never says "hero is photo" — it says `hero.variant: enum [photo-full-bleed | donut-centerpiece | text-only | ...]`
+
+## Core Principle 2 — *content is sacred, configuration is malleable*
+
+The owner authors every word, image, caption, and copy block in their own voice. Automation (LLMs, scripts, CI) may freely edit *configuration* (variants, layouts, modes, presentation knobs) but must **never silently write to content fields**.
+
+- Every schema field is classified `owner-only` | `llm-assisted` | `system`
+- Automation writes to Sanity drafts only — never to published documents
+- A **Review Mode** kill switch in `/admin` freezes all content writes globally during sensitive review sessions
+- Every content change is logged in a Convex audit table with source, diff, and rollback capability
+- The canonical contract lives at [`CONTENT_RULES.md`](../../../CONTENT_RULES.md) in the repo root; every LLM session reads it before acting
+- Full architectural treatment in *Content Sovereignty & Guardrails* below
 
 ## Guiding Principles (from research)
 
@@ -108,6 +120,137 @@ Three backends, three jobs, zero overlap:
 | Hosting | Vercel (already configured) | Static adapter builds, edge-fast |
 
 **Total runtime dependencies: 4** — SvelteKit, melt-ui, Convex client, Mux player. No motion library. No state library. No animation framework.
+
+---
+
+## Content Sovereignty & Guardrails
+
+This section is the architectural expression of Core Principle 2. The canonical, non-negotiable contract is [`CONTENT_RULES.md`](../../../CONTENT_RULES.md) at the repo root — this spec section describes how we *implement* the rules.
+
+### Field classification
+
+Every field in every Sanity schema and every Convex table carries a `_authorship` classification:
+
+```typescript
+type Authorship =
+  | 'owner-only'    // words, images, captions, bios, CV entries, blog bodies, asset selections
+  | 'llm-assisted'  // variants, layouts, modes, columns, colors, speeds, ordering
+  | 'system'        // audit timestamps, counters, build hashes — system-managed only
+```
+
+**Default for any new field: `owner-only`.** Defensive default — forces explicit reclassification if a field is actually configuration.
+
+Example Sanity schema annotation:
+
+```typescript
+export const heroSchema = defineType({
+  name: 'hero',
+  type: 'document',
+  fields: [
+    { name: 'headline',  type: 'string', _authorship: 'owner-only' },
+    { name: 'subhead',   type: 'string', _authorship: 'owner-only' },
+    { name: 'alignment', type: 'string', _authorship: 'llm-assisted' },
+    { name: 'photoRef',  type: 'reference', to: [{ type: 'photo' }], _authorship: 'owner-only' },
+  ]
+})
+```
+
+Example Convex table annotation:
+
+```typescript
+// convex/schema.ts
+export default defineSchema({
+  pageConfig: defineTable({
+    mode: v.string(),           // llm-assisted
+    sections: v.array(...),     // llm-assisted (variants, order)
+    reviewMode: v.boolean(),    // system (flipped from /admin only)
+    _authorshipMap: v.any(),    // per-field classification
+  })
+})
+```
+
+### The five guardrails
+
+**1. Classification is load-bearing.** CI fails the build if any Sanity schema or Convex table defines a field without `_authorship`. No unclassified fields in production, ever.
+
+**2. Drafts-only for automation.** Every automated write path (Claude tool calls, scripts, CI jobs, future LLM agents) writes to Sanity **draft** documents. The owner promotes draft → published through Sanity Studio UI or the `/admin` publish button, and only that button has the published-write capability. Any automated mutation attempting to write published state throws a hard error with a loud log entry.
+
+**3. Review Mode — the global kill switch.** A top-level Convex flag `reviewMode: boolean`. When true:
+- All writes to `owner-only` fields are rejected from every write path
+- Configuration writes (`llm-assisted`) still succeed, so presentation can be tuned without touching content
+- A prominent visual banner appears on every `/admin` screen so the owner always knows
+- Auto-arm option: can be wired to turn on when a `/review/:token` link is visited, off when the session expires
+- Flippable from the `/admin` dashboard in one tap
+
+**4. Audit log.** A Convex table `auditLog` records every mutation:
+
+```typescript
+auditLog: defineTable({
+  timestamp: v.number(),
+  source: v.union(
+    v.literal('owner'),
+    v.literal('admin-ui'),
+    v.literal('studio'),
+    v.literal('llm'),
+    v.literal('system'),
+    v.literal('script'),
+  ),
+  actor: v.optional(v.string()),         // Clerk userId or tool identifier
+  fieldPath: v.string(),                 // e.g., "sections[2].content.headline"
+  operation: v.union(v.literal('create'), v.literal('update'), v.literal('delete')),
+  oldValue: v.optional(v.any()),
+  newValue: v.optional(v.any()),
+  reviewModeAtTime: v.boolean(),
+  classificationAtTime: v.string(),      // owner-only | llm-assisted | system
+})
+```
+
+The `/admin` **Audit** screen shows a reverse-chronological feed of entries with a one-click rollback per entry. Rollbacks are themselves audit entries (full history preserved).
+
+**5. LLM boundary contract.** [`CONTENT_RULES.md`](../../../CONTENT_RULES.md) at the repo root is the canonical document. Every LLM tooling file (`CLAUDE.md`, `AGENTS.md`) points to it. Every future Claude session reads it before acting. Summary of obligations for LLMs:
+
+- Read `CONTENT_RULES.md` before making any change
+- Never edit `owner-only` fields without per-change owner approval
+- Never bypass Review Mode
+- Default-classify ambiguous fields as `owner-only` and ask the owner
+- State intended changes to content-adjacent files *before* making them
+
+### Implementation impact on other parts of the spec
+
+- **Sanity schemas** gain an `_authorship` field on every definition. Existing schemas (blog posts, images) are classified retroactively — default `owner-only`.
+- **Convex schema** gains the `auditLog` table, the `reviewMode` flag on the top-level `pageConfig` table, and a `contentLock` middleware function wrapped around every content mutation.
+- **`/admin` admin surface** gains an **Audit** screen and a Review Mode toggle on the Dashboard screen. The banner indicator lives in the `/admin` root layout.
+- **Section schema types** carry authorship on every field:
+
+```typescript
+type HeroSection = {
+  kind: 'hero'
+  variant: HeroVariant              // llm-assisted
+  config: {
+    alignment: 'left' | 'center' | 'right'   // llm-assisted
+    textSize: 'sm' | 'md' | 'lg' | 'xl'      // llm-assisted
+  }
+  content: {
+    headline?: string                // owner-only
+    subhead?: string                 // owner-only
+    photoRef?: SanityImageRef        // owner-only (asset selection)
+    videoRef?: MuxAssetRef           // owner-only
+  }
+}
+```
+
+By convention, anything inside `.content` is `owner-only` unless explicitly overridden. Anything inside `.config` is `llm-assisted`. This gives us a simple type-level rule: **`.content` = sacred, `.config` = malleable.** Zero ambiguity.
+
+### Why this architecture
+
+The owner has been bitten by LLM tooling silently rewriting their content during what was supposed to be a layout tweak. This is the architectural remedy:
+
+- The split is **schema-level** (not a runtime convention), so any write path respects it automatically
+- Review Mode is a **global kill switch** with one-tap control, not a per-field lock
+- The audit log gives **observability + rollback** so mistakes are recoverable
+- `CONTENT_RULES.md` at the repo root is the **social contract** that any LLM session must read before acting
+
+Nothing stupid happens again.
 
 ---
 
@@ -410,13 +553,14 @@ This keeps the gallery fast even with 50+ videos. The whole-gallery bundle stays
 
 Five screens, SvelteKit routes under `/admin`, Clerk-gated, mobile-first (designed for the owner's phone first). Black text on white, system fonts, no donut, no personality — this is a tool, not a showcase.
 
-1. **Dashboard (`/admin`)** — current mode, live visitor counter, last-edited timestamp, one-click publish, "Edit content → /studio" link
+1. **Dashboard (`/admin`)** — current mode, live visitor counter, last-edited timestamp, one-click publish, "Edit content → /studio" link. **Review Mode toggle** lives here as a prominent kill switch with a banner indicator that appears on every `/admin` screen when active.
 2. **Page builder (`/admin/page`)** — drag-to-reorder section cards, add from a typed palette, delete. Each card shows variant + live thumbnail.
-3. **Section editor (`/admin/page/[sectionId]`)** — auto-generated form from the section schema: variant picker, config fields, content refs. Saves optimistically to Convex.
+3. **Section editor (`/admin/page/[sectionId]`)** — auto-generated form from the section schema: variant picker, config fields, content refs. Saves optimistically to Convex. Fields classified `owner-only` show a lock icon and route edits through a "Propose draft" flow that writes to Sanity drafts only — never directly to published.
 4. **Mode presets (`/admin/modes`)** — dropdown of presets, one-click apply with preview diff shown before confirm.
 5. **Identity (`/admin/identity`)** — name, handle, logo mode (`stussy-script | wordmark | none`), accent color (3–4 curated options — not a freeform picker), default donut config.
+6. **Audit (`/admin/audit`)** — reverse-chronological feed of every content change with source, diff, and one-click rollback per entry. Filterable by source (`owner` / `admin-ui` / `studio` / `llm` / `system` / `script`). This is how the owner sees what changed, who changed it, and reverts anything unwanted.
 
-All content editing (photos, videos, copy, Mux upload, blog posts, bios, CV data) happens in **Sanity Studio at `/studio`**. The `/admin` panel never tries to replicate Sanity's content editor — clean split.
+All content editing (photos, videos, copy, Mux upload, blog posts, bios, CV data) happens in **Sanity Studio at `/studio`**. The `/admin` panel never tries to replicate Sanity's content editor — clean split. The Audit screen observes changes from *both* surfaces.
 
 ---
 
@@ -518,6 +662,10 @@ Preserved so future-self doesn't re-argue:
 | 10 | Drag = perspective/framing (viewpoint rotates, not torus) | Torus tumbles in place | Maps directly to photographer's verb — one motif running through the whole site |
 | 11 | No polyglot backend (no Elixir/Python/Go on Railway) | Build own WS backend in Phoenix | Convex IS the WS backend; zero workloads here justify extra runtimes |
 | 12 | No motion/animation/state library | Framer Motion / Motion One / XState | Progressive enhancement via CSS transitions + Svelte reactivity suffices for this scope |
+| 13 | Content vs configuration split + Review Mode + audit log + CONTENT_RULES.md | Honor-system LLM guidelines / per-field locks / no guardrails | Owner has been bitten by silent LLM content rewrites. Architectural enforcement, not politeness. |
+| 14 | `.content` = sacred, `.config` = malleable (type-level convention) | Runtime flags per field | Splitting at the type/naming level means every write path respects it automatically without runtime checks per field |
+| 15 | All automated writes go to Sanity drafts, never published | Let LLMs write published fields directly | Draft-only gives the owner a forced review checkpoint even when Review Mode is off |
+| 16 | `CONTENT_RULES.md` at repo root is canonical, referenced from CLAUDE.md / AGENTS.md / README.md | Scatter rules across multiple docs | Single source of truth; future LLM sessions hit one file before acting |
 
 ---
 
@@ -552,3 +700,4 @@ Preserved so future-self doesn't re-argue:
 | Date | Author | Change |
 |---|---|---|
 | 2026-04-14 | Claude + senik | Initial draft written during brainstorming session |
+| 2026-04-14 | Claude + senik | Added Core Principle 2 (content sovereignty), new "Content Sovereignty & Guardrails" section, updated non-goals, added `/admin` Audit screen + Review Mode toggle, added decision log entries 13–16, updated section schema to illustrate `owner-only` vs `llm-assisted` classification. Canonical rules live at `CONTENT_RULES.md` at repo root, referenced from `CLAUDE.md`, `AGENTS.md`, `README.md`. |
