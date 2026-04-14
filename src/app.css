@@ -354,6 +354,62 @@
   --font-sans: 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
 }
 
+/* ---- MATRIX MODES: Controls visual intensity axis (orthogonal to theme) ---- */
+/* "minimalist" is the default — no overrides needed */
+
+[data-matrix="brutalist"],
+:root:has([data-matrix="brutalist"]) {
+  --font-sans: 'JetBrains Mono', ui-monospace, 'SF Mono', monospace;
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
+  --radius-xl: 0;
+  --border-width: 2px;
+  --border-color: var(--color-text);
+  --border-color-strong: var(--color-text);
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: none;
+  letter-spacing: 0.02em;
+}
+
+[data-matrix="night-vision"],
+:root:has([data-matrix="night-vision"]) {
+  --color-bg: #000000;
+  --color-bg-alt: #0a0f0a;
+  --color-surface: #000000;
+  --color-surface-raised: #0a1a0a;
+  --color-text: #00ff41;
+  --color-text-secondary: #00cc33;
+  --color-text-muted: #009926;
+  --color-text-subtle: #007a1f;
+  --color-accent: #00ff41;
+  --color-accent-hover: #33ff66;
+  --color-accent-subtle: #003310;
+  --border-color: #00ff4133;
+  --border-color-strong: #00ff41;
+  --border-color-subtle: #00ff4122;
+  --shadow-sm: 0 0 4px rgba(0, 255, 65, 0.1);
+  --shadow-md: 0 0 12px rgba(0, 255, 65, 0.15);
+  --shadow-lg: 0 0 24px rgba(0, 255, 65, 0.2);
+}
+
+/* CRT scanlines overlay for night-vision (CSS fallback when WebGL unavailable) */
+[data-matrix="night-vision"] body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.15) 2px,
+    rgba(0, 0, 0, 0.15) 4px
+  );
+}
+
 /* ---- LAYER 2: Reset & Base ---- */
 *,
 *::before,

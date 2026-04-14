@@ -338,6 +338,7 @@ export default defineSchema({
 		navOrder: v.number(),
 		navVisible: v.boolean(),
 		visible: v.boolean(),
+		archived: v.optional(v.boolean()),
 		sections: v.array(v.object({
 			sectionType: v.string(),
 			config: v.any(),

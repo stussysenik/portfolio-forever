@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { getConvexClient } from '$lib/convex';
 	import { api } from '$convex/_generated/api';
+	import { isScreenPass } from '$lib/stores/controls';
 
 	export let id = "cv";
 
@@ -10,7 +11,10 @@
 	let languages: any[] = [];
 	let sections: any[] = [];
 
-	$: sortedSections = [...sections].sort((a, b) => a.order - b.order).filter((s) => s.visible);
+	$: sortedSections = (() => {
+		const sorted = [...sections].sort((a, b) => a.order - b.order).filter((s) => s.visible);
+		return $isScreenPass ? sorted.slice(0, 2) : sorted;
+	})();
 
 	function getEntriesForType(type: string): any[] {
 		return entries
@@ -84,22 +88,24 @@
 								{#if entry.location}<span class="cv-entry-location">{entry.location}</span>{/if}
 							</div>
 						{/if}
-						{#if entry.description}
-							<p class="cv-entry-description">{entry.description}</p>
-						{/if}
-						{#if entry.highlights && entry.highlights.length > 0}
-							<ul class="cv-entry-highlights">
-								{#each entry.highlights as hl}
-									<li>{hl}</li>
-								{/each}
-							</ul>
-						{/if}
-						{#if entry.tools && entry.tools.length > 0}
-							<div class="cv-entry-tools">
-								{#each entry.tools as tool}
-									<span class="cv-tool-tag">{tool}</span>
-								{/each}
-							</div>
+						{#if !$isScreenPass}
+							{#if entry.description}
+								<p class="cv-entry-description">{entry.description}</p>
+							{/if}
+							{#if entry.highlights && entry.highlights.length > 0}
+								<ul class="cv-entry-highlights">
+									{#each entry.highlights as hl}
+										<li>{hl}</li>
+									{/each}
+								</ul>
+							{/if}
+							{#if entry.tools && entry.tools.length > 0}
+								<div class="cv-entry-tools">
+									{#each entry.tools as tool}
+										<span class="cv-tool-tag">{tool}</span>
+									{/each}
+								</div>
+							{/if}
 						{/if}
 					</div>
 				{/each}

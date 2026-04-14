@@ -38,6 +38,7 @@ export const getNavItems = query({
 				label: p.navLabel ?? p.label,
 				route: p.route,
 				navOrder: p.navOrder,
+				archived: p.archived ?? false,
 			}));
 	},
 });
@@ -52,6 +53,7 @@ export const upsert = mutation({
 		navOrder: v.number(),
 		navVisible: v.boolean(),
 		visible: v.boolean(),
+		archived: v.optional(v.boolean()),
 		sections: v.array(v.object({
 			sectionType: v.string(),
 			config: v.any(),
@@ -203,6 +205,19 @@ export const updateSectionThemeOverrides = mutation({
 	},
 });
 
+/** Toggle archived status for a page */
+export const setArchived = mutation({
+	args: { pageId: v.string(), archived: v.boolean() },
+	handler: async (ctx, { pageId, archived }) => {
+		const page = await ctx.db
+			.query("pages")
+			.withIndex("by_pageId", (q) => q.eq("pageId", pageId))
+			.unique();
+		if (!page) throw new Error(`Page "${pageId}" not found`);
+		await ctx.db.patch(page._id, { archived });
+	},
+});
+
 /** Delete a page */
 export const deletePage = mutation({
 	args: { pageId: v.string() },
@@ -215,21 +230,22 @@ export const deletePage = mutation({
 	},
 });
 
-/** Known pages — canonical set matching the frontend section registry */
+/** Known pages — canonical set matching the frontend section registry.
+ *  Order: process → re:mix → cv → likes → terminal → talks → gifts → blog → works → labs → gallery(archived) → minor(archived) */
 const KNOWN_PAGES = [
 	{ pageId: "home", label: "Home", route: "/", navOrder: 0, navVisible: false, sectionType: "hero", dataTable: undefined },
-	{ pageId: "works", label: "Works", route: "/works", navOrder: 1, navVisible: true, sectionType: "works-grid", dataTable: "worksEntries" },
-	{ pageId: "blog", label: "Blog", route: "/blog", navOrder: 2, navVisible: true, sectionType: "blog-feed", dataTable: "blogPosts" },
+	{ pageId: "process", label: "Process", route: "/process", navOrder: 1, navVisible: true, sectionType: "process", dataTable: undefined },
+	{ pageId: "academia", label: "re:mix", route: "/academia", navOrder: 2, navVisible: true, sectionType: "academia", dataTable: "academicEntries" },
 	{ pageId: "cv", label: "CV", route: "/cv", navOrder: 3, navVisible: true, sectionType: "cv", dataTable: "cvEntries" },
-	{ pageId: "academia", label: "re:mix", route: "/academia", navOrder: 4, navVisible: true, sectionType: "academia", dataTable: "academicEntries" },
+	{ pageId: "likes", label: "Likes", route: "/likes", navOrder: 4, navVisible: true, sectionType: "likes", dataTable: "likesCategories" },
 	{ pageId: "terminal", label: "Terminal", route: "/terminal", navOrder: 5, navVisible: true, sectionType: "terminal", dataTable: undefined },
-	{ pageId: "process", label: "Process", route: "/process", navOrder: 6, navVisible: true, sectionType: "process", dataTable: undefined },
-	{ pageId: "talks", label: "Talks", route: "/talks", navOrder: 7, navVisible: true, sectionType: "timeline", dataTable: "talksEntries" },
-	{ pageId: "likes", label: "Likes", route: "/likes", navOrder: 8, navVisible: true, sectionType: "likes", dataTable: "likesCategories" },
-	{ pageId: "gifts", label: "Gifts", route: "/gifts", navOrder: 9, navVisible: true, sectionType: "gifts", dataTable: "giftsConfig" },
-	{ pageId: "gallery", label: "Gallery", route: "/gallery", navOrder: 10, navVisible: true, sectionType: "gallery", dataTable: "galleryItems" },
-	{ pageId: "labs", label: "Labs", route: "/labs", navOrder: 11, navVisible: true, sectionType: "labs", dataTable: "labEntries" },
-	{ pageId: "minor", label: "Minor", route: "/minor", navOrder: 12, navVisible: true, sectionType: "minor", dataTable: "minorEntries" },
+	{ pageId: "talks", label: "Talks", route: "/talks", navOrder: 6, navVisible: true, sectionType: "timeline", dataTable: "talksEntries" },
+	{ pageId: "gifts", label: "Gifts", route: "/gifts", navOrder: 7, navVisible: true, sectionType: "gifts", dataTable: "giftsConfig" },
+	{ pageId: "blog", label: "Blog", route: "/blog", navOrder: 8, navVisible: true, sectionType: "blog-feed", dataTable: "blogPosts" },
+	{ pageId: "works", label: "Works", route: "/works", navOrder: 9, navVisible: true, sectionType: "works-grid", dataTable: "worksEntries" },
+	{ pageId: "labs", label: "Labs", route: "/labs", navOrder: 10, navVisible: true, sectionType: "labs", dataTable: "labEntries" },
+	{ pageId: "gallery", label: "Gallery", route: "/gallery", navOrder: 11, navVisible: true, sectionType: "gallery", dataTable: "galleryItems", archived: true },
+	{ pageId: "minor", label: "Minor", route: "/minor", navOrder: 12, navVisible: true, sectionType: "minor", dataTable: "minorEntries", archived: true },
 	{ pageId: "os", label: "OS", route: "/os", navOrder: 13, navVisible: false, sectionType: "os", dataTable: undefined },
 ];
 
@@ -261,6 +277,7 @@ export const ensureSeeded = mutation({
 				navOrder: pg.navOrder,
 				navVisible: pg.navVisible,
 				visible: true,
+				archived: (pg as any).archived ?? false,
 				sections: [{
 					sectionType: pg.sectionType,
 					config: {},
@@ -268,6 +285,40 @@ export const ensureSeeded = mutation({
 					order: 0,
 				}],
 			});
+		}
+	},
+});
+
+/** Apply nav order + archived flags + navVisible to existing pages (idempotent migration) */
+export const applyNavOrder = mutation({
+	args: {},
+	handler: async (ctx) => {
+		const ORDER: Record<string, { navOrder: number; archived?: boolean; navVisible?: boolean }> = {
+			home: { navOrder: 0, navVisible: false },
+			process: { navOrder: 1, navVisible: true },
+			academia: { navOrder: 2, navVisible: true },
+			cv: { navOrder: 3, navVisible: true },
+			likes: { navOrder: 4, navVisible: true },
+			terminal: { navOrder: 5, navVisible: true },
+			talks: { navOrder: 6, navVisible: true },
+			gifts: { navOrder: 7, navVisible: true },
+			blog: { navOrder: 8, navVisible: true },
+			works: { navOrder: 9, navVisible: true },
+			labs: { navOrder: 10, navVisible: true },
+			gallery: { navOrder: 11, navVisible: true, archived: true },
+			minor: { navOrder: 12, navVisible: true, archived: true },
+			os: { navOrder: 13, navVisible: false },
+		};
+		const pages = await ctx.db.query("pages").collect();
+		for (const page of pages) {
+			const update = ORDER[page.pageId];
+			if (update) {
+				await ctx.db.patch(page._id, {
+					navOrder: update.navOrder,
+					archived: update.archived ?? false,
+					navVisible: update.navVisible ?? page.navVisible,
+				});
+			}
 		}
 	},
 });

@@ -249,6 +249,7 @@
 			on:toggleflag
 			on:togglepage
 			on:reorderpages
+			on:archivepage
 		/>
 		<div class="sidebar-footer">
 			<slot name="sidebar-footer" />

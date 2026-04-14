@@ -13,10 +13,10 @@
         import { overlapDetector } from "$lib/utils/overlap-detector";
         import { initPostHog, trackPageView } from "$lib/posthog";
         import { siteMode, readerOverride, isReaderMode, siteConfig as siteConfigStore, featureFlags } from "$lib/stores/siteMode";
-        import { getConvexClient } from "$lib/convex";
-        import { api } from "$convex/_generated/api";
+        import { getRustClient as getConvexClient, api } from "$lib/rustBackend";
         import Embellishments from "$lib/components/Embellishments.svelte";
         import { parseSameAs } from "$lib/utils/social-links";
+        import { themeMatrix } from "$lib/stores/controls";
 
         // View Transitions API — smooth page-to-page animations
         onNavigate((navigation) => {
@@ -42,7 +42,7 @@
                 { href: "/cv", label: "cv" },
         ];
 
-        let navItems: { href: string; label: string }[] = staticNav;
+        let navItems: { href: string; label: string; archived?: boolean }[] = staticNav;
         let siteConfigData: any = null;
         let profileName: string = siteConfig.name;
         let socialLinksData: { label: string; url: string }[] = socialLinks;
@@ -51,6 +51,12 @@
 
         $: currentPath = $page.url.pathname;
         $: pixelCanvasEnabled = ($featureFlags.get("pixel-engine") ?? false) && !$isReaderMode;
+
+        // Theme matrix: sync to data-matrix attribute + localStorage
+        $: if (browser) {
+                document.documentElement.setAttribute('data-matrix', $themeMatrix);
+                localStorage.setItem('matrix', $themeMatrix);
+        }
 
         $: if (browser && pixelCanvasEnabled && !PixelCanvasComponent) {
                 pixelCanvasPromise ??= import("$lib/components/PixelCanvas.svelte").then(({ default: component }) => {
@@ -67,6 +73,12 @@
         // Init PostHog + Convex siteConfig on mount
         onMount(() => {
                 initPostHog();
+
+                // Restore matrix mode from localStorage
+                const savedMatrix = localStorage.getItem('matrix');
+                if (savedMatrix === 'minimalist' || savedMatrix === 'brutalist' || savedMatrix === 'night-vision') {
+                        themeMatrix.set(savedMatrix);
+                }
 
                 // Listen for admin preview messages (section scroll sync)
                 adminMessageHandler = (e: MessageEvent) => {
@@ -102,6 +114,7 @@
                                         navItems = items.map((p: any) => ({
                                                 href: p.route,
                                                 label: p.label,
+                                                archived: p.archived ?? false,
                                         }));
                                 }
                         });
@@ -277,6 +290,7 @@
                                                                 currentPath.startsWith(
                                                                         item.href,
                                                                 ))}
+                                                class:archived={item.archived}
                                         >
                                                 {item.label}
                                         </a>
@@ -488,6 +502,20 @@
         .nav-link.active::after {
                 transform: scaleX(1);
                 transform-origin: left;
+        }
+
+        .nav-link.archived {
+                color: #e54545;
+                opacity: 0.55;
+        }
+
+        .nav-link.archived:hover {
+                color: #ff4444;
+                opacity: 0.85;
+        }
+
+        .nav-link.archived::after {
+                background: #e54545;
         }
 
         .nav-sep {
@@ -772,6 +800,61 @@
 
                 .wip-sep {
                         display: none;
+                }
+        }
+
+        /* ─── Mobile header — iA Writer / Things DNA ───
+           Stacked, left-aligned, compact, clear hierarchy.
+           Social links get their own subtle row via flex line-break. */
+        @media (max-width: 767px) {
+                .header {
+                        padding: var(--space-2xs) 0;
+                        padding-bottom: var(--space-2xs);
+                }
+
+                .header-inner {
+                        flex-direction: column;
+                        align-items: flex-start;
+                        gap: var(--space-2xs);
+                        padding: 0 var(--space-md);
+                }
+
+                .header-name {
+                        font-size: var(--font-size-sm);
+                        font-weight: var(--font-weight-semibold);
+                }
+
+                .header-nav-group {
+                        width: 100%;
+                }
+
+                .nav {
+                        justify-content: flex-start;
+                        gap: 2px var(--space-sm);
+                }
+
+                .nav-link {
+                        font-size: 12px;
+                        padding: 2px 0;
+                }
+
+                /* Separator becomes a full-width flex break —
+                   pushes social links to their own line */
+                .nav-sep {
+                        flex-basis: 100%;
+                        height: 0;
+                        width: 0;
+                        margin: 0;
+                        background: none;
+                }
+
+                .nav-link.external {
+                        font-size: 11px;
+                        opacity: 0.5;
+                }
+
+                .nav-link.external:hover {
+                        opacity: 1;
                 }
         }
 

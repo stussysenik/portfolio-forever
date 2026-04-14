@@ -3,6 +3,7 @@
         import { profile } from "$lib/data/content";
         import { getConvexClient } from '$lib/convex';
         import { api } from '$convex/_generated/api';
+        import { isScreenPass } from '$lib/stores/controls';
         import WorksCaseStudy from './works/WorksCaseStudy.svelte';
         import WorksMinimalList from './works/WorksMinimalList.svelte';
         import VideoPreview from '$lib/components/VideoPreview.svelte';
@@ -90,6 +91,9 @@
         $: showPreview = thumbnailConfig?.showPreview ?? true;
         $: viewMode = sectionConfig?.immune ? 'grid' : (sectionConfig?.viewMode ?? 'grid');
 
+        // Depth controller: limit visible projects in 5-min "screen pass" mode
+        $: visibleProjects = $isScreenPass ? projects.slice(0, 3) : projects;
+
         function handleLoad(index: number) {
                 loaded = { ...loaded, [index]: true };
         }
@@ -130,12 +134,12 @@
         <header class="section-header">
                 <span class="section-marker">◆</span>
                 <h1 class="section-title">WORKS</h1>
-                <span class="section-meta">live embeds · {projects.length} projects</span>
+                <span class="section-meta">live embeds · {visibleProjects.length} projects{$isScreenPass ? ` of ${projects.length}` : ''}</span>
         </header>
 
         {#if viewMode === 'grid'}
                 <div class="projects-grid" class:list-mode={displayMode === 'list'} style="--grid-cols: {gridCols};">
-                        {#each projects as project, i}
+                        {#each visibleProjects as project, i}
                                 <div class="project-card"
                                         use:inview={i}
                                         on:mouseenter={() => hoveredIndex = i}

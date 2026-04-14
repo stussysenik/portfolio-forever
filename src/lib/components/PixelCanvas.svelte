@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount, onDestroy } from "svelte";
 	import { isReaderMode, featureFlags } from "$lib/stores/siteMode";
+	import { isNightVision } from "$lib/stores/controls";
 	import * as engine from "$lib/pixel-engine/engine";
 	import { loadLuaRuntime, compileBehavior } from "$lib/pixel-engine/lua-runtime";
 	import { ShaderPipeline, type ShaderParams } from "$lib/pixel-engine/shader-pipeline";
@@ -35,15 +36,17 @@
 		deviceMemory?: number;
 	};
 
-	// Check feature flag
-	$: {
-		const flags = $featureFlags;
-		enabled = flags.get("pixel-engine") ?? false;
-	}
+	// Check feature flag (night-vision force-enables pixel engine for CRT)
+	$: enabled = $isNightVision || ($featureFlags.get("pixel-engine") ?? false);
 
 	// Disable in reader mode
 	$: active = enabled && !$isReaderMode;
 	$: shouldRender = active && !runtimeDisabled;
+
+	// Night-vision: override shader params to green CRT when toggled
+	$: if (pipeline && $isNightVision) {
+		pipeline.params = { crt: 1.0, chromatic: 2.0, bloom: 0.3, holographic: 0 };
+	}
 
 	let cleanupFns: (() => void)[] = [];
 

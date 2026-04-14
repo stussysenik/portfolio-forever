@@ -2,6 +2,9 @@
   import { onMount, onDestroy, tick } from "svelte";
   import { sections } from "$lib/sections/index";
   import { isReaderMode, siteConfig } from "$lib/stores/siteMode";
+  import { depthController, physicsEngine } from "$lib/stores/controls";
+  import { filterByDepth } from "$lib/utils/depth-filter";
+  import { getParallaxMultiplier, getScrollBehavior } from "$lib/utils/scroll-physics";
   import { getConvexClient } from "$lib/convex";
   import { api } from "$convex/_generated/api";
   import { resolveComponentKey, sectionTypeRegistry } from "$lib/sections/registry";
@@ -37,6 +40,9 @@
         .map((s: any) => resolveComponentKey(s.sectionType))
     : ($siteConfig?.sectionOrder || sections.map((s) => s.id));
   $: parallaxSpeed = $siteConfig?.parallaxSpeed ?? 0.5;
+
+  // Depth-filtered sections: "full" returns all (default behavior unchanged)
+  $: filteredSections = filterByDepth(sectionOrder, $depthController);
 
   // Build section data lookup (component key → section data with spacing/themeOverrides)
   $: sectionDataMap = (() => {
@@ -202,7 +208,7 @@
   function scrollToSection(id: string) {
     const el = document.getElementById(id);
     if (el) {
-      el.scrollIntoView({ behavior: "smooth" });
+      el.scrollIntoView({ behavior: getScrollBehavior($physicsEngine) });
     }
   }
 
@@ -211,13 +217,13 @@
     const target = e.target as HTMLElement;
     if (target.tagName === "INPUT" || target.tagName === "TEXTAREA") return;
 
-    const currentIndex = sectionOrder.indexOf(activeSection);
-    if (e.key === "j" && currentIndex < sectionOrder.length - 1) {
+    const currentIndex = filteredSections.indexOf(activeSection);
+    if (e.key === "j" && currentIndex < filteredSections.length - 1) {
       e.preventDefault();
-      scrollToSection(sectionOrder[currentIndex + 1]);
+      scrollToSection(filteredSections[currentIndex + 1]);
     } else if (e.key === "k" && currentIndex > 0) {
       e.preventDefault();
-      scrollToSection(sectionOrder[currentIndex - 1]);
+      scrollToSection(filteredSections[currentIndex - 1]);
     }
   }
 
@@ -253,7 +259,7 @@
 >
   <!-- Section nav (scroll spy) -->
   <nav class="section-nav" aria-label="Page sections">
-    {#each sectionOrder as id}
+    {#each filteredSections as id}
       {@const label = sectionLabels[id]}
       {#if label && componentMap[id]}
         <button
@@ -268,7 +274,7 @@
   </nav>
 
   <!-- Sections -->
-  {#each sectionOrder as id (id)}
+  {#each filteredSections as id (id)}
     {@const sd = sectionDataMap[id]}
     <section
       class="section-wrapper"
@@ -281,7 +287,7 @@
       style:padding-bottom="{sd?.themeOverrides?.paddingBottom ?? 0}px"
       style:padding-left="{sd?.themeOverrides?.paddingLeft ?? 0}px"
       style:transform={parallaxEnabled && !$isReaderMode && inViewport.has(id)
-        ? `translateY(${(scrollY - (sectionOffsets[id] ?? 0)) * parallaxSpeed * 0.1}px)`
+        ? `translateY(${(scrollY - (sectionOffsets[id] ?? 0)) * parallaxSpeed * getParallaxMultiplier($physicsEngine)}px)`
         : undefined}
     >
       {#if visibleSections.has(id)}

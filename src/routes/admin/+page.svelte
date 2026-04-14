@@ -81,6 +81,17 @@
 		}
 	}
 
+	async function handleArchivePage(e: CustomEvent<{ pageId: string; archived: boolean }>) {
+		const { pageId, archived } = e.detail;
+		try {
+			await client.mutation(api.pages.setArchived, { pageId, archived });
+			const page = pages.find((p: any) => p.pageId === pageId);
+			toast.success(`${page?.label ?? pageId}: ${archived ? 'ARCHIVED' : 'UNARCHIVED'}`);
+		} catch (err: any) {
+			toast.error(err.message || 'Failed to toggle archive');
+		}
+	}
+
 	async function handleAddSection(e: CustomEvent<string>) {
 		if (!activePage) return;
 		const sectionTypeId = e.detail;
@@ -198,6 +209,7 @@
 	on:toggleflag={handleToggleFlag}
 	on:togglepage={handleTogglePage}
 	on:reorderpages={handleReorderPages}
+	on:archivepage={handleArchivePage}
 	on:opensettings={() => (settingsOpen = true)}
 >
 	<!-- Builder pane (default slot) — compartment system -->

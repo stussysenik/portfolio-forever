@@ -13,6 +13,7 @@
 		toggleflag: { key: string; category: string };
 		reorderpages: { pageIds: string[] };
 		togglepage: { pageId: string; visible: boolean };
+		archivepage: { pageId: string; archived: boolean };
 	}>();
 
 	let dragIndex: number | null = null;
@@ -135,6 +136,7 @@
 					<button
 						class="page-row"
 						class:page-row-active={activePageId === page.pageId}
+						class:page-row-archived={page.archived}
 						role="option"
 						aria-selected={activePageId === page.pageId}
 						on:click={() => dispatch('selectpage', { pageId: page.pageId })}
@@ -149,13 +151,24 @@
 								title={page.visible ? 'Click to hide page' : 'Click to show page'}
 								aria-label={page.visible ? 'Hide ' + page.label : 'Show ' + page.label}
 							>
-								<span class="page-dot" class:page-dot--visible={page.visible} class:page-dot--hidden={!page.visible}></span>
+								<span class="page-dot" class:page-dot--visible={page.visible && !page.archived} class:page-dot--hidden={!page.visible} class:page-dot--archived={page.archived && page.visible}></span>
 							</span>
 							{page.label}
 						</span>
-						{#if count > 0}
-							<span class="page-row-count">{count}</span>
-						{/if}
+						<span class="page-row-right">
+							{#if count > 0}
+								<span class="page-row-count">{count}</span>
+							{/if}
+							<span
+								class="archive-btn"
+								class:archive-btn--active={page.archived}
+								role="button"
+								tabindex="-1"
+								title={page.archived ? 'Unarchive page' : 'Archive page'}
+								on:click|stopPropagation={() => dispatch('archivepage', { pageId: page.pageId, archived: !page.archived })}
+								on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); dispatch('archivepage', { pageId: page.pageId, archived: !page.archived }); } }}
+							>A</span>
+						</span>
 					</button>
 				</li>
 			{/each}
@@ -346,6 +359,10 @@
 		background: var(--color-text-subtle, #444);
 	}
 
+	.page-dot--archived {
+		background: #e54545;
+	}
+
 	.page-dot-btn {
 		background: none;
 		border: none;
@@ -364,6 +381,12 @@
 		transition: transform 120ms ease;
 	}
 
+	.page-row-right {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+	}
+
 	.page-row-count {
 		font-size: var(--admin-text-2xs, 7px);
 		color: var(--color-text-subtle, #444);
@@ -372,6 +395,51 @@
 
 	.page-row-active .page-row-count {
 		color: var(--admin-blue, #2563EB);
+	}
+
+	/* Archived row — red tint */
+	.page-row-archived {
+		border-left-color: #e54545;
+	}
+
+	.page-row-archived .page-row-label {
+		color: #e54545;
+		opacity: 0.7;
+	}
+
+	.page-row-archived:hover .page-row-label {
+		opacity: 1;
+	}
+
+	/* Archive toggle button — tiny "A" indicator */
+	.archive-btn {
+		font-family: var(--font-mono);
+		font-size: 7px;
+		font-weight: 700;
+		color: var(--color-text-subtle, #444);
+		opacity: 0;
+		cursor: pointer;
+		padding: 2px 3px;
+		border-radius: 2px;
+		transition: all 120ms ease;
+		user-select: none;
+		line-height: 1;
+	}
+
+	.page-row:hover .archive-btn {
+		opacity: 0.5;
+	}
+
+	.page-row:hover .archive-btn:hover {
+		opacity: 1;
+		color: #e54545;
+		background: rgba(229, 69, 69, 0.1);
+	}
+
+	.archive-btn--active {
+		opacity: 1 !important;
+		color: #e54545;
+		background: rgba(229, 69, 69, 0.12);
 	}
 
 	/* New page button */
