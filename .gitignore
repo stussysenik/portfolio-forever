@@ -35,3 +35,9 @@ test-results/
 .goose/
 .trae/
 .impeccable.md
+
+# Local reference / inspection
+inspect-source-code/
+
+# Local task tracking
+tasks/
