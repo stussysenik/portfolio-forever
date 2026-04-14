@@ -1,3 +1,10 @@
+---
+created: 2026-02-xx
+updated: 2026-04-11
+category: architecture
+tags: [state-diagrams, logic-flows]
+---
+
 # State Diagrams & Logic Flows
 
 ## 1. OS Mode Window Management

@@ -1,3 +1,10 @@
+---
+created: 2026-03-xx
+updated: 2026-04-11
+category: design
+tags: [design-system, colors, typography, spacing, a11y]
+---
+
 # Design System
 
 ## Philosophy

@@ -1,3 +1,10 @@
+---
+created: 2026-03-xx
+updated: 2026-04-11
+category: vision
+tags: [philosophy, operating-system, portfolio]
+---
+
 # Vision
 
 ## The Portfolio as an Operating System

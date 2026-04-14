@@ -1,3 +1,10 @@
+---
+created: 2026-02-xx
+updated: 2026-04-11
+category: architecture
+tags: [system-engineering, breakdown]
+---
+
 # System Engineering Architecture Breakdown
 
 ## 1. High-Level System Context

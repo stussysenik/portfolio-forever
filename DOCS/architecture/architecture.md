@@ -1,3 +1,10 @@
+---
+created: 2026-03-xx
+updated: 2026-04-11
+category: architecture
+tags: [layout, spacing, testing, decisions]
+---
+
 # Architecture & Design Decisions
 
 ## Layout System
