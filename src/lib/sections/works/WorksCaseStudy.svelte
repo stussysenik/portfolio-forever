@@ -1,4 +1,6 @@
 <script lang="ts">
+    import Katex from '$lib/components/Katex.svelte';
+    import { parseMath } from '$lib/utils/parseMath';
     export let projects: any[] = [];
 </script>
 
@@ -22,7 +24,15 @@
                 </div>
                 <h2 class="card-title">{project.title}</h2>
                 {#if project.description}
-                    <p class="card-description">{project.description}</p>
+                    <p class="card-description">
+                        {#each parseMath(project.description) as seg}
+                            {#if seg.type === 'text'}
+                                {seg.value}
+                            {:else}
+                                <Katex content={seg.value} displayMode={seg.displayMode} />
+                            {/if}
+                        {/each}
+                    </p>
                 {/if}
                 {#if project.tools && project.tools.length > 0}
                     <div class="tech-stack">

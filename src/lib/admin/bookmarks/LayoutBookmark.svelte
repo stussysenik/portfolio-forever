@@ -2,6 +2,8 @@
 	import { AdminToggle, AdminChipGroup, BoxModelDiagram } from '$lib/admin/primitives';
 	import { stripConvexMeta } from '$lib/admin/constants';
 	import { toast } from '$lib/stores/toast';
+	import AdminIcon from '$lib/admin/AdminIcon.svelte';
+	import { IconArrowUp, IconArrowDown, IconX } from '$lib/admin/admin-icons';
 
 	// Props
 	export let section: any = null;
@@ -251,9 +253,7 @@
 				on:click={handleMoveUp}
 				aria-label="Move section up"
 			>
-				<svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-					<polyline points="2,7 5,3 8,7" />
-				</svg>
+				<AdminIcon icon={IconArrowUp} size="xs" tone="inherit" />
 				MOVE UP
 			</button>
 
@@ -263,9 +263,7 @@
 				on:click={handleMoveDown}
 				aria-label="Move section down"
 			>
-				<svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-					<polyline points="2,3 5,7 8,3" />
-				</svg>
+				<AdminIcon icon={IconArrowDown} size="xs" tone="inherit" />
 				MOVE DOWN
 			</button>
 		</div>
@@ -276,10 +274,7 @@
 				on:click={handleRemove}
 				aria-label="Remove section"
 			>
-				<svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-					<line x1="2" y1="2" x2="8" y2="8" />
-					<line x1="8" y1="2" x2="2" y2="8" />
-				</svg>
+				<AdminIcon icon={IconX} size="xs" tone="inherit" />
 				REMOVE SECTION
 			</button>
 		</div>

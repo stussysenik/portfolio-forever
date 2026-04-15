@@ -76,6 +76,7 @@ export default defineSchema({
 	worksEntries: defineTable({
 		title: v.string(),
 		url: v.string(),
+		linkLabel: v.optional(v.string()),
 		category: v.optional(v.string()),
 		preview: v.optional(v.string()),
 		previewMode: v.optional(v.union(v.literal("live"), v.literal("static"), v.literal("video"))),
@@ -96,6 +97,8 @@ export default defineSchema({
 		visible: v.boolean(),
 		styleOverrides: v.optional(v.object({
 			accentColor: v.optional(v.string()),
+			httpColor: v.optional(v.string()),
+			secondaryHighlight: v.optional(v.string()),
 			badgeStyle: v.optional(v.string()),
 			impactMetrics: v.optional(v.array(v.object({
 				label: v.string(),

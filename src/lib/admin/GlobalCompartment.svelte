@@ -2,6 +2,8 @@
 	import { createEventDispatcher, tick } from 'svelte';
 	import { AdminToggle, AdminChipGroup, AdminSlider } from '$lib/admin/primitives';
 	import { stripConvexMeta } from '$lib/admin/constants';
+	import AdminIcon from './AdminIcon.svelte';
+	import { IconChevronDown } from './admin-icons';
 
 	// Props
 	export let featureFlags: any[] = [];
@@ -118,9 +120,7 @@
 				<span class="gc-count" aria-label="{activeCount} of {totalCount} flags active">{flagCountLabel}</span>
 			{/if}
 			<span class="gc-chevron" aria-hidden="true">
-				<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-					<polyline points="2,4 6,8 10,4" />
-				</svg>
+				<AdminIcon icon={IconChevronDown} size="xs" tone="inherit" />
 			</span>
 		</div>
 	</div>

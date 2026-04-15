@@ -3,6 +3,8 @@
 	import { getConvexClient } from '$lib/convex';
 	import { api } from '$convex/_generated/api';
 	import { isScreenPass } from '$lib/stores/controls';
+	import Katex from '$lib/components/Katex.svelte';
+	import { parseMath } from '$lib/utils/parseMath';
 
 	export let id = "cv";
 
@@ -90,7 +92,15 @@
 						{/if}
 						{#if !$isScreenPass}
 							{#if entry.description}
-								<p class="cv-entry-description">{entry.description}</p>
+								<p class="cv-entry-description">
+									{#each parseMath(entry.description) as seg}
+										{#if seg.type === 'text'}
+											{seg.value}
+										{:else}
+											<Katex content={seg.value} displayMode={seg.displayMode} />
+										{/if}
+									{/each}
+								</p>
 							{/if}
 							{#if entry.highlights && entry.highlights.length > 0}
 								<ul class="cv-entry-highlights">

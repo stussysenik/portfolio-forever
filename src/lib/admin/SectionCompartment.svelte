@@ -4,6 +4,8 @@
 	import BookmarkTabs from './BookmarkTabs.svelte';
 	import StyleBookmark from './bookmarks/StyleBookmark.svelte';
 	import LayoutBookmark from './bookmarks/LayoutBookmark.svelte';
+	import AdminIcon from './AdminIcon.svelte';
+	import { IconChevronDown } from './admin-icons';
 
 	// Props
 	export let section: any = null;
@@ -102,9 +104,7 @@
 
 			<!-- Chevron -->
 			<span class="compartment__chevron" aria-hidden="true">
-				<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-					<polyline points="2,4 6,8 10,4" />
-				</svg>
+				<AdminIcon icon={IconChevronDown} size="xs" tone="inherit" />
 			</span>
 		</div>
 	</div>

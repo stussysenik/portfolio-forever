@@ -201,6 +201,30 @@ export const seedBuiltIn = internalMutation({
 					electricGreen: "#008000",
 				},
 			},
+			{
+				themeId: "carbon",
+				label: "Carbon",
+				type: "light" as const,
+				isBuiltIn: true,
+				isDefault: false,
+				colors: {
+					bg: "#ffffff",
+					bgAlt: "#f4f4f4",
+					surface: "#ffffff",
+					surfaceRaised: "#f4f4f4",
+					text: "#161616",
+					textSecondary: "#525252",
+					textMuted: "#6f6f6f",
+					textSubtle: "#a8a8a8",
+					accent: "#0f62fe",
+					accentHover: "#0043ce",
+					accentSubtle: "#edf5ff",
+					success: "#24a148",
+					warning: "#f1c21b",
+					danger: "#da1e28",
+					electricGreen: "#24a148",
+				},
+			},
 		];
 
 		for (const theme of builtIn) {

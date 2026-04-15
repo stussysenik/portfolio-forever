@@ -3,6 +3,8 @@
   import { getConvexClient } from '$lib/convex';
   import { api } from '$convex/_generated/api';
   import DOMPurify from 'dompurify';
+  import Katex from '$lib/components/Katex.svelte';
+  import { parseMath } from '$lib/utils/parseMath';
   import type { PageData } from './$types';
 
   export let data: PageData;
@@ -12,6 +14,17 @@
   function sanitize(html: string): string {
     if (typeof window === 'undefined') return html;
     return DOMPurify.sanitize(html);
+  }
+
+  /** Split content into sanitized HTML chunks and math segments. */
+  function splitContent(html: string) {
+    if (!html) return [] as Array<{ type: 'html' | 'math'; value: string; displayMode?: boolean }>;
+    const segs = parseMath(html);
+    return segs.map((s) =>
+      s.type === 'text'
+        ? { type: 'html' as const, value: sanitize(s.value) }
+        : { type: 'math' as const, value: s.value, displayMode: s.displayMode }
+    );
   }
 
   onMount(() => {
@@ -80,7 +93,13 @@
     <!-- Article Content - Optimal reading width, proper rhythm -->
     <div class="article-content">
       {#if note.content}
-        {@html sanitize(note.content)}
+        {#each splitContent(note.content) as seg}
+          {#if seg.type === 'html'}
+            {@html seg.value}
+          {:else}
+            <Katex content={seg.value} displayMode={seg.displayMode} />
+          {/if}
+        {/each}
       {:else}
         <p class="no-content">No content yet.</p>
       {/if}

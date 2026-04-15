@@ -4,14 +4,33 @@
         // Donut.c algorithm ported to TypeScript for ASCII rendering
         // Original by Andy Sloane (a1k0n), adapted from C
 
-        let asciiOutput = "";
-        let animationFrame: number;
+        let asciiOutput = $state("");
+        let animationFrame: number = 0;
+        let inertiaFrame: number = 0;
         let lastFrameTime = 0;
         const targetFPS = 30;
         const frameInterval = 1000 / targetFPS;
-        let A = 0;
-        let B = 0;
-        let prefersReducedMotion = false;
+        let A = $state(0);
+        let B = $state(0);
+        let prefersReducedMotion = $state(false);
+
+        // Drag state
+        let isDragging = $state(false);
+        let activePointerId: number | null = null;
+        let lastPointerX = 0;
+        let lastPointerY = 0;
+
+        // Velocity ring buffer for inertia seeding
+        type VelocitySample = { dx: number; dy: number; t: number };
+        const velocityBuffer: VelocitySample[] = [];
+        const VELOCITY_SAMPLES = 5;
+
+        // Pixel-to-radian mapping
+        const SENSITIVITY = 0.01;
+
+        // Baseline auto-rotation rates (match renderFrame increments)
+        const BASELINE_VA = 0.04;
+        const BASELINE_VB = 0.02;
 
         const width = 100;
         const height = 32;
@@ -97,7 +116,7 @@
         }
 
         function renderFrame(timestamp: number = 0) {
-                if (prefersReducedMotion) {
+                if (prefersReducedMotion || isDragging) {
                         animationFrame = 0;
                         return;
                 }
@@ -112,10 +131,100 @@
 
                 drawFrame();
 
-                A += 0.04;
-                B += 0.02;
+                A += BASELINE_VA;
+                B += BASELINE_VB;
 
                 animationFrame = requestAnimationFrame(renderFrame);
+        }
+
+        function cancelAnim() {
+                if (animationFrame) {
+                        cancelAnimationFrame(animationFrame);
+                        animationFrame = 0;
+                }
+                if (inertiaFrame) {
+                        cancelAnimationFrame(inertiaFrame);
+                        inertiaFrame = 0;
+                }
+        }
+
+        function startAuto() {
+                if (prefersReducedMotion || animationFrame) return;
+                lastFrameTime = 0;
+                animationFrame = requestAnimationFrame(renderFrame);
+        }
+
+        function handlePointerDown(event: PointerEvent) {
+                cancelAnim();
+                activePointerId = event.pointerId;
+                (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
+                lastPointerX = event.clientX;
+                lastPointerY = event.clientY;
+                velocityBuffer.length = 0;
+                isDragging = true;
+        }
+
+        function handlePointerMove(event: PointerEvent) {
+                if (!isDragging || event.pointerId !== activePointerId) return;
+                const dx = event.clientX - lastPointerX;
+                const dy = event.clientY - lastPointerY;
+                lastPointerX = event.clientX;
+                lastPointerY = event.clientY;
+
+                B += dx * SENSITIVITY;
+                A += dy * SENSITIVITY;
+
+                velocityBuffer.push({ dx, dy, t: performance.now() });
+                if (velocityBuffer.length > VELOCITY_SAMPLES) {
+                        velocityBuffer.shift();
+                }
+
+                drawFrame();
+        }
+
+        function handlePointerEnd(event: PointerEvent) {
+                if (event.pointerId !== activePointerId) return;
+                try {
+                        (event.currentTarget as HTMLElement).releasePointerCapture(event.pointerId);
+                } catch {}
+                activePointerId = null;
+                isDragging = false;
+
+                if (prefersReducedMotion) {
+                        velocityBuffer.length = 0;
+                        return;
+                }
+
+                // Compute trailing average velocity (px/frame ~= dx, dy per move)
+                let sumDx = 0;
+                let sumDy = 0;
+                for (const sample of velocityBuffer) {
+                        sumDx += sample.dx;
+                        sumDy += sample.dy;
+                }
+                const count = velocityBuffer.length || 1;
+                let vB = (sumDx / count) * SENSITIVITY;
+                let vA = (sumDy / count) * SENSITIVITY;
+                velocityBuffer.length = 0;
+
+                // Decay over ~600ms (~36 frames at 60fps) toward baseline
+                const DECAY_MS = 600;
+                const startTime = performance.now();
+
+                function inertiaLoop(now: number) {
+                        const t = Math.min(1, (now - startTime) / DECAY_MS);
+                        const ease = 1 - t;
+                        A += vA * ease + BASELINE_VA * t;
+                        B += vB * ease + BASELINE_VB * t;
+                        drawFrame();
+                        if (t < 1) {
+                                inertiaFrame = requestAnimationFrame(inertiaLoop);
+                        } else {
+                                inertiaFrame = 0;
+                                startAuto();
+                        }
+                }
+                inertiaFrame = requestAnimationFrame(inertiaLoop);
         }
 
         onMount(() => {
@@ -123,16 +232,12 @@
                 const syncMotionPreference = (matches: boolean) => {
                         prefersReducedMotion = matches;
                         if (prefersReducedMotion) {
-                                if (animationFrame) {
-                                        cancelAnimationFrame(animationFrame);
-                                        animationFrame = 0;
-                                }
+                                cancelAnim();
                                 drawFrame();
                                 return;
                         }
-                        if (!animationFrame) {
-                                lastFrameTime = 0;
-                                animationFrame = requestAnimationFrame(renderFrame);
+                        if (!isDragging && !animationFrame) {
+                                startAuto();
                         }
                 };
 
@@ -143,9 +248,7 @@
                 syncMotionPreference(mediaQuery.matches);
                 mediaQuery.addEventListener("change", handleMotionChange);
                 return () => {
-                        if (animationFrame) {
-                                cancelAnimationFrame(animationFrame);
-                        }
+                        cancelAnim();
                         mediaQuery.removeEventListener("change", handleMotionChange);
                 };
         });
@@ -201,13 +304,20 @@
 </script>
 
 <div class="donut-container">
-        <div class="donut-display">
-                <pre class="donut-ascii">{asciiOutput}</pre>
+        <div
+                class="donut-display"
+                class:is-dragging={isDragging}
+                onpointerdown={handlePointerDown}
+                onpointermove={handlePointerMove}
+                onpointerup={handlePointerEnd}
+                onpointercancel={handlePointerEnd}
+        >
+                <pre class="donut-ascii" aria-hidden="true">{asciiOutput}</pre>
         </div>
 
         <button
                 class="source-toggle"
-                on:click={() => (showSource = !showSource)}
+                onclick={() => (showSource = !showSource)}
                 aria-expanded={showSource}
         >
                 {showSource ? "[ hide source ]" : "[ view zig source ]"}
@@ -235,6 +345,14 @@
                 overflow: hidden;
                 max-width: 100%;
                 will-change: transform;
+                touch-action: none;
+                cursor: grab;
+                user-select: none;
+                -webkit-user-select: none;
+        }
+
+        .donut-display.is-dragging {
+                cursor: grabbing;
         }
 
         .donut-ascii {
@@ -248,6 +366,8 @@
                 text-align: center;
                 white-space: pre;
                 overflow: hidden;
+                touch-action: none;
+                pointer-events: none;
         }
 
         @media (min-width: 768px) {

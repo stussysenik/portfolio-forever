@@ -1,0 +1,79 @@
+/*
+ * Admin shell surface tokens.
+ *
+ * Scoped under `.admin-shell[data-admin]` so admin surface vars cannot leak
+ * into the public site. Spacing/typography tokens live in `admin-tokens.css`.
+ *
+ * Cascade rules (non-negotiable):
+ *   1. All variables in this file are `--admin-*` prefixed.
+ *   2. All variables are declared under `.admin-shell[data-admin]`.
+ *   3. Theme accent + font families inherit from the active site theme via
+ *      `var(--color-accent, <fallback>)`. Everything else is locally owned.
+ *   4. Dark mode is triggered by a dark site theme attribute on :root —
+ *      no prefers-color-scheme media query, no stylesheet swap.
+ */
+
+.admin-shell[data-admin] {
+	/* Surface zones (light-first) */
+	--admin-chrome-bg: #f8f8f6;
+	--admin-workspace-bg: #ffffff;
+	--admin-frame-bg: #eeeeec;
+
+	/* Foreground */
+	--admin-text: #1a1a18;
+	--admin-text-subtle: rgba(26, 26, 24, 0.62);
+	--admin-text-muted: rgba(26, 26, 24, 0.48);
+
+	/* Keylines & structure */
+	--admin-keyline: rgba(26, 26, 24, 0.1);
+	--admin-keyline-strong: rgba(26, 26, 24, 0.18);
+
+	/* Accents inherit from the active site theme */
+	--admin-accent: var(--color-accent, #2563eb);
+	--admin-success: var(--color-success, #16a34a);
+
+	/* Families inherit too — admin reads the same stack as the site */
+	--admin-font-sans: var(
+		--font-family-sans,
+		-apple-system,
+		BlinkMacSystemFont,
+		"Inter",
+		sans-serif
+	);
+	--admin-font-mono: var(
+		--font-family-mono,
+		ui-monospace,
+		"JetBrains Mono",
+		"SF Mono",
+		Menlo,
+		monospace
+	);
+
+	/* Shadows — subtle, never decorative */
+	--admin-shadow-frame: 0 1px 0 rgba(26, 26, 24, 0.04), 0 0 0 1px var(--admin-keyline);
+	--admin-shadow-dock: 0 -1px 0 var(--admin-keyline);
+
+	/* Inline baseline: every admin zone should read text/background
+	   from these tokens when nothing more specific overrides. */
+	color: var(--admin-text);
+	background-color: var(--admin-workspace-bg);
+}
+
+/*
+ * Dark-mode inheritance.
+ * Triggered by a dark site theme attribute, not prefers-color-scheme.
+ * Only the surface colors + color-scheme flip; layout stays pinned.
+ */
+:root[data-theme="darkroom"] .admin-shell[data-admin],
+:root[data-theme="carbon"] .admin-shell[data-admin],
+:root[data-theme="terminal"] .admin-shell[data-admin] {
+	--admin-chrome-bg: #0e0e0c;
+	--admin-workspace-bg: #141412;
+	--admin-frame-bg: #1a1a18;
+	--admin-text: #f4f4f2;
+	--admin-text-subtle: rgba(244, 244, 242, 0.62);
+	--admin-text-muted: rgba(244, 244, 242, 0.44);
+	--admin-keyline: rgba(244, 244, 242, 0.12);
+	--admin-keyline-strong: rgba(244, 244, 242, 0.22);
+	color-scheme: dark;
+}

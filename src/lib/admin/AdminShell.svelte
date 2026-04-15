@@ -1,9 +1,13 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
 	import './tokens/admin-tokens.css';
+	import './tokens/admin-shell-tokens.css';
 	import PageSidebar from './PageSidebar.svelte';
 	import PageBar from './PageBar.svelte';
 	import PreviewDrawer from './PreviewDrawer.svelte';
+	import AdminIcon from './AdminIcon.svelte';
+	import { IconSettings } from './admin-icons';
+	import MobileDock from './MobileDock.svelte';
 
 	export let pages: any[] = [];
 	export let activePage: any = null;
@@ -21,7 +25,12 @@
 		selectsection: { index: number };
 		opensettings: void;
 		reorderpages: { pageIds: string[] };
+		openpages: void;
+		opensections: void;
+		openpreview: void;
 	}>();
+
+	export let activeMobileSheet: 'pages' | 'sections' | 'preview' | null = null;
 
 	let configOpen = false;
 	let overflowOpen = false;
@@ -110,7 +119,7 @@
 
 <svelte:window on:click={handleClickOutside} />
 
-<div class="admin-shell" class:config-open={configOpen}>
+<div class="admin-shell" data-admin class:config-open={configOpen}>
 	<!-- Top bar -->
 	<header class="topbar">
 		<div class="topbar-left">
@@ -129,7 +138,7 @@
 		</div>
 		<div class="topbar-right">
 			<button class="chip" on:click={() => dispatch('opensettings')} title="Open settings" aria-label="Settings">
-				<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+				<AdminIcon icon={IconSettings} size="sm" tone="inherit" />
 			</button>
 			<div class="topbar-collapsible">
 				<div class="dropdown-wrapper">
@@ -266,7 +275,17 @@
 		<slot name="preview" />
 	</section>
 
-	<!-- Preview drawer (mobile/tablet only, hidden on desktop via CSS) -->
+	<!-- Mobile dock (shown on < 768px via CSS) -->
+	<div class="mobile-dock-wrap">
+		<MobileDock
+			active={activeMobileSheet}
+			on:openpages={() => dispatch('openpages')}
+			on:opensections={() => dispatch('opensections')}
+			on:openpreview={() => dispatch('openpreview')}
+		/>
+	</div>
+
+	<!-- Legacy preview drawer (tablet only, hidden on mobile + desktop) -->
 	<PreviewDrawer
 		open={previewOpen}
 		siteUrl={typeof window !== 'undefined' ? window.location.origin : ''}
@@ -279,23 +298,24 @@
 	/* === Shell grid === */
 	.admin-shell {
 		display: grid;
-		grid-template-rows: var(--admin-topbar-h) auto 1fr;
+		grid-template-rows: var(--admin-topbar-h) auto minmax(0, 1fr) auto;
 		grid-template-columns: 1fr;
 		grid-template-areas:
 			"topbar"
 			"pills"
-			"builder";
-		height: 100vh;
+			"builder"
+			"dock";
 		height: 100dvh;
 		overflow: hidden;
-		background: var(--color-bg, #0a0a0a);
-		color: var(--color-text, #e5e5e5);
+		background: var(--admin-chrome-bg);
+		color: var(--admin-text);
+		font-family: var(--admin-font-sans);
 	}
 
 	/* Tablet: sidebar + main */
 	@media (min-width: 768px) {
 		.admin-shell {
-			grid-template-rows: var(--admin-topbar-h) 1fr;
+			grid-template-rows: var(--admin-topbar-h) minmax(0, 1fr);
 			grid-template-columns: var(--admin-sidebar-w) 1fr;
 			grid-template-areas:
 				"topbar topbar"
@@ -328,8 +348,9 @@
 		align-items: center;
 		justify-content: space-between;
 		padding: 0 var(--admin-space-4, 16px);
-		border-bottom: 1px solid var(--border-color-subtle, #1a1a1a);
-		background: var(--color-bg, #0a0a0a);
+		border-bottom: 1px solid var(--admin-keyline);
+		background: var(--admin-chrome-bg);
+		color: var(--admin-text);
 		z-index: 10;
 	}
 
@@ -354,47 +375,47 @@
 	}
 
 	.breadcrumb-root {
-		color: var(--color-text-muted, #666);
+		color: var(--admin-text-muted);
 	}
 
 	.breadcrumb-sep {
-		color: var(--color-text-subtle, #444);
+		color: var(--admin-text-subtle);
 	}
 
 	.breadcrumb-current {
-		color: var(--color-text, #e5e5e5);
+		color: var(--admin-text);
 		font-weight: 500;
 	}
 
 	.chip {
-		font-family: var(--font-mono);
+		font-family: var(--admin-font-mono);
 		font-size: var(--admin-text-xs, 9px);
 		text-transform: uppercase;
 		letter-spacing: 0.06em;
 		padding: var(--admin-space-1, 4px) var(--admin-space-3, 12px);
-		border: 1px solid var(--border-color-subtle, #222);
+		border: 1px solid var(--admin-keyline);
 		border-radius: 2px;
 		background: transparent;
-		color: var(--color-text-muted, #666);
+		color: var(--admin-text-subtle);
 		cursor: pointer;
 		transition: all var(--admin-transition, 120ms ease);
 		white-space: nowrap;
 	}
 
 	.chip:hover {
-		border-color: var(--color-text-muted, #666);
-		color: var(--color-text, #e5e5e5);
+		border-color: var(--admin-keyline-strong);
+		color: var(--admin-text);
 	}
 
 	.chip-active {
-		background: var(--admin-blue, #2563EB);
-		border-color: var(--admin-blue, #2563EB);
+		background: var(--admin-accent);
+		border-color: var(--admin-accent);
 		color: #fff;
 	}
 
 	.chip-active:hover {
-		background: var(--admin-blue, #2563EB);
-		border-color: var(--admin-blue, #2563EB);
+		background: var(--admin-accent);
+		border-color: var(--admin-accent);
 		color: #fff;
 	}
 
@@ -408,12 +429,12 @@
 		top: calc(100% + 4px);
 		right: 0;
 		min-width: 140px;
-		background: var(--color-bg, #0a0a0a);
-		border: 1px solid var(--border-color-subtle, #222);
+		background: var(--admin-chrome-bg);
+		border: 1px solid var(--admin-keyline);
 		border-radius: 4px;
 		padding: 4px;
 		z-index: 100;
-		box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 	}
 
 	.dropdown-item {
@@ -422,11 +443,11 @@
 		gap: 8px;
 		width: 100%;
 		padding: 6px 8px;
-		font-family: var(--font-mono);
+		font-family: var(--admin-font-mono);
 		font-size: var(--admin-text-xs, 9px);
 		background: transparent;
 		border: none;
-		color: var(--color-text-muted, #666);
+		color: var(--admin-text-subtle);
 		cursor: pointer;
 		border-radius: 2px;
 		transition: all var(--admin-transition, 120ms ease);
@@ -434,12 +455,12 @@
 	}
 
 	.dropdown-item:hover {
-		background: var(--color-bg-alt, #111);
-		color: var(--color-text, #e5e5e5);
+		background: var(--admin-frame-bg);
+		color: var(--admin-text);
 	}
 
 	.dropdown-item-active {
-		color: var(--admin-blue, #2563EB);
+		color: var(--admin-accent);
 	}
 
 	.theme-dot {
@@ -456,9 +477,10 @@
 		grid-area: sidebar;
 		display: none;
 		flex-direction: column;
-		border-right: 1px solid var(--border-color-subtle, #1a1a1a);
+		border-right: 1px solid var(--admin-keyline);
 		overflow-y: auto;
-		background: var(--color-bg, #0a0a0a);
+		background: var(--admin-chrome-bg);
+		color: var(--admin-text);
 	}
 
 	@media (min-width: 768px) {
@@ -471,20 +493,36 @@
 		margin-top: auto;
 	}
 
-	/* === Builder === */
-	.builder {
-		grid-area: builder;
-		overflow-y: auto;
-		padding: var(--admin-space-4, 16px);
+	/* === Mobile dock (bottom row, hidden tablet+) === */
+	.mobile-dock-wrap {
+		grid-area: dock;
+		display: block;
+	}
+	@media (min-width: 768px) {
+		.mobile-dock-wrap {
+			display: none;
+		}
 	}
 
-	/* === Preview === */
+	/* === Builder (workspace surface) === */
+	.builder {
+		grid-area: builder;
+		min-height: 0;
+		overflow-y: auto;
+		overscroll-behavior: contain;
+		padding: var(--admin-space-4, 16px);
+		background: var(--admin-workspace-bg);
+		color: var(--admin-text);
+	}
+
+	/* === Preview frame === */
 	.preview {
 		grid-area: preview;
 		display: none;
 		overflow-y: auto;
-		border-left: 3px solid var(--admin-blue, #2563EB);
-		background: var(--color-bg, #0a0a0a);
+		border-left: 1px solid var(--admin-keyline);
+		background: var(--admin-frame-bg);
+		padding: 8px;
 	}
 
 	@media (min-width: 1024px) {
@@ -512,13 +550,13 @@
 	}
 
 	.topbar-overflow-chip {
-		font-family: var(--font-mono);
+		font-family: var(--admin-font-mono);
 		font-size: var(--admin-text-xs, 9px);
 		padding: var(--admin-space-1, 4px) var(--admin-space-3, 12px);
-		border: 1px solid var(--border-color-subtle);
+		border: 1px solid var(--admin-keyline);
 		border-radius: 2px;
 		background: transparent;
-		color: var(--color-text-muted);
+		color: var(--admin-text-subtle);
 		cursor: pointer;
 		min-height: var(--admin-touch-compact, 28px);
 		display: none; /* shown via media query */
@@ -526,16 +564,16 @@
 		transition: all var(--admin-transition, 120ms ease);
 	}
 	.topbar-overflow-chip:hover {
-		border-color: var(--color-text-muted);
-		color: var(--color-text);
+		border-color: var(--admin-keyline-strong);
+		color: var(--admin-text);
 	}
 
 	.topbar-overflow-dropdown {
 		position: absolute;
 		top: calc(var(--admin-topbar-h, 44px) + 4px);
 		right: var(--admin-space-4, 16px);
-		background: var(--color-bg, #0e0e0e);
-		border: 1px solid var(--border-color-subtle);
+		background: var(--admin-chrome-bg);
+		border: 1px solid var(--admin-keyline);
 		border-radius: 4px;
 		padding: var(--admin-space-2, 8px);
 		z-index: 50;
@@ -543,7 +581,7 @@
 		flex-direction: column;
 		gap: var(--admin-space-2, 8px);
 		min-width: 160px;
-		box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 	}
 
 	.overflow-row {
@@ -554,11 +592,11 @@
 	}
 
 	.overflow-label {
-		font-family: var(--font-mono);
+		font-family: var(--admin-font-mono);
 		font-size: var(--admin-text-2xs, 7px);
 		text-transform: uppercase;
 		letter-spacing: 0.08em;
-		color: var(--color-text-subtle);
+		color: var(--admin-text-muted);
 		font-weight: 600;
 	}
 </style>

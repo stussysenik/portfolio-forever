@@ -1,22 +1,11 @@
 <script lang="ts">
 	import { toast } from '$lib/stores/toast';
+	import FlagIndicator from '$lib/components/FlagIndicator.svelte';
+	import { flagIndicatorRegistry } from './flagIndicatorRegistry';
 
 	export let client: any;
 	export let api: any;
 	export let featureFlags: any[];
-
-	const DEFAULT_FLAGS = [
-		{ key: 'pixel-engine', category: 'visual', label: 'Pixel Engine', status: 'active' as const },
-		{ key: 'ascii-donut', category: 'visual', label: 'ASCII Donut', status: 'planned' as const },
-		{ key: 'parallax', category: 'visual', label: 'Parallax Transitions', status: 'planned' as const },
-		{ key: 'view-transitions', category: 'visual', label: 'View Transitions', status: 'planned' as const },
-		{ key: 'wip-banner', category: 'layout', label: 'WIP Banner', status: 'planned' as const },
-		{ key: 'elevator', category: 'visual', label: 'Elevator (Back to Top)', status: 'planned' as const },
-		{ key: 'terminal-matrix', category: 'visual', label: 'Terminal Matrix Animation', status: 'planned' as const },
-		{ key: 'os-desktop', category: 'visual', label: 'OS Desktop Simulator', status: 'planned' as const },
-		{ key: 'social-links', category: 'layout', label: 'Social Links Dropdown', status: 'planned' as const },
-		{ key: 'command-palette', category: 'layout', label: 'Command Palette', status: 'planned' as const },
-	];
 
 	function getFlagState(key: string): boolean {
 		const flag = featureFlags.find((f: any) => f.key === key);
@@ -32,10 +21,10 @@
 <section class="admin-section">
 	<h2 class="section-label">Feature Flags</h2>
 	<div class="card">
-		{#each DEFAULT_FLAGS as flag}
+		{#each flagIndicatorRegistry as flag}
 			<div class="flag-row">
 				<span class="flag-label">{flag.label}</span>
-				<span class="flag-status" class:flag-status-active={flag.status === 'active'}>{flag.status}</span>
+				<FlagIndicator flagKey={flag.key} enabled={getFlagState(flag.key)} label={getFlagState(flag.key) ? 'on' : 'off'} />
 				<span class="flag-category">{flag.category}</span>
 				<button
 					class="flag-toggle"

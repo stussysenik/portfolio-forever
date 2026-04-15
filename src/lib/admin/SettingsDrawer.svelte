@@ -7,6 +7,8 @@
 	import AnimationsCell from './controls/AnimationsCell.svelte';
 	import UiSettingsPanel from './UiSettingsPanel.svelte';
 	import { toast } from '$lib/stores/toast';
+	import AdminIcon from './AdminIcon.svelte';
+	import { IconX } from './admin-icons';
 
 	export let open: boolean = false;
 	export let client: any;
@@ -78,9 +80,7 @@
 			on:click={() => dispatch('close')}
 			aria-label="Close settings drawer"
 		>
-			<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
-				<path d="M4 4l8 8M12 4l-8 8" />
-			</svg>
+			<AdminIcon icon={IconX} size="md" tone="inherit" ariaLabel="Close" />
 		</button>
 	</div>
 

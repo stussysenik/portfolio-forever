@@ -7,6 +7,9 @@
 	import PreviewPane from '$lib/admin/PreviewPane.svelte';
 	import SectionPicker from '$lib/admin/SectionPicker.svelte';
 	import SettingsDrawer from '$lib/admin/SettingsDrawer.svelte';
+	import PagesSheet from '$lib/admin/sheets/PagesSheet.svelte';
+	import SectionsSheet from '$lib/admin/sheets/SectionsSheet.svelte';
+	import PreviewSheet from '$lib/admin/sheets/PreviewSheet.svelte';
 	import { toast } from '$lib/stores/toast';
 	import { stripConvexMeta } from '$lib/admin/constants';
 
@@ -27,6 +30,7 @@
 	let previewRefreshKey = 0;
 	let selectedSectionId = '';
 	let globalExpanded = false;
+	let activeMobileSheet: 'pages' | 'sections' | 'preview' | null = null;
 
 	$: activePage = pages.find((p) => p.pageId === activePageId) ?? null;
 	$: previewRoute = activePage?.route ?? '/';
@@ -205,12 +209,16 @@
 	{entriesByTable}
 	siteConfig={siteConfigData}
 	{registrySections}
+	{activeMobileSheet}
 	on:selectpage={handleSelectPage}
 	on:toggleflag={handleToggleFlag}
 	on:togglepage={handleTogglePage}
 	on:reorderpages={handleReorderPages}
 	on:archivepage={handleArchivePage}
 	on:opensettings={() => (settingsOpen = true)}
+	on:openpages={() => (activeMobileSheet = 'pages')}
+	on:opensections={() => (activeMobileSheet = 'sections')}
+	on:openpreview={() => (activeMobileSheet = 'preview')}
 >
 	<!-- Builder pane (default slot) — compartment system -->
 	{#if activePage}
@@ -259,6 +267,41 @@
 	open={showSectionPicker}
 	on:pick={handleAddSection}
 	on:close={() => (showSectionPicker = false)}
+/>
+
+<!-- Mobile sheets (below 768px) -->
+<PagesSheet
+	open={activeMobileSheet === 'pages'}
+	{pages}
+	{activePageId}
+	{featureFlags}
+	{entriesByTable}
+	on:close={() => (activeMobileSheet = null)}
+	on:selectpage={(e) => { handleSelectPage(e); activeMobileSheet = null; }}
+	on:toggleflag={handleToggleFlag}
+	on:togglepage={handleTogglePage}
+	on:reorderpages={handleReorderPages}
+	on:archivepage={handleArchivePage}
+/>
+<SectionsSheet
+	open={activeMobileSheet === 'sections'}
+	sections={activePage?.sections ?? []}
+	pageId={activePage?.pageId ?? ''}
+	page={activePage}
+	{entriesByTable}
+	{featureFlags}
+	siteConfig={siteConfigData}
+	heroConfig={heroConfigData}
+	cvProfile={cvProfileData}
+	{client}
+	{api}
+	on:close={() => (activeMobileSheet = null)}
+/>
+<PreviewSheet
+	open={activeMobileSheet === 'preview'}
+	siteUrl={typeof window !== 'undefined' ? window.location.origin : ''}
+	path={previewRoute}
+	on:close={() => (activeMobileSheet = null)}
 />
 
 <!-- Settings Drawer (global settings only) -->

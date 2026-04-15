@@ -19,10 +19,28 @@ export const getFullWorks = query({
 	},
 });
 
+const styleOverridesValidator = v.optional(
+	v.object({
+		accentColor: v.optional(v.string()),
+		httpColor: v.optional(v.string()),
+		secondaryHighlight: v.optional(v.string()),
+		badgeStyle: v.optional(v.string()),
+		impactMetrics: v.optional(
+			v.array(
+				v.object({
+					label: v.string(),
+					value: v.string(),
+				})
+			)
+		),
+	})
+);
+
 export const createEntry = mutation({
 	args: {
 		title: v.string(),
 		url: v.string(),
+		linkLabel: v.optional(v.string()),
 		category: v.optional(v.string()),
 		preview: v.optional(v.string()),
 		previewMode: v.optional(v.union(v.literal("live"), v.literal("static"), v.literal("video"))),
@@ -41,6 +59,7 @@ export const createEntry = mutation({
 		zoom: v.optional(v.number()),
 		order: v.number(),
 		visible: v.boolean(),
+		styleOverrides: styleOverridesValidator,
 	},
 	handler: async (ctx, args) => {
 		return await ctx.db.insert("worksEntries", args);
@@ -52,6 +71,7 @@ export const updateEntry = mutation({
 		id: v.id("worksEntries"),
 		title: v.optional(v.string()),
 		url: v.optional(v.string()),
+		linkLabel: v.optional(v.string()),
 		category: v.optional(v.string()),
 		preview: v.optional(v.string()),
 		previewMode: v.optional(v.union(v.literal("live"), v.literal("static"), v.literal("video"))),
@@ -70,6 +90,7 @@ export const updateEntry = mutation({
 		zoom: v.optional(v.number()),
 		order: v.optional(v.number()),
 		visible: v.optional(v.boolean()),
+		styleOverrides: styleOverridesValidator,
 	},
 	handler: async (ctx, { id, ...fields }) => {
 		await ctx.db.patch(id, stripUndefined(fields));

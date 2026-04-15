@@ -122,6 +122,21 @@
 		}
 	}
 
+	async function saveStyleOverride(
+		entry: any,
+		key: 'accentColor' | 'httpColor' | 'secondaryHighlight',
+		value: string
+	) {
+		const merged = {
+			...(entry.styleOverrides ?? {}),
+			[key]: value || undefined,
+		};
+		await client.mutation(api.works.updateEntry, {
+			id: entry._id as Id<"worksEntries">,
+			styleOverrides: merged,
+		});
+	}
+
 	async function moveWorkEntry(id: string, direction: -1 | 1) {
 		const sorted = [...entries].sort((a: any, b: any) => a.order - b.order);
 		const idx = sorted.findIndex((e: any) => e._id === id);
@@ -236,7 +251,7 @@
 					<button class="tool-tag tool-tag-btn" on:click={() => toggleExpand(entry._id)}>
 					Preview {expandedId === entry._id ? '\u25B4' : '\u25BE'}
 				</button>
-				{#each ['viewport', 'cam', 'videoPreview', 'muxPlaybackId'] as field}
+				{#each ['viewport', 'cam', 'videoPreview', 'muxPlaybackId', 'linkLabel'] as field}
 						{#if editingId === entry._id && editingField === field}
 							<input class="field-input-sm" bind:value={editBuffer} on:keydown={(e) => { if (e.key === 'Enter') saveWorkEdit(entry._id); if (e.key === 'Escape') cancelEdit(); }} />
 							<button class="btn-sm btn-save" on:click={() => saveWorkEdit(entry._id)}>&#10003;</button>
@@ -246,6 +261,30 @@
 							</button>
 						{/if}
 					{/each}
+					<label class="color-chip" title="Stripe / accent color">
+						<span>stripe</span>
+						<input
+							type="color"
+							value={entry.styleOverrides?.accentColor ?? '#000000'}
+							on:change={(e) => saveStyleOverride(entry, 'accentColor', (e.currentTarget as HTMLInputElement).value)}
+						/>
+					</label>
+					<label class="color-chip" title="Link / HTTP color">
+						<span>http</span>
+						<input
+							type="color"
+							value={entry.styleOverrides?.httpColor ?? '#2563eb'}
+							on:change={(e) => saveStyleOverride(entry, 'httpColor', (e.currentTarget as HTMLInputElement).value)}
+						/>
+					</label>
+					<label class="color-chip" title="Secondary highlight">
+						<span>2nd</span>
+						<input
+							type="color"
+							value={entry.styleOverrides?.secondaryHighlight ?? '#16a34a'}
+							on:change={(e) => saveStyleOverride(entry, 'secondaryHighlight', (e.currentTarget as HTMLInputElement).value)}
+						/>
+					</label>
 					{#if entry.preview}
 						<button class="tool-tag crop-toggle" class:active={expandedCropId === entry._id} on:click={() => toggleCropTable(entry._id)}>
 							{expandedCropId === entry._id ? '- crop' : '+ crop'}
@@ -410,6 +449,35 @@
 		display: flex;
 		gap: var(--space-xs);
 		margin-top: var(--space-xs);
+	}
+
+	.color-chip {
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+		padding: 2px 6px;
+		font-family: var(--font-mono, monospace);
+		font-size: var(--font-size-2xs, 9px);
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: var(--color-text-muted);
+		border: 1px solid var(--border-color-subtle);
+		border-radius: 2px;
+		cursor: pointer;
+	}
+
+	.color-chip input[type="color"] {
+		width: 14px;
+		height: 14px;
+		padding: 0;
+		border: none;
+		background: transparent;
+		cursor: pointer;
+	}
+
+	.color-chip:hover {
+		border-color: var(--color-text);
+		color: var(--color-text);
 	}
 
 	.crop-toggle {

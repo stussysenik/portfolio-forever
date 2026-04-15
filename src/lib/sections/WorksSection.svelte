@@ -10,9 +10,17 @@
 
         export let id = "works";
 
+        interface StyleOverrides {
+                accentColor?: string;
+                httpColor?: string;
+                secondaryHighlight?: string;
+                badgeStyle?: string;
+        }
+
         interface Project {
                 title: string;
                 url: string;
+                linkLabel?: string;
                 category?: string;
                 preview?: string;
                 previewMode?: 'live' | 'static' | 'video';
@@ -23,6 +31,17 @@
                 focalX?: number;
                 focalY?: number;
                 zoom?: number;
+                styleOverrides?: StyleOverrides;
+        }
+
+        /** Collect styleOverrides as inline CSS var declarations */
+        function overrideVars(p: Project): string {
+                const o = p.styleOverrides ?? {};
+                const parts: string[] = [];
+                if (o.accentColor) parts.push(`--works-stripe-color: ${o.accentColor}`);
+                if (o.httpColor) parts.push(`--works-http-color: ${o.httpColor}`);
+                if (o.secondaryHighlight) parts.push(`--works-secondary-highlight: ${o.secondaryHighlight}`);
+                return parts.join('; ');
         }
 
         /** Show static image only when explicitly set to 'static' and preview exists */
@@ -144,6 +163,7 @@
                                         use:inview={i}
                                         on:mouseenter={() => hoveredIndex = i}
                                         on:mouseleave={() => hoveredIndex = -1}
+                                        style={overrideVars(project)}
                                 >
                                         {#if showPreview}
                                         <div class="project-embed" class:loaded={loaded[i]}>
@@ -192,6 +212,9 @@
                                                 {/if}
                                                 {#if project.category}
                                                         <span class="project-category">{project.category}</span>
+                                                {/if}
+                                                {#if showPreview}
+                                                        <a href={project.url} target="_blank" rel="noopener noreferrer" class="project-link">{project.linkLabel ?? project.url}</a>
                                                 {/if}
                                         </div>
                                 </div>
@@ -445,10 +468,14 @@
         /* Meta */
         .project-meta {
                 display: flex;
+                flex-wrap: wrap;
                 align-items: baseline;
                 justify-content: space-between;
-                gap: var(--space-sm);
+                gap: var(--space-xs) var(--space-sm);
                 padding: 0 var(--space-xs);
+                /* Left stripe consuming --works-stripe-color */
+                border-left: 2px solid var(--works-stripe-color, transparent);
+                padding-left: var(--space-sm);
         }
 
         .project-title {
@@ -460,7 +487,22 @@
         .project-category {
                 font-family: var(--font-mono);
                 font-size: var(--font-size-2xs);
-                color: var(--color-text-subtle);
+                color: var(--works-secondary-highlight, var(--color-text-subtle));
                 text-transform: lowercase;
+        }
+
+        .project-link {
+                font-family: var(--font-mono);
+                font-size: var(--font-size-2xs);
+                color: var(--works-http-color, var(--color-accent));
+                text-decoration: none;
+                flex-basis: 100%;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+        }
+
+        .project-link:hover {
+                text-decoration: underline;
         }
 </style>
