@@ -12,15 +12,20 @@
         import Toast from "$lib/components/Toast.svelte";
         import { overlapDetector } from "$lib/utils/overlap-detector";
         import { initPostHog, trackPageView } from "$lib/posthog";
-import { siteMode, readerOverride, isReaderMode, siteConfig as siteConfigStore, featureFlags, wipBannerDismissed, previewMode, navParadigm } from "$lib/stores/siteMode";
-	import { getConvexClient } from "$lib/convex";
-	import { api } from "$convex/_generated/api";
+        import { siteMode, readerOverride, isReaderMode, siteConfig as siteConfigStore, featureFlags, wipBannerDismissed, previewMode, navParadigm } from "$lib/stores/siteMode";
+        import { getConvexClient } from "$lib/convex";
+        import { api } from "$convex/_generated/api";
         import Embellishments from "$lib/components/Embellishments.svelte";
         import { parseSameAs } from "$lib/utils/social-links";
         import { themeMatrix } from "$lib/stores/controls";
         import NavSidebar from "$lib/components/nav/NavSidebar.svelte";
         import NavDrawer from "$lib/components/nav/NavDrawer.svelte";
         import NavHybrid from "$lib/components/nav/NavHybrid.svelte";
+
+        // Force scroll to top on every navigation - prevent scroll restoration
+        if (browser) {
+                history.scrollRestoration = "manual";
+        }
 
         // View Transitions API — smooth page-to-page animations
         onNavigate((navigation) => {
@@ -83,7 +88,14 @@ $: currentPath = $page.url.pathname;
 
         // Scroll to top on every navigation + track page view
         afterNavigate(() => {
-                document.documentElement.scrollTop = 0;
+                // Force scroll to top and prevent scroll restoration
+                if (browser) {
+                        requestAnimationFrame(() => {
+                                window.scrollTo(0, 0);
+                                document.documentElement.scrollTop = 0;
+                                document.body.scrollTop = 0;
+                        });
+                }
                 trackPageView(window.location.href);
         });
 
@@ -339,6 +351,16 @@ if (!isExcluded) {			// Load site config from Convex
 <Embellishments />
 <Toast />
 
+{#if layoutConfig.showWipBanner && layoutConfig.wipBannerPosition !== 'hidden' && !$wipBannerDismissed && !currentPath.startsWith('/admin')}
+	<div class="wip-banner" class:wip-banner--sticky={layoutConfig.wipBannerPosition === 'sticky'}>
+		<span class="wip-text">
+			<span class="wip-msg">{layoutConfig.wipBannerMessage}</span>
+			<span class="wip-sep">·</span>
+			<span class="wip-time">{pragueTime}</span>
+		</span>
+	</div>
+{/if}
+
 {#if $siteMode === 'disabled' && !currentPath.startsWith('/admin')}
 	<div class="maintenance-lockscreen">
 		<div class="lock-inner">
@@ -351,29 +373,10 @@ if (!isExcluded) {			// Load site config from Convex
 	<slot />
 {:else if isInPreview}
 <!-- PREVIEW MODE: WYSIWYG only — no Convex calls, no chrome, just the content -->
-{#if layoutConfig.showWipBanner && layoutConfig.wipBannerPosition !== 'hidden' && !$wipBannerDismissed}
-	<div class="wip-banner" class:wip-banner--sticky={layoutConfig.wipBannerPosition === 'sticky'}>
-		<span class="wip-text">
-			<span class="wip-msg">{layoutConfig.wipBannerMessage}</span>
-			<span class="wip-sep">·</span>
-			<span class="wip-time">{pragueTime}</span>
-		</span>
-	</div>
-{/if}
 <main class="main-content preview-content" style="padding-top: 0; padding-bottom: 0;">
 	<slot />
 </main>
-{:else}
-{#if layoutConfig.showWipBanner && layoutConfig.wipBannerPosition !== 'hidden' && !$wipBannerDismissed}
-	<div class="wip-banner" class:wip-banner--sticky={layoutConfig.wipBannerPosition === 'sticky'}>
-		<span class="wip-text">
-			<span class="wip-msg">{layoutConfig.wipBannerMessage}</span>
-			<span class="wip-sep">·</span>
-			<span class="wip-time">{pragueTime}</span>
-		</span>
-	</div>
-{/if}
-{#if $navParadigm === 'sidebar'}
+{:else if $navParadigm === 'sidebar'}
         <NavSidebar
                 {navItems}
                 socialLinks={socialLinksData}
@@ -427,7 +430,6 @@ if (!isExcluded) {			// Load site config from Convex
                 </div>
         </div>
 </footer>
-{/if}
 
 <style>
 	.maintenance-lockscreen {

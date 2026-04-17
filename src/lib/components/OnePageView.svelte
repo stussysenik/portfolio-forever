@@ -107,6 +107,7 @@
   let inViewport = new Set<string>(["hero"]);
   let sectionOffsets: Record<string, number> = {};
   let _resizeHandler: (() => void) | null = null;
+  let _hashChangeHandler: (() => void) | null = null;
 
   // Re-observe section elements (called imperatively from subscription callback, not reactively)
   function reobserveSections() {
@@ -194,11 +195,17 @@
     window.addEventListener('resize', recacheOffsets);
     _resizeHandler = recacheOffsets;
 
-    // Handle initial hash
-    const hash = window.location.hash.slice(1);
-    if (hash && sectionElements[hash]) {
-      sectionElements[hash].scrollIntoView({ behavior: "smooth" });
-    }
+    // Only handle hash navigation on explicit browser navigation (popstate),
+    // not on initial page load to prevent unwanted auto-scrolling
+    const handleHashChange = () => {
+      const hash = window.location.hash.slice(1);
+      if (hash && sectionElements[hash]) {
+        sectionElements[hash].scrollIntoView({ behavior: "smooth" });
+      }
+    };
+    
+    window.addEventListener('popstate', handleHashChange);
+    _hashChangeHandler = handleHashChange;
   });
 
   onDestroy(() => {
@@ -206,6 +213,7 @@
     lazyObs?.disconnect();
     homePageUnsub?.();
     if (_resizeHandler) window.removeEventListener('resize', _resizeHandler);
+    if (_hashChangeHandler) window.removeEventListener('popstate', _hashChangeHandler);
   });
 
   function scrollToSection(id: string) {

@@ -22,4 +22,14 @@ export default defineConfig({
                         allow: ["convex"],
                 },
         },
+        build: {
+                rollupOptions: {
+                        output: {
+                                // Cache busting: ensure unique hashes for each build
+                                entryFileNames: "[name]-[hash].js",
+                                chunkFileNames: "[name]-[hash].js",
+                                assetFileNames: "[name]-[hash][extname]",
+                        },
+                },
+        },
 });

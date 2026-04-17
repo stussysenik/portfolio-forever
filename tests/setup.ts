@@ -15,21 +15,39 @@ type TestFixtures = {
 
 // Custom test fixture with accessibility testing
 export const test = base.extend<TestFixtures>({
-        /**
-         * Accessibility testing fixture
-         * @example
-         * await test.step('check accessibility', async ({ makeAxeBuilder }) => {
-         *   const accessibilityScanResults = await makeAxeBuilder().analyze();
-         *   expect(accessibilityScanResults.violations).toEqual([]);
-         * });
-         */
-        makeAxeBuilder: async ({ page }, use) => {
-                const createBuilder = () => {
-                        return new AxeBuilder({ page });
-                };
-                await use(createBuilder);
-        },
+	/**
+	 * Accessibility testing fixture
+	 * @example
+	 * await test.step('check accessibility', async ({ makeAxeBuilder }) => {
+	 *   const accessibilityScanResults = await makeAxeBuilder().analyze();
+	 *   expect(accessibilityScanResults.violations).toEqual([]);
+	 * });
+	 */
+	makeAxeBuilder: async ({ page }, use) => {
+		const createBuilder = () => {
+			return new AxeBuilder({ page });
+		};
+		await use(createBuilder);
+	},
+})
+
+// Clear cache and storage before each test to ensure fresh state
+test.beforeEach(async ({ page, context }) => {
+	// Clear all cookies
+	await context.clearCookies();
 });
+
+// Helper function to clear storage - call this AFTER navigation in tests
+export async function clearStorage(page: Page) {
+	await page.evaluate(() => {
+		try {
+			localStorage.clear();
+			sessionStorage.clear();
+		} catch (e) {
+			// Ignore if localStorage not available
+		}
+	});
+}
 
 // Re-export expect for convenience
 export { expect };
