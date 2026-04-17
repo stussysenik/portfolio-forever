@@ -17,6 +17,7 @@
 
   let currentFont: Font = 'inter';
   let isOpen = false;
+  let switcherEl: HTMLElement;
 
   onMount(() => {
     const saved = localStorage.getItem('preferred-font') as Font | null;
@@ -69,11 +70,17 @@
   function handleKeydown(e: KeyboardEvent) {
     if (e.key === 'Escape') isOpen = false;
   }
+
+  function handleClickOutside(e: MouseEvent) {
+    if (isOpen && switcherEl && !switcherEl.contains(e.target as Node)) {
+      isOpen = false;
+    }
+  }
 </script>
 
-<svelte:window on:keydown={handleKeydown} />
+<svelte:window on:keydown={handleKeydown} on:click={handleClickOutside} />
 
-<div class="font-switcher">
+<div class="font-switcher" bind:this={switcherEl}>
   <button
     class="font-toggle"
     on:click={() => isOpen = !isOpen}
@@ -229,7 +236,7 @@
   }
 
   .cell-name {
-    font-size: 11px;
+    font-size: var(--font-size-xs, 0.75rem);
     font-weight: 600;
     color: var(--color-text);
     white-space: nowrap;
@@ -238,14 +245,14 @@
   }
 
   .cell-check {
-    font-size: 10px;
+    font-size: var(--font-size-xs, 0.75rem);
     color: var(--color-accent);
     flex-shrink: 0;
   }
 
   .cell-category {
     font-family: var(--font-mono);
-    font-size: 9px;
+    font-size: var(--font-size-2xs, 0.75rem);
     color: var(--color-text-subtle);
     text-transform: uppercase;
     letter-spacing: 0.05em;

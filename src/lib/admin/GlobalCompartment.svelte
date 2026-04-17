@@ -28,11 +28,11 @@
 		{ id: 'reader', label: 'READER' },
 	];
 
-	// Nav mode chip options
+	// Nav paradigm chip options
 	const navModeOptions = [
-		{ id: 'pills', label: 'PILLS' },
-		{ id: 'tabs', label: 'TABS' },
-		{ id: 'minimal', label: 'MINIMAL' },
+		{ id: 'sidebar', label: 'SIDEBAR' },
+		{ id: 'drawer', label: 'DRAWER' },
+		{ id: 'hybrid', label: 'HYBRID' },
 	];
 
 	// Derived: active flag count
@@ -42,7 +42,7 @@
 
 	// Derived: current site config values with fallbacks
 	$: currentMode = siteConfig?.mode ?? 'multi-page';
-	$: currentNavMode = siteConfig?.navMode ?? 'pills';
+	$: currentNavMode = siteConfig?.navMode ?? 'sidebar';
 	$: currentParallax = siteConfig?.parallaxSpeed ?? 0.5;
 
 	async function handleToggle() {
@@ -197,7 +197,7 @@
 				<div class="gc-group-content">
 					<!-- Nav mode row -->
 					<div class="nav-row">
-						<span class="nav-row-label">NAV MODE</span>
+						<span class="nav-row-label">NAV PARADIGM</span>
 						<AdminChipGroup
 							options={navModeOptions}
 							value={currentNavMode}
@@ -266,7 +266,7 @@
 
 	.gc-icon {
 		font-family: var(--font-mono);
-		font-size: var(--admin-text-sm, 11px);
+		font-size: var(--admin-text-base, 14px);
 		color: var(--color-text-muted, #666);
 		flex-shrink: 0;
 		line-height: 1;
@@ -274,7 +274,7 @@
 
 	.gc-label {
 		font-family: var(--font-mono);
-		font-size: var(--admin-text-xs, 9px);
+		font-size: var(--admin-text-sm, 13px);
 		text-transform: uppercase;
 		letter-spacing: 0.08em;
 		color: var(--color-text, #e5e5e5);
@@ -291,7 +291,7 @@
 
 	.gc-count {
 		font-family: var(--font-mono);
-		font-size: var(--admin-text-2xs, 7px);
+		font-size: var(--admin-text-xs, 12px);
 		text-transform: uppercase;
 		letter-spacing: 0.06em;
 		color: var(--admin-green, #44D62C);
@@ -344,7 +344,7 @@
 
 	.gc-group-label {
 		font-family: var(--font-mono);
-		font-size: var(--admin-text-2xs, 7px);
+		font-size: var(--admin-text-xs, 12px);
 		text-transform: uppercase;
 		letter-spacing: 0.08em;
 		color: var(--color-text-subtle, #444);
@@ -354,7 +354,7 @@
 
 	.gc-group-count {
 		font-family: var(--font-mono);
-		font-size: var(--admin-text-2xs, 7px);
+		font-size: var(--admin-text-xs, 12px);
 		letter-spacing: 0.06em;
 		color: var(--admin-green, #44D62C);
 		line-height: 1;
@@ -395,7 +395,7 @@
 
 	.flag-label {
 		font-family: var(--font-mono);
-		font-size: var(--admin-text-xs, 9px);
+		font-size: var(--admin-text-sm, 13px);
 		text-transform: uppercase;
 		letter-spacing: 0.06em;
 		color: var(--color-text-muted, #666);
@@ -412,7 +412,7 @@
 
 	.flag-state {
 		font-family: var(--font-mono);
-		font-size: var(--admin-text-2xs, 7px);
+		font-size: var(--admin-text-xs, 12px);
 		text-transform: uppercase;
 		letter-spacing: 0.06em;
 		color: var(--color-text-subtle, #444);
@@ -434,13 +434,13 @@
 
 	.nav-row-label {
 		font-family: var(--font-mono);
-		font-size: var(--admin-text-2xs, 7px);
+		font-size: var(--admin-text-xs, 12px);
 		text-transform: uppercase;
 		letter-spacing: 0.08em;
 		color: var(--color-text-subtle, #444);
 		font-weight: 600;
 		white-space: nowrap;
 		flex-shrink: 0;
-		min-width: 60px;
+		min-width: 80px;
 	}
 </style>

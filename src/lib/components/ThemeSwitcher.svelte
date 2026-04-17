@@ -1,39 +1,39 @@
 <script lang="ts">
   import { onMount } from 'svelte';
 
-  type Theme = 'minimal' | 'studio' | 'terminal' | 'darkroom' | 'accessible';
+  type Theme = 'minimal' | 'studio' | 'terminal' | 'bw';
 
   const themes: { id: Theme; label: string; icon: string; description: string }[] = [
-    { id: 'minimal',    label: 'Minimal',    icon: '○', description: 'Warm & colorful' },
-    { id: 'studio',     label: 'Studio',     icon: '◇', description: 'Achromatic precision' },
-    { id: 'terminal',   label: 'Terminal',   icon: '▸', description: 'Hacker dark' },
-    { id: 'darkroom',   label: 'Darkroom',   icon: '◼', description: 'Reference dark' },
-    { id: 'accessible', label: 'Accessible', icon: '◎', description: 'WCAG AAA' },
+    { id: 'minimal',  label: 'Minimal',  icon: '○', description: 'Warm & colorful' },
+    { id: 'studio',   label: 'Studio',   icon: '◇', description: 'Achromatic precision' },
+    { id: 'terminal', label: 'Terminal', icon: '▸', description: 'Hacker dark' },
+    { id: 'bw',       label: 'B&W',      icon: '⋎', description: 'Ink & craft' },
   ];
 
   let currentTheme: Theme = 'minimal';
   let isOpen = false;
+  let switcherEl: HTMLElement;
   
   onMount(() => {
-    // Load saved theme with migration for legacy themes
     const saved = localStorage.getItem('theme');
 
-    // Migrate legacy theme names
     if (saved === 'paper') {
       currentTheme = 'minimal';
-      applyTheme('minimal');
+      applyTheme('minimal', false);
+    } else if (saved === 'accessible' || saved === 'sumi') {
+      currentTheme = 'bw';
+      applyTheme('bw', false);
     } else if (saved && themes.some(t => t.id === saved)) {
       currentTheme = saved as Theme;
-      applyTheme(saved as Theme);
+      applyTheme(saved as Theme, false);
     } else {
-      applyTheme('minimal');
+      applyTheme('minimal', false);
     }
     
-    // Listen for keyboard shortcut
     const handleKeydown = (e: KeyboardEvent) => {
       if (e.key === 't' && !e.metaKey && !e.ctrlKey && !isInputFocused()) {
         e.preventDefault();
-        cycleTheme();
+        isOpen = !isOpen;
       }
     };
     
@@ -48,13 +48,14 @@
            active?.getAttribute('contenteditable') === 'true';
   }
   
-  function applyTheme(theme: Theme) {
+  function applyTheme(theme: Theme, announce: boolean = true) {
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('theme', theme);
     currentTheme = theme;
 
-    // Screen reader announcement
-    announceThemeChange(theme);
+    if (announce) {
+      announceThemeChange(theme);
+    }
   }
 
   function announceThemeChange(theme: Theme) {
@@ -70,12 +71,6 @@
     setTimeout(() => announcement.remove(), 1000);
   }
   
-  function cycleTheme() {
-    const currentIndex = themes.findIndex(t => t.id === currentTheme);
-    const nextIndex = (currentIndex + 1) % themes.length;
-    applyTheme(themes[nextIndex].id);
-  }
-  
   function selectTheme(theme: Theme) {
     applyTheme(theme);
     isOpen = false;
@@ -86,11 +81,17 @@
       isOpen = false;
     }
   }
+
+  function handleClickOutside(e: MouseEvent) {
+    if (isOpen && switcherEl && !switcherEl.contains(e.target as Node)) {
+      isOpen = false;
+    }
+  }
 </script>
 
-<svelte:window on:keydown={handleKeydown} />
+<svelte:window on:keydown={handleKeydown} on:click={handleClickOutside} />
 
-<div class="theme-switcher">
+<div class="theme-switcher" bind:this={switcherEl}>
   <button 
     class="theme-toggle"
     on:click={() => isOpen = !isOpen}
@@ -109,7 +110,7 @@
           class:active={currentTheme === theme.id}
           on:click={() => selectTheme(theme.id)}
           role="menuitem"
-          data-theme={theme.id}
+          data-theme-option={theme.id}
         >
           <span class="option-icon">{theme.icon}</span>
           <span class="option-label">{theme.label}</span>
@@ -138,16 +139,9 @@
     border: var(--border-width) solid var(--border-color);
     border-radius: var(--radius-sm);
     cursor: pointer;
-    transition: 
-      border-color var(--duration-fast) var(--easing),
-      background var(--duration-fast) var(--easing);
+    -webkit-tap-highlight-color: transparent;
   }
-  
-  .theme-toggle:hover {
-    border-color: var(--color-text-muted);
-    background: var(--color-surface);
-  }
-  
+
   .theme-icon {
     font-size: var(--font-size-sm);
     color: var(--color-text-muted);
@@ -164,20 +158,14 @@
     box-shadow: var(--shadow-md);
     padding: var(--space-xs);
     z-index: 100;
-    animation: dropdown-in var(--duration-fast) var(--easing-out);
+    animation: dropdown-in 120ms cubic-bezier(0.23, 1, 0.32, 1);
   }
-  
+
   @keyframes dropdown-in {
-    from {
-      opacity: 0;
-      transform: translateY(4px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
   }
-  
+
   .theme-option {
     display: flex;
     align-items: center;
@@ -190,15 +178,19 @@
     cursor: pointer;
     font-family: inherit;
     font-size: var(--font-size-sm);
-    color: var(--color-text-secondary);
+    color: var(--color-text-muted);
     text-align: left;
-    transition: background var(--duration-fast) var(--easing);
+    -webkit-tap-highlight-color: transparent;
   }
-  
+
   .theme-option:hover {
     background: var(--color-bg-alt);
   }
-  
+
+  .theme-option:active {
+    transform: scale(0.98);
+  }
+
   .theme-option.active {
     color: var(--color-text);
   }
@@ -214,7 +206,7 @@
   
   .option-check {
     font-size: var(--font-size-xs);
-    color: var(--color-accent);
+    color: var(--color-text-muted);
   }
 
   /* Screen reader only - for accessibility announcements */

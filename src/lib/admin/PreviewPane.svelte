@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { onMount, onDestroy } from 'svelte';
+
 	export let route: string = '/';
 	export let refreshKey: number = 0;
 	export let selectedSectionId: string = '';
@@ -16,11 +18,18 @@
 	let orientation: 'landscape' | 'portrait' = 'landscape';
 	let containerHeight: number = 0;
 
+	let previewUrl: string = route;
+
+	$: {
+		const sep = route.includes('?') ? '&' : '?';
+		previewUrl = route + sep + 'preview=true';
+	}
+
 	$: displayWidth = viewportWidth > 0 ? viewportWidth : containerWidth;
 	$: displayHeight = containerHeight > 0 ? containerHeight : 0;
 
 	$: if (refreshKey && iframeEl) {
-		iframeEl.src = iframeEl.src;
+		iframeEl.src = previewUrl;
 	}
 
 	$: iframeScale = viewportWidth > 0 ? Math.min(1, (containerWidth - 32) / viewportWidth) : 1;
@@ -32,6 +41,22 @@
 			'*'
 		);
 	}
+
+	// Listen for cmd+K previewAt commands
+	function handlePreviewBreakpoint(e: Event) {
+		const detail = (e as CustomEvent).detail;
+		if (detail?.width) viewportWidth = detail.width;
+	}
+
+	onMount(() => {
+		window.addEventListener('admin:previewBreakpoint', handlePreviewBreakpoint);
+	});
+
+	onDestroy(() => {
+		if (typeof window !== 'undefined') {
+			window.removeEventListener('admin:previewBreakpoint', handlePreviewBreakpoint);
+		}
+	});
 
 	function toggleOrientation() {
 		if (viewportWidth > 0 && containerHeight > 0) {
@@ -78,12 +103,12 @@
 				? `width: ${viewportWidth}px; transform: scale(${iframeScale}); transform-origin: top center;`
 				: 'width: 100%; height: 100%;'}
 		>
-			<iframe
-				bind:this={iframeEl}
-				src={route}
-				title="Page preview"
-				frameborder="0"
-			></iframe>
+<iframe
+			bind:this={iframeEl}
+			src={previewUrl}
+			title="Page preview"
+			frameborder="0"
+		></iframe>
 		</div>
 	</div>
 </div>

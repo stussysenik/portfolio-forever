@@ -2,12 +2,15 @@
         import { onMount, onDestroy } from "svelte";
         import { goto } from "$app/navigation";
         import { readerOverride } from "$lib/stores/siteMode";
+        import { getConvexClient } from "$lib/convex";
+        import { api } from "../../../convex/_generated/api";
+        import { toast } from "$lib/stores/toast";
 
         interface Command {
                 keys: string;
                 label: string;
                 action: () => void;
-                category: "navigation" | "action";
+                category: "navigation" | "action" | "system";
         }
 
         let isOpen = false;
@@ -76,6 +79,30 @@
                                 readerOverride.update((c) => c === null ? true : !c);
                         },
                         category: "action",
+                },
+                {
+                        keys: "s t",
+                        label: "Toggle Status",
+                        action: async () => {
+                                const profileId = (window as any).profileId;
+                                const profileAvailable = (window as any).profileAvailable;
+                                if (profileId) {
+                                        try {
+                                                const client = getConvexClient();
+                                                await client.mutation(api.cv.updateProfile, {
+                                                        id: profileId,
+                                                        available: !profileAvailable
+                                                });
+                                                toast.success(`Status updated: ${!profileAvailable ? 'Available' : 'Unavailable'}`);
+                                        } catch (e) {
+                                                console.error(e);
+                                                toast.error("Failed to update status");
+                                        }
+                                } else {
+                                        toast.error("Profile not loaded yet");
+                                }
+                        },
+                        category: "system",
                 },
         ];
 
@@ -187,6 +214,7 @@
 
         $: groupedCommands = {
                 navigation: commands.filter((c) => c.category === "navigation"),
+                system: commands.filter((c) => c.category === "system"),
         };
         
         $: if (isOpen && inputElement) {
@@ -211,6 +239,28 @@
                                 <h3 class="group-title">Navigation</h3>
                                 <ul class="command-list">
                                         {#each groupedCommands.navigation as cmd}
+                                                <li class="command-item">
+                                                        <div
+                                                                class="command-keys-container"
+                                                        >
+                                                                <kbd
+                                                                        class="command-keys"
+                                                                        >{cmd.keys}</kbd
+                                                                >
+                                                        </div>
+                                                        <span
+                                                                class="command-label"
+                                                                >{cmd.label}</span
+                                                        >
+                                                </li>
+                                        {/each}
+                                </ul>
+                        </section>
+
+                        <section class="command-group">
+                                <h3 class="group-title">System</h3>
+                                <ul class="command-list">
+                                        {#each groupedCommands.system as cmd}
                                                 <li class="command-item">
                                                         <div
                                                                 class="command-keys-container"

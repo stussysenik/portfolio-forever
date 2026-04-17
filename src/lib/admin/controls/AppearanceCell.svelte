@@ -8,8 +8,7 @@
 		{ id: 'minimal',    label: 'Minimal',    bg: '#FAFAF9', accent: '#2563EB' },
 		{ id: 'studio',     label: 'Studio',     bg: '#F5F5F5', accent: '#737373' },
 		{ id: 'terminal',   label: 'Terminal',   bg: '#0A0A0A', accent: '#44D62C' },
-		{ id: 'darkroom',   label: 'Darkroom',   bg: '#111111', accent: '#E5E5E5' },
-		{ id: 'accessible', label: 'A11y',       bg: '#FFFFFF', accent: '#0000EE' },
+		{ id: 'bw',         label: 'B&W',        bg: '#FFFFFF', accent: '#000000' },
 	];
 
 	const fonts: { id: string; name: string; family: string }[] = [

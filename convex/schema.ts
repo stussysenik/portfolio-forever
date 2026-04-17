@@ -135,7 +135,7 @@ export default defineSchema({
 		readerModeRoute: v.optional(v.string()),
 		footerEdition: v.optional(v.string()),
 		footerYear: v.optional(v.number()),
-		navMode: v.optional(v.union(v.literal("auto"), v.literal("manual"))),
+		navMode: v.optional(v.union(v.literal("sidebar"), v.literal("drawer"), v.literal("hybrid"))),
 		heroVisual: v.optional(v.string()),
 	}),
 
@@ -308,8 +308,10 @@ export default defineSchema({
 		tags: v.optional(v.array(v.string())),
 		publishedAt: v.optional(v.string()),
 		coverImage: v.optional(v.string()),
+		order: v.number(),
 		visible: v.boolean(),
-	}).index("by_slug", ["slug"]),
+	}).index("by_slug", ["slug"])
+		.index("by_order", ["order"]),
 
 	// Section registry — controls bento grid layout and site navigation
 	sectionRegistry: defineTable({
@@ -380,8 +382,10 @@ export default defineSchema({
 		field: v.string(),
 		oldValue: v.any(),
 		newValue: v.any(),
+		user: v.optional(v.string()), // Added user field
 		timestamp: v.number(),
-	}).index("by_table_field", ["table", "field"]),
+	}).index("by_table_field", ["table", "field"])
+		.index("by_user", ["user"]),
 
 	// Terminal — configurable data for the portfolio terminal
 	terminalConfig: defineTable({

@@ -30,7 +30,8 @@
 
 	/* Accents inherit from the active site theme */
 	--admin-accent: var(--color-accent, #2563eb);
-	--admin-success: var(--color-success, #16a34a);
+	--admin-success: #00FF00;
+	--admin-active-outline: #00FF00;
 
 	/* Families inherit too — admin reads the same stack as the site */
 	--admin-font-sans: var(

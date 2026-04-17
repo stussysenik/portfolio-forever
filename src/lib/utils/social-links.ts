@@ -16,6 +16,8 @@ const KNOWN_HOSTS: Record<string, string> = {
 	'vimeo.com': 'vimeo',
 	'dribbble.com': 'dribbble',
 	'behance.net': 'behance',
+	'letterboxd.com': 'letterboxd',
+	'app.thestorygraph.com': 'storygraph',
 	'medium.com': 'medium',
 };
 

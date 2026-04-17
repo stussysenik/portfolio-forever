@@ -1,5 +1,6 @@
 import { writable, derived, get } from "svelte/store";
 import { goto } from "$app/navigation";
+import { browser } from "$app/environment";
 
 export type SiteMode = "one-page" | "multi-page" | "reader" | "disabled";
 
@@ -18,10 +19,53 @@ export const isReaderMode = derived(
 export const siteConfig = writable<{
 	sectionOrder?: string[];
 	parallaxSpeed?: number;
+	navMode?: NavParadigm;
 } | null>(null);
 
 // Feature flags from Convex
 export const featureFlags = writable<Map<string, boolean>>(new Map());
+
+export type NavParadigm = "sidebar" | "drawer" | "hybrid";
+
+export const navParadigm = writable<NavParadigm>("sidebar");
+
+if (browser) {
+	const saved = localStorage.getItem("navParadigm");
+	if (saved === "sidebar" || saved === "drawer" || saved === "hybrid") {
+		navParadigm.set(saved);
+	}
+	navParadigm.subscribe((v) => {
+		localStorage.setItem("navParadigm", v);
+	});
+}
+
+// WIP banner toggle — persisted in localStorage
+export const wipBannerDismissed = writable<boolean>(false);
+if (browser) {
+	const saved = localStorage.getItem("wipBannerDismissed");
+	if (saved === "true") wipBannerDismissed.set(true);
+	wipBannerDismissed.subscribe((v) => {
+		localStorage.setItem("wipBannerDismissed", String(v));
+	});
+}
+
+// Preview mode: when true, this page is running inside an admin preview iframe.
+// ALL Convex/Rust subscriptions are blocked — the preview is WYSIWYG-only,
+// relying on admin-provided data passed via postMessage instead of live DB calls.
+export const previewMode = writable<boolean>(false);
+if (browser) {
+	const params = new URLSearchParams(window.location.search);
+	if (params.get('preview') === 'true') {
+		previewMode.set(true);
+	}
+}
+
+// Defensive blocker: returns true when Convex/Rust calls should be SUPPRESSED.
+// Use this to guard every subscription in the customer-facing layout.
+export const shouldBlockCalls = derived(
+	[previewMode],
+	([$preview]) => $preview
+);
 
 export function isFeatureEnabled(key: string): boolean {
 	const flags = get(featureFlags);

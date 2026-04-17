@@ -9,10 +9,27 @@ export const insert = mutation({
 		newValue: v.any(),
 	},
 	handler: async (ctx, args) => {
+		const identity = await ctx.auth.getUserIdentity();
 		return await ctx.db.insert("adminHistory", {
 			...args,
+			user: identity?.tokenIdentifier ?? "anonymous",
 			timestamp: Date.now(),
 		});
+	},
+});
+
+export const getRecentByTable = query({
+	args: {
+		table: v.string(),
+		limit: v.optional(v.number()),
+	},
+	handler: async (ctx, { table, limit }) => {
+		const rows = await ctx.db
+			.query("adminHistory")
+			.withIndex("by_table_field", (q) => q.eq("table", table))
+			.order("desc")
+			.take(limit ?? 5);
+		return rows;
 	},
 });
 

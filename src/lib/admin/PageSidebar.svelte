@@ -1,11 +1,17 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
+	import { toast } from '$lib/stores/toast';
+	import { stripConvexMeta } from '$lib/admin/constants';
 	import FlagsCell from './controls/FlagsCell.svelte';
+	import SaveBar from './SaveBar.svelte';
+	import { stagedCount } from '$lib/stores/stagedFlags';
 
 	export let pages: any[] = [];
 	export let activePageId: string = '';
 	export let featureFlags: any[] = [];
 	export let entriesByTable: Record<string, any[]> = {};
+	export let client: any = null;
+	export let api: any = null;
 
 	const dispatch = createEventDispatcher<{
 		selectpage: { pageId: string };
@@ -14,10 +20,40 @@
 		reorderpages: { pageIds: string[] };
 		togglepage: { pageId: string; visible: boolean };
 		archivepage: { pageId: string; archived: boolean };
+		updatepage: { pageId: string; updates: Record<string, any> };
 	}>();
 
 	let dragIndex: number | null = null;
 	let dropIndex: number | null = null;
+
+	let editingPageId: string | null = null;
+	let editField: 'label' | 'route' | 'navLabel' = 'label';
+	let editBuffer = '';
+	let editInputEl: HTMLInputElement | undefined;
+
+	function startPageEdit(pageId: string, field: 'label' | 'route' | 'navLabel', value: string) {
+		editingPageId = pageId;
+		editField = field;
+		editBuffer = value || '';
+	}
+
+	function cancelPageEdit() {
+		editingPageId = null;
+		editBuffer = '';
+	}
+
+	async function savePageEdit(pageId: string) {
+		if (!editBuffer.trim()) { cancelPageEdit(); return; }
+		const page = pages.find((p) => p.pageId === pageId);
+		if (!page || !client || !api) { cancelPageEdit(); return; }
+		try {
+			const updates: Record<string, any> = { [editField]: editBuffer.trim() };
+			dispatch('updatepage', { pageId, updates });
+		} finally {
+			editingPageId = null;
+			editBuffer = '';
+		}
+	}
 
 	function handleDragStart(e: DragEvent, index: number) {
 		dragIndex = index;
@@ -58,7 +94,6 @@
 		.filter((p) => p.pageId !== 'home')
 		.sort((a, b) => (a.navOrder ?? 0) - (b.navOrder ?? 0));
 
-	/** Build a Record<string, boolean> from the raw flags array */
 	$: flagsRecord = featureFlags.reduce((acc: Record<string, boolean>, f: any) => {
 		acc[f.key] = f.enabled;
 		return acc;
@@ -111,11 +146,14 @@
 		</div>
 	{/if}
 
-	<!-- FLAGS section — paginated by category -->
+	<!-- FLAGS section — paginated by category, staged -->
 	<div class="sidebar-section flags-section">
-		<span class="admin-label admin-label--xs sidebar-heading">FLAGS</span>
-		<FlagsCell flags={flagsRecord} on:toggle={handleFlagToggle} />
+		<span class="admin-label admin-label--xs sidebar-heading">FLAGS{#if $stagedCount > 0} · <span class="staged-indicator">{$stagedCount} staged</span>{/if}</span>
+		<FlagsCell {featureFlags} {client} {api} on:toggle={handleFlagToggle} />
 	</div>
+
+	<!-- Save bar — shown when staged changes exist -->
+	<SaveBar {client} {api} currentFlags={featureFlags} />
 
 	<!-- PAGES section -->
 	<div class="sidebar-section">
@@ -133,43 +171,69 @@
 					on:drop={(e) => handleDrop(e, i)}
 					on:dragend={handleDragEnd}
 				>
-					<button
-						class="page-row"
-						class:page-row-active={activePageId === page.pageId}
-						class:page-row-archived={page.archived}
-						role="option"
-						aria-selected={activePageId === page.pageId}
-						on:click={() => dispatch('selectpage', { pageId: page.pageId })}
-					>
-						<span class="page-row-label">
-							<span
-								class="page-dot-btn"
-								role="button"
-								tabindex="-1"
-								on:click|stopPropagation={() => dispatch('togglepage', { pageId: page.pageId, visible: !page.visible })}
-								on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); dispatch('togglepage', { pageId: page.pageId, visible: !page.visible }); } }}
-								title={page.visible ? 'Click to hide page' : 'Click to show page'}
-								aria-label={page.visible ? 'Hide ' + page.label : 'Show ' + page.label}
-							>
-								<span class="page-dot" class:page-dot--visible={page.visible && !page.archived} class:page-dot--hidden={!page.visible} class:page-dot--archived={page.archived && page.visible}></span>
-							</span>
-							{page.label}
+				<button
+					class="page-row"
+					class:page-row-active={activePageId === page.pageId}
+					class:page-row-archived={page.archived}
+					role="option"
+					aria-selected={activePageId === page.pageId}
+					on:click={() => dispatch('selectpage', { pageId: page.pageId })}
+				>
+					<span class="page-row-label">
+						<span
+							class="page-dot-btn"
+							role="button"
+							tabindex="-1"
+							on:click|stopPropagation={() => dispatch('togglepage', { pageId: page.pageId, visible: !page.visible })}
+							on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); dispatch('togglepage', { pageId: page.pageId, visible: !page.visible }); } }}
+							title={page.visible ? 'Click to hide page' : 'Click to show page'}
+							aria-label={page.visible ? 'Hide ' + page.label : 'Show ' + page.label}
+						>
+							<span class="page-dot" class:page-dot--visible={page.visible && !page.archived} class:page-dot--hidden={!page.visible} class:page-dot--archived={page.archived && page.visible}></span>
 						</span>
-						<span class="page-row-right">
-							{#if count > 0}
-								<span class="page-row-count">{count}</span>
-							{/if}
+						{#if editingPageId === page.pageId}
+							<input
+								class="inline-edit"
+								bind:this={editInputEl}
+								bind:value={editBuffer}
+								placeholder={editField}
+								on:keydown={(e) => {
+									if (e.key === 'Enter') { e.preventDefault(); savePageEdit(page.pageId); }
+									if (e.key === 'Escape') cancelPageEdit();
+								}}
+								on:blur={() => savePageEdit(page.pageId)}
+								on:click|stopPropagation
+							/>
+						{:else}
 							<span
-								class="archive-btn"
-								class:archive-btn--active={page.archived}
-								role="button"
-								tabindex="-1"
-								title={page.archived ? 'Unarchive page' : 'Archive page'}
-								on:click|stopPropagation={() => dispatch('archivepage', { pageId: page.pageId, archived: !page.archived })}
-								on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); dispatch('archivepage', { pageId: page.pageId, archived: !page.archived }); } }}
-							>A</span>
-						</span>
-					</button>
+								class="page-label-text"
+								on:dblclick|stopPropagation={() => startPageEdit(page.pageId, 'label', page.label)}
+							>{page.label}</span>
+						{/if}
+					</span>
+					<span class="page-row-right">
+						{#if count > 0}
+							<span class="page-row-count">{count}</span>
+						{/if}
+						<span
+							class="edit-btn"
+							role="button"
+							tabindex="-1"
+							title="Edit page label, route, nav label"
+							on:click|stopPropagation={() => startPageEdit(page.pageId, 'label', page.label)}
+							on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); startPageEdit(page.pageId, 'label', page.label); } }}
+						>✎</span>
+						<span
+							class="archive-btn"
+							class:archive-btn--active={page.archived}
+							role="button"
+							tabindex="-1"
+							title={page.archived ? 'Unarchive page' : 'Archive page'}
+							on:click|stopPropagation={() => dispatch('archivepage', { pageId: page.pageId, archived: !page.archived })}
+							on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); dispatch('archivepage', { pageId: page.pageId, archived: !page.archived }); } }}
+						>A</span>
+					</span>
+				</button>
 				</li>
 			{/each}
 		</ul>

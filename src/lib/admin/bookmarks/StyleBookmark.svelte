@@ -25,8 +25,8 @@
 	$: lineHeight    = isHero ? (heroConfig?.heroNameLineHeight     ?? 1.2)  : (typo.lineHeight    ?? TYPOGRAPHY_DEFAULTS.lineHeight);
 
 	// Hero typography defaults (differ from section defaults)
-	$: heroTypoDefaults = { fontSize: 3.5, fontWeight: 400, letterSpacing: 0, lineHeight: 1.2 };
-	$: typoDefaults = isHero ? heroTypoDefaults : TYPOGRAPHY_DEFAULTS;
+	const heroTypoDefaults = { fontSize: 3.5, fontWeight: 400, letterSpacing: 0, lineHeight: 1.2 };
+	$: typoDefaults = isHero ? heroTypoDefaults : { ...TYPOGRAPHY_DEFAULTS };
 
 	// Accent color
 	$: accentColor = section?.config?.accentColor ?? '#2563EB';

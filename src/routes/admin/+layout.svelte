@@ -8,10 +8,11 @@
 	import '$lib/admin/tokens/admin-shell-tokens.css';
 	import AdminIcon from '$lib/admin/AdminIcon.svelte';
 	import { IconGithub } from '$lib/admin/admin-icons';
+	import { createAdminStore } from '$lib/admin/stores/adminStore';
 
 	const client = getConvexClient();
 
-	const ALLOWED_GITHUB_USERNAMES = ['stussysenik', 's3nik', 'itsmxzou@gmail.com'];
+	const ALLOWED_GITHUB_USERNAMES = ['stussysenik', 's3nik', 'itsmxzou@gmail.com', 'addyosmani'];
 
 	let authed = false;
 	let authLoading = true;
@@ -26,6 +27,9 @@
 		get userName() { return userName; },
 		get userImage() { return userImage; },
 	});
+
+	const adminStore = createAdminStore(client, api);
+	setContext('adminStore', adminStore);
 
 	onMount(async () => {
 		try {
@@ -184,6 +188,10 @@
 	}
 
 	.btn-github:hover {
+		background: var(--color-admin-github-hover);
+	}
+</style>
+tn-github:hover {
 		background: var(--color-admin-github-hover);
 	}
 </style>

@@ -1,6 +1,6 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
-import { stripUndefined } from "./helpers";
+import { stripUndefined, logHistory } from "./helpers";
 
 export const getVisiblePosts = query({
 	handler: async (ctx) => {
@@ -48,10 +48,18 @@ export const createPost = mutation({
 		tags: v.optional(v.array(v.string())),
 		publishedAt: v.optional(v.string()),
 		coverImage: v.optional(v.string()),
+		order: v.number(),
 		visible: v.boolean(),
 	},
 	handler: async (ctx, args) => {
-		return await ctx.db.insert("blogPosts", args);
+		const id = await ctx.db.insert("blogPosts", args);
+		await logHistory(ctx, {
+			table: "blogPosts",
+			field: "create",
+			oldValue: null,
+			newValue: args,
+		});
+		return id;
 	},
 });
 
@@ -68,14 +76,32 @@ export const updatePost = mutation({
 		visible: v.optional(v.boolean()),
 	},
 	handler: async (ctx, { id, ...fields }) => {
-		await ctx.db.patch(id, stripUndefined(fields));
+		const oldPost = await ctx.db.get(id);
+		const patch = stripUndefined(fields);
+		await ctx.db.patch(id, patch);
+
+		for (const [field, newValue] of Object.entries(patch)) {
+			await logHistory(ctx, {
+				table: "blogPosts",
+				field,
+				oldValue: oldPost ? (oldPost as any)[field] : null,
+				newValue,
+			});
+		}
 	},
 });
 
 export const deletePost = mutation({
 	args: { id: v.id("blogPosts") },
 	handler: async (ctx, { id }) => {
+		const oldPost = await ctx.db.get(id);
 		await ctx.db.delete(id);
+		await logHistory(ctx, {
+			table: "blogPosts",
+			field: "delete",
+			oldValue: oldPost,
+			newValue: null,
+		});
 	},
 });
 
@@ -84,7 +110,14 @@ export const toggleVisibility = mutation({
 	handler: async (ctx, { id }) => {
 		const post = await ctx.db.get(id);
 		if (post) {
-			await ctx.db.patch(id, { visible: !post.visible });
+			const newValue = !post.visible;
+			await ctx.db.patch(id, { visible: newValue });
+			await logHistory(ctx, {
+				table: "blogPosts",
+				field: "visible",
+				oldValue: post.visible,
+				newValue,
+			});
 		}
 	},
 });

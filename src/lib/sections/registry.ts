@@ -25,6 +25,7 @@ export const sectionTypeRegistry: Record<string, SectionTypeDef> = {
 	'card-list':   { label: 'Card List',   icon: '▤', category: 'content', hasComponent: false },
 	'blog-feed':   { label: 'Blog Feed',   icon: '¶', category: 'content', dataTable: 'blogPosts', componentKey: 'blog' },
 	'gallery':     { label: 'Gallery',     icon: '▣', category: 'content', dataTable: 'galleryItems' },
+	'media':       { label: 'Media',        icon: '▶', category: 'media', dataTable: 'galleryItems', componentKey: 'media' },
 	'academia':    { label: 'Re:mix',      icon: '◈', category: 'content', dataTable: 'academicEntries' },
 	'likes':       { label: 'Likes',       icon: '♥', category: 'content', dataTable: 'likesCategories' },
 	'minor':       { label: 'Minor',       icon: '·', category: 'content', dataTable: 'minorEntries' },

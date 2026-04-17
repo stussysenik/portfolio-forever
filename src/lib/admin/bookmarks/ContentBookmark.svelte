@@ -50,7 +50,7 @@
 		<BlogAdmin entries={getEntries('blogPosts')} {client} {api} compact />
 
 	{:else if section?.sectionType === 'cv'}
-		<CvAdmin entries={getEntries('cvEntries')} {client} {api} compact />
+		<CvAdmin entries={getEntries('cvEntries')} sections={[]} languages={[]} {client} {api} compact />
 
 	{:else if section?.sectionType === 'timeline'}
 		<TalksAdmin entries={getEntries('talksEntries')} {client} {api} compact />

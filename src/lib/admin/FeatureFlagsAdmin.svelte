@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { toast } from '$lib/stores/toast';
-	import FlagIndicator from '$lib/components/FlagIndicator.svelte';
 	import { flagIndicatorRegistry } from './flagIndicatorRegistry';
+	import { AdminToggle } from '$lib/admin/primitives';
 
 	export let client: any;
 	export let api: any;
@@ -12,9 +12,18 @@
 		return flag ? flag.enabled : true;
 	}
 
-	async function toggleFeatureFlag(key: string, enabled: boolean, category: string) {
-		await client.mutation(api.siteConfig.setFeatureFlag, { key, enabled, category });
-		toast.success(`${key}: ${enabled ? 'ON' : 'OFF'}`);
+	function formatFlagLabel(key: string): string {
+		return key.replace(/-/g, ' ').toUpperCase();
+	}
+
+	async function handleFlagToggle(flag: any) {
+		const newEnabled = !getFlagState(flag.key);
+		await client.mutation(api.siteConfig.setFeatureFlag, {
+			key: flag.key,
+			enabled: newEnabled,
+			category: flag.category,
+		});
+		toast.success(`${flag.key}: ${newEnabled ? 'ON' : 'OFF'}`);
 	}
 </script>
 
@@ -22,17 +31,25 @@
 	<h2 class="section-label">Feature Flags</h2>
 	<div class="card">
 		{#each flagIndicatorRegistry as flag}
+			{@const enabled = getFlagState(flag.key)}
 			<div class="flag-row">
-				<span class="flag-label">{flag.label}</span>
-				<FlagIndicator flagKey={flag.key} enabled={getFlagState(flag.key)} label={getFlagState(flag.key) ? 'on' : 'off'} />
-				<span class="flag-category">{flag.category}</span>
-				<button
-					class="flag-toggle"
-					class:flag-on={getFlagState(flag.key)}
-					on:click={() => toggleFeatureFlag(flag.key, !getFlagState(flag.key), flag.category)}
-				>
-					{getFlagState(flag.key) ? 'ON' : 'OFF'}
-				</button>
+				<span
+					class="flag-dot"
+					class:flag-dot--active={enabled}
+					aria-hidden="true"
+				></span>
+				<span class="flag-label">{formatFlagLabel(flag.key)}</span>
+				<span class="flag-spacer"></span>
+				<span class="flag-state" class:flag-state--on={enabled}>
+					{enabled ? 'ON' : 'OFF'}
+				</span>
+				<AdminToggle
+					checked={enabled}
+					size="sm"
+					color="green"
+					label={formatFlagLabel(flag.key)}
+					on:change={() => handleFlagToggle(flag)}
+				/>
 			</div>
 		{/each}
 	</div>
@@ -44,83 +61,70 @@
 	}
 
 	.section-label {
-		font-size: var(--font-size-sm);
+		font-family: var(--font-mono);
+		font-size: var(--admin-text-xs, 12px);
 		font-weight: 600;
 		text-transform: uppercase;
-		letter-spacing: 0.05em;
-		color: var(--color-text-muted);
+		letter-spacing: 0.08em;
+		color: var(--color-text-subtle, #444);
+		line-height: 1;
+		margin-bottom: var(--admin-space-2, 8px);
 	}
 
 	.card {
-		border: 1px solid var(--border-color-subtle);
-		border-radius: var(--radius-md);
-		padding: var(--space-md);
-		margin-bottom: var(--space-sm);
-		transition: border-color var(--duration-fast) var(--easing);
-	}
-
-	.card:hover {
-		border-color: var(--border-color);
+		display: flex;
+		flex-direction: column;
+		gap: 0;
 	}
 
 	.flag-row {
 		display: flex;
 		align-items: center;
-		gap: var(--space-sm);
-		padding: var(--space-xs) 0;
-		border-bottom: 1px solid var(--border-color-subtle);
+		gap: var(--admin-space-2, 8px);
+		min-height: 36px;
 	}
 
-	.flag-row:last-child {
-		border-bottom: none;
+	.flag-dot {
+		display: inline-block;
+		width: 6px;
+		height: 6px;
+		border-radius: 50%;
+		background: var(--color-text-subtle, #444);
+		flex-shrink: 0;
+	}
+
+	.flag-dot--active {
+		background: var(--admin-green, #44D62C);
 	}
 
 	.flag-label {
+		font-family: var(--font-mono);
+		font-size: var(--admin-text-sm, 13px);
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: var(--color-text-muted, #666);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
 		flex: 1;
-		font-size: var(--font-size-sm);
+		min-width: 0;
 	}
 
-	.flag-status {
+	.flag-spacer {
+		flex: 1;
+	}
+
+	.flag-state {
 		font-family: var(--font-mono);
-		font-size: var(--font-size-2xs);
-		color: var(--color-text-subtle);
+		font-size: var(--admin-text-xs, 12px);
 		text-transform: uppercase;
-		letter-spacing: var(--letter-spacing-wide);
-		padding: 1px 6px;
-		border-radius: var(--radius-sm);
-		border: 1px solid var(--border-color-subtle);
+		letter-spacing: 0.06em;
+		color: var(--color-text-subtle, #444);
+		line-height: 1;
+		flex-shrink: 0;
 	}
 
-	.flag-status-active {
-		color: var(--color-success);
-		border-color: var(--color-success);
-	}
-
-	.flag-category {
-		font-family: var(--font-mono);
-		font-size: var(--font-size-2xs);
-		color: var(--color-text-subtle);
-		text-transform: uppercase;
-		letter-spacing: var(--letter-spacing-wide);
-	}
-
-	.flag-toggle {
-		padding: var(--space-2xs) var(--space-sm);
-		font-family: var(--font-mono);
-		font-size: var(--font-size-xs);
-		font-weight: 600;
-		border: 1px solid var(--border-color);
-		border-radius: var(--radius-sm);
-		background: transparent;
-		color: var(--color-text-muted);
-		cursor: pointer;
-		min-width: 4ch;
-		transition: all var(--duration-fast) var(--easing);
-	}
-
-	.flag-toggle.flag-on {
-		background: var(--color-success);
-		color: var(--color-surface);
-		border-color: var(--color-success);
+	.flag-state--on {
+		color: var(--admin-green, #44D62C);
 	}
 </style>

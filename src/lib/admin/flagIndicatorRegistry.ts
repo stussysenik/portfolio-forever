@@ -28,6 +28,7 @@ export const flagIndicatorRegistry: FlagIndicatorEntry[] = [
 	{ key: 'os-desktop',       label: 'OS Desktop Simulator',  category: 'visual', mountHint: 'OS desktop mount',                  icon: 'lucide:app-window' },
 	{ key: 'social-links',     label: 'Social Links Dropdown', category: 'layout', mountHint: 'social links dropdown',             icon: 'lucide:at-sign' },
 	{ key: 'command-palette',  label: 'Command Palette',       category: 'layout', mountHint: 'admin layout cmd+K',                icon: 'lucide:command' },
+	{ key: 'cube-mode',       label: '3D Cube Mode',           category: 'visual', mountHint: '+page.svelte conditional',          icon: 'lucide:box' },
 ];
 
 export function getFlagEntry(key: string): FlagIndicatorEntry | undefined {

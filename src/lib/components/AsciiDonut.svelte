@@ -14,11 +14,16 @@
         let B = $state(0);
         let prefersReducedMotion = $state(false);
 
-        // Drag state
+        // Rotation drag state
         let isDragging = $state(false);
         let activePointerId: number | null = null;
         let lastPointerX = 0;
         let lastPointerY = 0;
+
+        // Positional drag state (Shift+drag to move donut around)
+        let donutPos = $state({ x: 0, y: 0 });
+        let isPositionalDrag = $state(false);
+        let isShiftHeld = $state(false);
 
         // Velocity ring buffer for inertia seeding
         type VelocitySample = { dx: number; dy: number; t: number };
@@ -162,6 +167,7 @@
                 lastPointerY = event.clientY;
                 velocityBuffer.length = 0;
                 isDragging = true;
+                isPositionalDrag = isShiftHeld || event.shiftKey;
         }
 
         function handlePointerMove(event: PointerEvent) {
@@ -171,15 +177,19 @@
                 lastPointerX = event.clientX;
                 lastPointerY = event.clientY;
 
-                B += dx * SENSITIVITY;
-                A += dy * SENSITIVITY;
+                if (isPositionalDrag) {
+                        const clamped = clampPosition(donutPos.x + dx, donutPos.y + dy);
+                        donutPos = clamped;
+                } else {
+                        B += dx * SENSITIVITY;
+                        A += dy * SENSITIVITY;
+                        drawFrame();
+                }
 
                 velocityBuffer.push({ dx, dy, t: performance.now() });
                 if (velocityBuffer.length > VELOCITY_SAMPLES) {
                         velocityBuffer.shift();
                 }
-
-                drawFrame();
         }
 
         function handlePointerEnd(event: PointerEvent) {
@@ -188,6 +198,15 @@
                         (event.currentTarget as HTMLElement).releasePointerCapture(event.pointerId);
                 } catch {}
                 activePointerId = null;
+
+                if (isPositionalDrag) {
+                        isPositionalDrag = false;
+                        isDragging = false;
+                        savePosition();
+                        startAuto();
+                        return;
+                }
+
                 isDragging = false;
 
                 if (prefersReducedMotion) {
@@ -195,7 +214,6 @@
                         return;
                 }
 
-                // Compute trailing average velocity (px/frame ~= dx, dy per move)
                 let sumDx = 0;
                 let sumDy = 0;
                 for (const sample of velocityBuffer) {
@@ -207,7 +225,6 @@
                 let vA = (sumDy / count) * SENSITIVITY;
                 velocityBuffer.length = 0;
 
-                // Decay over ~600ms (~36 frames at 60fps) toward baseline
                 const DECAY_MS = 600;
                 const startTime = performance.now();
 
@@ -225,6 +242,57 @@
                         }
                 }
                 inertiaFrame = requestAnimationFrame(inertiaLoop);
+        }
+
+        function handleKeyDown(e: KeyboardEvent) {
+                if (e.key === 'Shift') isShiftHeld = true;
+        }
+
+        function handleKeyUp(e: KeyboardEvent) {
+                if (e.key === 'Shift') isShiftHeld = false;
+        }
+
+        function clampPosition(x: number, y: number): { x: number; y: number } {
+                const container = document.querySelector('.hero-visual') as HTMLElement | null;
+                if (!container) return { x, y };
+                const rect = container.getBoundingClientRect();
+                const donutEl = document.querySelector('.donut-display') as HTMLElement | null;
+                const dw = donutEl?.offsetWidth ?? 300;
+                const dh = donutEl?.offsetHeight ?? 200;
+                const margin = 8;
+                const maxX = (rect.width / 2 - dw / 2) + margin;
+                const maxY = (rect.height / 2 - dh / 2) + margin;
+                return {
+                        x: Math.max(-maxX, Math.min(maxX, x)),
+                        y: Math.max(-maxY, Math.min(maxY, y)),
+                };
+        }
+
+        function loadSavedPosition() {
+                try {
+                        const saved = localStorage.getItem('donut-position');
+                        if (saved) {
+                                const parsed = JSON.parse(saved);
+                                if (typeof parsed.x === 'number' && typeof parsed.y === 'number') {
+                                        donutPos = clampPosition(parsed.x, parsed.y);
+                                }
+                        }
+                } catch {}
+        }
+
+        function savePosition() {
+                try {
+                        localStorage.setItem('donut-position', JSON.stringify(donutPos));
+                } catch {}
+                if (typeof window !== 'undefined') {
+                        const iframes = document.querySelectorAll<HTMLIFrameElement>('iframe[src*="preview=true"]');
+                        iframes.forEach((iframe) => {
+                                iframe.contentWindow?.postMessage(
+                                        { type: 'admin:donutPosition', x: donutPos.x, y: donutPos.y },
+                                        '*',
+                                );
+                        });
+                }
         }
 
         onMount(() => {
@@ -247,9 +315,16 @@
 
                 syncMotionPreference(mediaQuery.matches);
                 mediaQuery.addEventListener("change", handleMotionChange);
+
+                loadSavedPosition();
+                window.addEventListener('keydown', handleKeyDown);
+                window.addEventListener('keyup', handleKeyUp);
+
                 return () => {
                         cancelAnim();
                         mediaQuery.removeEventListener("change", handleMotionChange);
+                        window.removeEventListener('keydown', handleKeyDown);
+                        window.removeEventListener('keyup', handleKeyUp);
                 };
         });
 
@@ -307,6 +382,9 @@
         <div
                 class="donut-display"
                 class:is-dragging={isDragging}
+                class:is-positional={isPositionalDrag}
+                class:shift-ready={isShiftHeld}
+                style:transform="translate({donutPos.x}px, {donutPos.y}px)"
                 onpointerdown={handlePointerDown}
                 onpointermove={handlePointerMove}
                 onpointerup={handlePointerEnd}
@@ -352,6 +430,18 @@
         }
 
         .donut-display.is-dragging {
+                cursor: grabbing;
+        }
+
+        .donut-display.shift-ready {
+                cursor: move;
+        }
+
+        .donut-display.is-positional {
+                cursor: move;
+        }
+
+        .donut-display.is-positional.is-dragging {
                 cursor: grabbing;
         }
 

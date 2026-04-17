@@ -49,11 +49,12 @@
 
 <style>
 	.page-bar {
-		grid-area: pills;
+		flex: 0 0 auto;
 		display: flex;
 		flex-direction: column;
-		border-bottom: 1px solid var(--border-color-subtle, #1a1a1a);
-		background: var(--color-bg, #0a0a0a);
+		border-bottom: 1px solid var(--admin-keyline, #1a1a1a);
+		background: var(--admin-chrome-bg, #0a0a0a);
+		width: 100%;
 	}
 
 	@media (min-width: 768px) {
@@ -66,7 +67,7 @@
 		display: flex;
 		align-items: center;
 		gap: var(--admin-space-2, 8px);
-		padding: var(--admin-space-2, 8px) var(--admin-space-4, 16px);
+		padding: var(--admin-space-2, 8px);
 		overflow-x: auto;
 		-webkit-overflow-scrolling: touch;
 		scrollbar-width: none;
@@ -81,36 +82,37 @@
 		display: inline-flex;
 		align-items: center;
 		gap: var(--admin-space-1, 4px);
-		min-height: var(--admin-touch-min, 44px);
-		padding: 6px 14px;
-		font-family: var(--font-mono);
+		min-height: var(--admin-touch-compact, 32px);
+		padding: 4px 10px;
+		font-family: var(--admin-font-mono, monospace);
 		font-size: var(--admin-text-xs, 9px);
 		text-transform: uppercase;
 		letter-spacing: 0.04em;
 		white-space: nowrap;
-		border: 1px solid var(--border-color-subtle, #222);
+		border: 1px solid var(--admin-keyline, #222);
 		border-radius: 2px;
 		background: transparent;
-		color: var(--color-text-muted, #666);
+		color: var(--admin-text-muted, #666);
 		cursor: pointer;
 		transition: all var(--admin-transition, 120ms ease);
 		flex-shrink: 0;
 	}
 
 	.pill:hover {
-		border-color: var(--color-text-muted, #666);
-		color: var(--color-text, #e5e5e5);
+		border-color: var(--admin-keyline-strong, #666);
+		color: var(--admin-text, #e5e5e5);
 	}
 
 	.pill-active {
-		background: var(--color-text, #e5e5e5);
-		color: var(--color-bg, #0a0a0a);
-		border-color: var(--color-text, #e5e5e5);
+		background: var(--admin-active-outline, #00FF00);
+		color: #000;
+		border-color: var(--admin-active-outline, #00FF00);
+		font-weight: 600;
 	}
 
 	.pill-active:hover {
-		background: var(--color-text, #e5e5e5);
-		color: var(--color-bg, #0a0a0a);
+		background: var(--admin-active-outline, #00FF00);
+		color: #000;
 	}
 
 	/* === Pill indicators === */
@@ -127,24 +129,25 @@
 
 	.pill-section-count {
 		font-size: var(--admin-text-2xs, 7px);
-		color: var(--admin-green, #44D62C);
-		font-family: var(--font-mono);
+		color: var(--admin-success, #00FF00);
+		font-family: var(--admin-font-mono, monospace);
 		line-height: 1;
 	}
 
 	.pill-active .pill-section-count {
-		color: var(--admin-green, #44D62C);
+		color: #000;
+		opacity: 0.7;
 	}
 
 	.pill-entry-count {
 		font-size: var(--admin-text-2xs, 7px);
-		color: var(--color-text-muted, #666);
-		font-family: var(--font-mono);
+		color: var(--admin-text-muted, #666);
+		font-family: var(--admin-font-mono, monospace);
 		line-height: 1;
 	}
 
 	.pill-active .pill-entry-count {
-		color: var(--color-bg, #0a0a0a);
-		opacity: 0.6;
+		color: #000;
+		opacity: 0.5;
 	}
 </style>

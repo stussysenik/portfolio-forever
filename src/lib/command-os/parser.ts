@@ -4,7 +4,7 @@ export type ParseResult =
 	| { success: true; action: string; args: Record<string, unknown> }
 	| { success: false; error: string; suggestions?: string[] };
 
-const THEME_ALIASES = ['minimal', 'studio', 'terminal', 'darkroom', 'accessible', 'carbon'];
+const THEME_ALIASES = ['minimal', 'studio', 'terminal', 'bw'];
 
 /**
  * Local NLP-lite parser. Covers the high-frequency cases without an LLM so the
@@ -54,6 +54,34 @@ export function parseLocally(input: string): ParseResult | null {
 			action: 'toggleFlag',
 			args: { flagId: flagMatch[2], enabled },
 		};
+	}
+
+	// WIP badge — goes through pending stack, not direct Convex
+	const wipMatch = lower.match(/^(?:enable|disable|show|hide|turn\s+(on|off))\s+(?:the\s+)?wip(?:\s+badge)?$/);
+	if (wipMatch) {
+		const visible = /^(?:enable|show|turn\s+on)/.test(lower);
+		return { success: true, action: 'setWipBadge', args: { visible } };
+	}
+
+	// "save" / "commit" — flush pending changes
+	if (/^(?:save|commit|apply|publish)\s*(?:changes)?$/.test(lower)) {
+		return { success: true, action: 'commitPending', args: { confirm: true } };
+	}
+
+	// preview breakpoint: "preview 390", "preview mobile", "preview tablet", "preview desktop"
+	const PREVIEW_ALIASES: Record<string, number> = {
+		mobile: 390, phone: 390, iphone: 390,
+		tablet: 768, ipad: 768,
+		desktop: 1440, laptop: 1440,
+	};
+	const previewMatch = lower.match(/^(?:preview|viewport|breakpoint)\s+(?:at\s+)?(\S+)$/);
+	if (previewMatch) {
+		const val = previewMatch[1];
+		const width = PREVIEW_ALIASES[val] ?? parseInt(val, 10);
+		if (width >= 280 && width <= 3840) {
+			return { success: true, action: 'previewAt', args: { width } };
+		}
+		return { success: false, error: `invalid viewport: "${val}". Use a number (280–3840) or: mobile, tablet, desktop` };
 	}
 
 	// font switch

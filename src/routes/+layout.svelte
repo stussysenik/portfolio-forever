@@ -12,11 +12,15 @@
         import Toast from "$lib/components/Toast.svelte";
         import { overlapDetector } from "$lib/utils/overlap-detector";
         import { initPostHog, trackPageView } from "$lib/posthog";
-        import { siteMode, readerOverride, isReaderMode, siteConfig as siteConfigStore, featureFlags } from "$lib/stores/siteMode";
-        import { getRustClient as getConvexClient, api } from "$lib/rustBackend";
+import { siteMode, readerOverride, isReaderMode, siteConfig as siteConfigStore, featureFlags, wipBannerDismissed, previewMode, navParadigm } from "$lib/stores/siteMode";
+	import { getConvexClient } from "$lib/convex";
+	import { api } from "$convex/_generated/api";
         import Embellishments from "$lib/components/Embellishments.svelte";
         import { parseSameAs } from "$lib/utils/social-links";
         import { themeMatrix } from "$lib/stores/controls";
+        import NavSidebar from "$lib/components/nav/NavSidebar.svelte";
+        import NavDrawer from "$lib/components/nav/NavDrawer.svelte";
+        import NavHybrid from "$lib/components/nav/NavHybrid.svelte";
 
         // View Transitions API — smooth page-to-page animations
         onNavigate((navigation) => {
@@ -31,6 +35,7 @@
 
         // Navigation - static fallback for SSR, replaced by Convex data on mount
         const staticNav = [
+                { href: "/media", label: "media" },
                 { href: "/academia", label: "re:mix" },
                 { href: "/terminal", label: "terminal" },
                 { href: "/process", label: "process" },
@@ -48,9 +53,21 @@
         let socialLinksData: { label: string; url: string }[] = socialLinks;
         let PixelCanvasComponent: any = null;
         let pixelCanvasPromise: Promise<void> | null = null;
+        let socialOverflowOpen = false;
+        let socialRailOpen = false;
+        let focusedSocialIndex = -1;
+        
+        let profileAvailable: boolean = profile.available;
+        let profileId: any = null;
 
-        $: currentPath = $page.url.pathname;
-        $: pixelCanvasEnabled = ($featureFlags.get("pixel-engine") ?? false) && !$isReaderMode;
+        $: if (browser) {
+                (window as any).profileAvailable = profileAvailable;
+                (window as any).profileId = profileId;
+        }
+
+$: currentPath = $page.url.pathname;
+	$: pixelCanvasEnabled = ($featureFlags.get("pixel-engine") ?? false) && !$isReaderMode;
+	$: isInPreview = $previewMode;
 
         // Theme matrix: sync to data-matrix attribute + localStorage
         $: if (browser) {
@@ -81,64 +98,119 @@
                 }
 
                 // Listen for admin preview messages (section scroll sync)
-                adminMessageHandler = (e: MessageEvent) => {
-                        if (e.data?.type === 'admin:scrollToSection') {
-                                const el = document.getElementById(e.data.sectionId);
-                                if (el) {
-                                        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                                        el.classList.add('admin-highlight');
-                                        setTimeout(() => el.classList.remove('admin-highlight'), 2000);
-                                }
-                        }
-                };
+adminMessageHandler = (e: MessageEvent) => {
+				if (e.data?.type === 'admin:scrollToSection') {
+					const el = document.getElementById(e.data.sectionId);
+					if (el) {
+						el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+						el.classList.add('admin-highlight');
+						setTimeout(() => el.classList.remove('admin-highlight'), 2000);
+					}
+				}
+				if (e.data?.type === 'admin:wipBadge' && e.data.visible !== undefined) {
+					wipBannerDismissed.set(!e.data.visible);
+				}
+			};
                 window.addEventListener('message', adminMessageHandler);
 
-                // Load site config from Convex
-                try {
-                        const client = getConvexClient();
-                        unsubSiteConfig = client.onUpdate(api.siteConfig.get, {}, (config: any) => {
-                                if (config?.mode) {
-                                        siteMode.set(config.mode);
-                                }
-                                if (config) {
-                                        siteConfigStore.set({
-                                                sectionOrder: config.sectionOrder,
-                                                parallaxSpeed: config.parallaxSpeed,
-                                        });
-                                        siteConfigData = config;
-                                }
-                        });
-                        // Subscribe to nav items from pages table
-                        unsubNavItems = client.onUpdate(api.pages.getNavItems, {}, (items: any[]) => {
-                                if (items && items.length > 0) {
-                                        navItems = items.map((p: any) => ({
-                                                href: p.route,
-                                                label: p.label,
-                                                archived: p.archived ?? false,
-                                        }));
-                                }
-                        });
-                        // Subscribe to feature flags
-                        unsubFlags = client.onUpdate(api.siteConfig.getFeatureFlags, {}, (flags: any[]) => {
-                                if (flags) {
-                                        const map = new Map<string, boolean>();
-                                        for (const f of flags) map.set(f.key, f.enabled);
-                                        featureFlags.set(map);
-                                }
-                        });
-                        // Subscribe to profile for nav (name + social links)
-                        unsubProfile = client.onUpdate(api.cv.getVisibleCV, {}, (data: any) => {
-                                if (data?.profile?.name) {
-                                        profileName = data.profile.name;
-                                }
-                                if (data?.profile?.sameAs && Array.isArray(data.profile.sameAs)) {
-                                        socialLinksData = parseSameAs(data.profile.sameAs);
-                                }
-                        });
-                } catch (e) {
-                        // Convex not available — default to multi-page
-                        console.warn("Convex siteConfig not available, using multi-page mode");
-                }
+// DEFENSIVE: Skip all Convex subscriptions in admin or preview mode
+// The admin has its own subscriptions; the public layout should not
+// run redundant/expensive database calls when in admin or preview.
+const isExcluded = window.location.pathname.startsWith('/admin') || window.location.search.includes('preview=true');
+
+if (!isExcluded) {			// Load site config from Convex
+			try {
+				const client = getConvexClient();
+				unsubSiteConfig = client.onUpdate(api.siteConfig.get, {}, (config: any) => {
+					if (config?.mode) {
+						siteMode.set(config.mode);
+					}
+					if (config) {
+						siteConfigStore.set({
+							sectionOrder: config.sectionOrder,
+							parallaxSpeed: config.parallaxSpeed,
+							navMode: config.navMode,
+						});
+						if (config.navMode && ['sidebar', 'drawer', 'hybrid'].includes(config.navMode)) {
+							navParadigm.set(config.navMode);
+						}
+						siteConfigData = config;
+					}
+				});
+				// Subscribe to nav items from pages table
+				unsubNavItems = client.onUpdate(api.pages.getNavItems, {}, (items: any[]) => {
+					if (items && items.length > 0) {
+						navItems = items.map((p: any) => ({
+							href: p.route,
+							label: p.label,
+							archived: p.archived ?? false,
+						}));
+					}
+				});
+				// Subscribe to feature flags
+				unsubFlags = client.onUpdate(api.siteConfig.getFeatureFlags, {}, (flags: any[]) => {
+					if (flags) {
+						const map = new Map<string, boolean>();
+						for (const f of flags) map.set(f.key, f.enabled);
+						featureFlags.set(map);
+					}
+				});
+				// Subscribe to profile for nav (name + social links)
+				unsubProfile = client.onUpdate(api.cv.getVisibleCV, {}, (data: any) => {
+					if (data?.profile?.name) {
+						profileName = data.profile.name;
+					}
+					if (data?.profile?.sameAs && Array.isArray(data.profile.sameAs)) {
+						socialLinksData = parseSameAs(data.profile.sameAs);
+					}
+					if (data?.profile) {
+						profileAvailable = data.profile.available ?? true;
+						profileId = data.profile._id;
+					}
+				});
+			} catch (e) {
+				// Convex not available — default to multi-page
+				console.warn("Convex siteConfig not available, using multi-page mode");
+			}
+		} else {
+			// In preview mode: receive data from admin parent via postMessage
+			window.addEventListener('message', (e: MessageEvent) => {
+				if (e.data?.type === 'admin:siteConfig' && e.data.config) {
+					const config = e.data.config;
+					if (config.mode) siteMode.set(config.mode);
+					siteConfigStore.set({
+						sectionOrder: config.sectionOrder,
+						parallaxSpeed: config.parallaxSpeed,
+						navMode: config.navMode,
+					});
+					if (config.navMode && ['sidebar', 'drawer', 'hybrid'].includes(config.navMode)) {
+						navParadigm.set(config.navMode);
+					}
+					siteConfigData = config;
+				}
+				if (e.data?.type === 'admin:navItems' && e.data.items) {
+					navItems = e.data.items.map((p: any) => ({
+						href: p.route,
+						label: p.label,
+						archived: p.archived ?? false,
+					}));
+				}
+				if (e.data?.type === 'admin:featureFlags' && e.data.flags) {
+					const map = new Map<string, boolean>();
+					for (const f of e.data.flags) map.set(f.key, f.enabled);
+					featureFlags.set(map);
+				}
+				if (e.data?.type === 'admin:profile' && e.data.profile) {
+					if (e.data.profile.name) profileName = e.data.profile.name;
+					if (e.data.profile.sameAs) socialLinksData = parseSameAs(e.data.profile.sameAs);
+					profileAvailable = e.data.profile.available ?? true;
+					profileId = e.data.profile._id;
+				}
+				if (e.data?.type === 'admin:wipBadge' && e.data.visible !== undefined) {
+					wipBannerDismissed.set(!e.data.visible);
+				}
+			});
+		}
 
                 // Check URL param for reader mode
                 const url = new URL(window.location.href);
@@ -152,6 +224,20 @@
                 document.body.classList.toggle("reader-mode", $isReaderMode);
         }
 
+        // Sync header height to CSS var so content can offset correctly
+        let headerResizeObserver: ResizeObserver | undefined;
+        $: if (browser) {
+                const topFrame = document.querySelector('.top-frame');
+                if (topFrame && !headerResizeObserver) {
+                        const sync = () => {
+                                document.documentElement.style.setProperty('--header-height', `${topFrame.getBoundingClientRect().height}px`);
+                        };
+                        sync();
+                        headerResizeObserver = new ResizeObserver(sync);
+                        headerResizeObserver.observe(topFrame);
+                }
+        }
+
         // Cleanup
         let unsubSiteConfig: (() => void) | undefined;
         let unsubNavItems: (() => void) | undefined;
@@ -159,6 +245,7 @@
         let unsubProfile: (() => void) | undefined;
         let adminMessageHandler: ((e: MessageEvent) => void) | undefined;
         onDestroy(() => {
+                headerResizeObserver?.disconnect();
                 unsubSiteConfig?.();
                 unsubNavItems?.();
                 unsubFlags?.();
@@ -260,69 +347,73 @@
 			<span>{pragueTime}</span>
 		</div>
 	</div>
+{:else if currentPath.startsWith('/admin')}
+	<slot />
+{:else if isInPreview}
+<!-- PREVIEW MODE: WYSIWYG only — no Convex calls, no chrome, just the content -->
+{#if layoutConfig.showWipBanner && layoutConfig.wipBannerPosition !== 'hidden' && !$wipBannerDismissed}
+	<div class="wip-banner" class:wip-banner--sticky={layoutConfig.wipBannerPosition === 'sticky'}>
+		<span class="wip-text">
+			<span class="wip-msg">{layoutConfig.wipBannerMessage}</span>
+			<span class="wip-sep">·</span>
+			<span class="wip-time">{pragueTime}</span>
+		</span>
+	</div>
+{/if}
+<main class="main-content preview-content" style="padding-top: 0; padding-bottom: 0;">
+	<slot />
+</main>
 {:else}
-<div class="top-frame">
-<!-- WIP BANNER - First visible element, before everything -->
-{#if layoutConfig.showWipBanner && layoutConfig.wipBannerPosition !== 'hidden'}
-        <div class="wip-banner" class:wip-banner--sticky={layoutConfig.wipBannerPosition === 'sticky'}>
-                <span class="wip-text">
-                        <span class="wip-msg">{layoutConfig.wipBannerMessage}</span>
-                        <span class="wip-sep">·</span>
-                        <span class="wip-time">{pragueTime}</span>
-                </span>
-        </div>
+{#if layoutConfig.showWipBanner && layoutConfig.wipBannerPosition !== 'hidden' && !$wipBannerDismissed}
+	<div class="wip-banner" class:wip-banner--sticky={layoutConfig.wipBannerPosition === 'sticky'}>
+		<span class="wip-text">
+			<span class="wip-msg">{layoutConfig.wipBannerMessage}</span>
+			<span class="wip-sep">·</span>
+			<span class="wip-time">{pragueTime}</span>
+		</span>
+	</div>
+{/if}
+{#if $navParadigm === 'sidebar'}
+        <NavSidebar
+                {navItems}
+                socialLinks={socialLinksData}
+                {profileName}
+                currentPath={$page.url.pathname}
+                profileAvailable={profileAvailable}
+        />
+        <main class="main-content main-content--sidebar">
+                <slot />
+        </main>
+{:else if $navParadigm === 'drawer'}
+        <NavDrawer
+                {navItems}
+                socialLinks={socialLinksData}
+                {profileName}
+                currentPath={$page.url.pathname}
+        />
+        <main class="main-content">
+                <slot />
+        </main>
+{:else}
+        <NavHybrid
+                {navItems}
+                socialLinks={socialLinksData}
+                {profileName}
+                currentPath={$page.url.pathname}
+        />
+        <main class="main-content">
+                <slot />
+        </main>
 {/if}
 
-<header class="header">
-        <div class="header-inner">
-                <a href="/" class="header-name">{profileName}</a>
-
-                <div class="header-nav-group">
-                        <!-- Main navigation -->
-                        <nav class="nav" aria-label="Main">
-                                {#each navItems as item}
-                                        <a
-                                                href={item.href}
-                                                class="nav-link"
-                                                class:active={currentPath ===
-                                                        item.href ||
-                                                        (item.href !== "/" &&
-                                                                currentPath.startsWith(
-                                                                        item.href,
-                                                                ))}
-                                                class:archived={item.archived}
-                                        >
-                                                {item.label}
-                                        </a>
-                                {/each}
-
-                                <!-- External Links Inlined -->
-                                {#if socialLinksData.length > 0}
-                                        <span class="nav-sep"></span>
-                                        {#each socialLinksData as link}
-                                                <a href={link.url} target="_blank" rel="noopener" class="nav-link external" data-brand={link.label}>
-                                                        {link.label}
-                                                </a>
-                                        {/each}
-                                {/if}
-                        </nav>
-                </div>
-        </div>
-</header>
-</div>
-
-<main class="main-content">
-        <slot />
-</main>
-
-<footer class="terminal">
+<footer class="terminal" class:terminal--sidebar={$navParadigm === 'sidebar'}>
         <div class="terminal-left">
                 <span class="terminal-edition">{siteConfigData?.footerEdition ?? 'Made with 💙 in Bed-Stuy by STÜSSY SENIK'} · {siteConfigData?.footerYear ?? new Date().getFullYear()}</span>
                 <span class="terminal-sep">·</span>
                 <span class="terminal-path">{currentPath}</span>
         </div>
         <div class="terminal-right">
-                {#if profile.available}
+                {#if profileAvailable}
                         <span class="terminal-sep">·</span>
                         <span class="terminal-status">
                                 <span class="status-indicator"></span>
@@ -400,8 +491,21 @@
         }
 
         .main-content {
-               padding-top: var(--space-3xl);
+               padding-top: var(--header-height, var(--space-3xl));
                padding-bottom: 80px;
+        }
+
+        .main-content--sidebar {
+               margin-left: 220px;
+               padding-top: var(--space-xl);
+               padding-bottom: 80px;
+        }
+
+        @media (max-width: 767px) {
+               .main-content--sidebar {
+                       margin-left: 0;
+                       padding-top: var(--header-height, var(--space-3xl));
+               }
         }
 
         .header-inner {
@@ -439,16 +543,16 @@
                 }
         }
 
-        .nav {
+.nav {
                 display: flex;
                 flex-wrap: wrap;
-                gap: var(--space-xs) var(--space-sm);
-                justify-content: center;
+                gap: var(--space-xs) var(--space-md);
+                align-items: baseline;
         }
 
         @media (min-width: 768px) {
                 .nav {
-                        gap: var(--space-sm) var(--space-md);
+                        gap: var(--space-sm) var(--space-lg);
                 }
                 .nav-link {
                         font-size: var(--font-size-sm);
@@ -457,7 +561,7 @@
 
         @media (min-width: 1024px) {
                 .nav {
-                        gap: var(--space-sm) var(--space-lg);
+                        gap: var(--space-sm) var(--space-xl);
                 }
         }
 
@@ -470,6 +574,7 @@
                 position: relative;
                 transition: color var(--duration-fast) var(--easing);
                 white-space: nowrap;
+                letter-spacing: var(--letter-spacing-normal);
         }
 
         .nav-link:hover {
@@ -484,14 +589,14 @@
         .nav-link::after {
                 content: "";
                 position: absolute;
-                bottom: 0;
+                bottom: -1px;
                 left: 0;
-                right: 0;
-                height: 2px;
-                background: var(--color-electric-green);
+                width: 100%;
+                height: 1px;
+                background: currentColor;
                 transform: scaleX(0);
                 transform-origin: right;
-                transition: transform var(--duration-fast) var(--easing);
+                transition: transform var(--duration-normal) var(--easing-out);
         }
 
         .nav-link:hover::after {
@@ -502,6 +607,7 @@
         .nav-link.active::after {
                 transform: scaleX(1);
                 transform-origin: left;
+                opacity: 0.5;
         }
 
         .nav-link.archived {
@@ -518,30 +624,27 @@
                 background: #e54545;
         }
 
-        .nav-sep {
-                width: 1px;
-                background: var(--border-color-subtle);
-                margin: 0 var(--space-2xs);
-                align-self: stretch;
-        }
-
         .nav-link.external {
                 font-family: var(--font-mono);
-                font-size: var(--font-size-xs);
+                font-size: var(--font-size-2xs, 0.75rem);
+                letter-spacing: var(--letter-spacing-wider);
+                text-transform: uppercase;
+                color: var(--color-text-subtle);
         }
 
         .nav-link.external::after {
                 display: none;
         }
 
-        /* Brand gradient hover effects for external inline links */
         .nav-link.external:hover {
-                background: transparent;
-                background-clip: text;
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-                color: transparent;
-                text-shadow: none;
+                color: var(--color-text);
+        }
+
+        .nav-sep {
+                color: var(--color-text-subtle);
+                font-size: var(--font-size-2xs);
+                margin: 0 var(--space-xs);
+                user-select: none;
         }
 
         .nav-link.external[data-brand="soundcloud"]:hover {
@@ -618,7 +721,11 @@
                 font-family: var(--font-mono);
                 font-size: var(--font-size-2xs);
                 z-index: 100;
-                transition: background-color var(--duration-slow) var(--easing);
+                transition: background-color var(--duration-slow) var(--easing), left var(--duration-normal) var(--easing-out);
+        }
+
+        .terminal--sidebar {
+                left: calc(220px + var(--space-md));
         }
 
         .terminal-left,
@@ -721,6 +828,10 @@
                         padding: var(--space-xs) var(--space-sm);
                 }
 
+                .terminal--sidebar {
+                        left: var(--space-sm);
+                }
+
                 /* Hide edition text on mobile — path + controls are enough */
                 .terminal-edition {
                         display: none;
@@ -750,7 +861,7 @@
                 }
 
                 .main-content {
-                        padding-top: var(--space-3xl);
+                        padding-top: var(--header-height, var(--space-3xl));
                 }
         }
 
@@ -765,7 +876,7 @@
                 background: #ff6b6b; /* Warning Red restored */
                 color: #ffffff; /* White text */
                 font-family: "Helvetica", sans-serif;
-                font-size: 11px; /* Micro tech text */
+                font-size: var(--font-size-xs, 0.75rem); /* Readable on mobile */
                 font-weight: bold;
                 text-transform: uppercase;
                 letter-spacing: 0.05em;
@@ -828,7 +939,7 @@
                         width: 100%;
                 }
 
-                .nav {
+.nav {
                         justify-content: flex-start;
                         gap: 2px var(--space-sm);
                 }
@@ -838,30 +949,25 @@
                         padding: 2px 0;
                 }
 
-                /* Separator becomes a full-width flex break —
-                   pushes social links to their own line */
                 .nav-sep {
-                        flex-basis: 100%;
-                        height: 0;
-                        width: 0;
-                        margin: 0;
-                        background: none;
+                        margin: 0 var(--space-2xs);
+                        font-size: var(--font-size-2xs, 0.75rem);
                 }
 
                 .nav-link.external {
-                        font-size: 11px;
-                        opacity: 0.5;
-                }
-
-                .nav-link.external:hover {
-                        opacity: 1;
+                        font-size: var(--font-size-2xs, 0.75rem);
                 }
         }
 
-        /* Scroll Lock for Process Page */
-        :global(body.scroll-lock) {
-                overflow: hidden !important;
-                height: 100vh !important;
-                touch-action: none; /* Disable touch scrolling */
-        }
+/* Scroll Lock for Process Page */
+	:global(body.scroll-lock) {
+		overflow: hidden !important;
+		height: 100vh !important;
+		touch-action: none; /* Disable touch scrolling */
+	}
+
+	.preview-content {
+		background: var(--color-bg, var(--bg, #FFFFFF));
+		min-height: 100vh;
+	}
 </style>

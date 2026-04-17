@@ -26,6 +26,4 @@ const makeThemeStory = (themeId: string): Story => ({
 export const Minimal = makeThemeStory('minimal');
 export const Studio = makeThemeStory('studio');
 export const Terminal = makeThemeStory('terminal');
-export const Darkroom = makeThemeStory('darkroom');
-export const Accessible = makeThemeStory('accessible');
-export const Carbon = makeThemeStory('carbon');
+export const BW = makeThemeStory('bw');

@@ -65,7 +65,7 @@
     }
 
     .row-meta {
-        font-size: 0.72rem;
+        font-size: var(--font-size-xs, 0.75rem);
         color: var(--color-text-subtle, #aaa);
         text-transform: lowercase;
     }

@@ -10,6 +10,8 @@ export default defineConfig({
 	},
 	test: {
 		include: ['src/**/*.{test,spec}.{js,ts}'],
+		exclude: ['src/**/*.jest.test.ts'],
 		globals: true,
+		environment: 'happy-dom',
 	},
 });

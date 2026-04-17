@@ -319,7 +319,7 @@
     border: 1px solid #ffffff;
     border-right-color: #000000;
     border-bottom-color: #000000;
-    font-size: 9px;
+    font-size: var(--font-size-2xs, 0.75rem);
     line-height: 1;
     font-weight: bold;
     cursor: pointer;
@@ -411,7 +411,7 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    font-size: 11px;
+    font-size: var(--font-size-xs, 0.75rem);
   }
 
   .taskbar-item.active {
@@ -438,6 +438,6 @@
     height: 22px;
     display: flex;
     align-items: center;
-    font-size: 11px;
+    font-size: var(--font-size-xs, 0.75rem);
   }
 </style>

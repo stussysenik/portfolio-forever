@@ -126,13 +126,20 @@ export class RustClient {
 		onUpdate: (value: TResult) => void,
 		onError?: (err: unknown) => void,
 	): Unsubscribe {
+		let cancelled = false;
 		execute(ref, args)
-			.then(onUpdate)
+			.then((result) => {
+				if (!cancelled) onUpdate(result);
+			})
 			.catch((err) => {
-				if (onError) onError(err);
-				else console.warn(`[rustBackend] onUpdate failed:`, err);
+				if (cancelled) return;
+				if (onError) {
+					onError(err);
+				} else if (!(err instanceof TypeError && err.message === "Failed to fetch")) {
+					console.warn(`[rustBackend] onUpdate failed:`, err);
+				}
 			});
-		return () => {};
+		return () => { cancelled = true; };
 	}
 }
 

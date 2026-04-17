@@ -1,4 +1,15 @@
 /* Admin Design Tokens */
+/*
+ * Type scale modeled after Carbon Design System principles:
+ *   - 12px absolute minimum for legibility (Samsung S8 = 360px viewport)
+ *   - 1.25× ratio between steps for clear hierarchy
+ *   - All sizes in px (admin is a tool — no fluid type)
+ *   - Every size must be legible at arm's length on mobile
+ *
+ * Scale:  12 · 13 · 14 · 16 · 18 · 20 · 24
+ * Carbon: label-01 · body-compact-01 · body-short-01 · heading-compact-02 · heading-03
+ */
+
 :root {
   /* Chrome colors — constrained palette */
   --admin-blue: #2563EB;
@@ -12,22 +23,22 @@
   --admin-space-5: 20px;
   --admin-space-6: 24px;
 
-  /* Font sizes (fixed, not fluid — admin is a tool) */
-  --admin-text-3xs: 6px;
-  --admin-text-2xs: 7px;
-  --admin-text-xs: 9px;
-  --admin-text-sm: 11px;
-  --admin-text-base: 13px;
+  /* Font sizes — Carbon-aligned, 12px floor */
+  --admin-text-xs: 12px;
+  --admin-text-sm: 13px;
+  --admin-text-base: 14px;
   --admin-text-lg: 16px;
   --admin-text-xl: 18px;
+  --admin-text-2xl: 20px;
+  --admin-text-3xl: 24px;
 
   /* Touch targets */
   --admin-touch-min: 44px;
-  --admin-touch-compact: 28px;
+  --admin-touch-compact: 36px;
 
   /* Layout */
-  --admin-sidebar-w: 220px;
-  --admin-topbar-h: 44px;
+  --admin-sidebar-w: 240px;
+  --admin-topbar-h: 48px;
 
   /* Transition */
   --admin-transition: 120ms ease;
@@ -42,7 +53,6 @@
   color: var(--color-text-subtle, #666);
   font-weight: 600;
 }
-.admin-label--3xs { font-size: var(--admin-text-3xs); }
-.admin-label--2xs { font-size: var(--admin-text-2xs); }
 .admin-label--xs { font-size: var(--admin-text-xs); }
 .admin-label--sm { font-size: var(--admin-text-sm); }
+.admin-label--base { font-size: var(--admin-text-base); }

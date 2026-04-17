@@ -262,25 +262,26 @@
                 margin-left: auto;
         }
 
-        /* Grid — mobile-first responsive */
-        .projects-grid {
-                display: grid;
-                grid-template-columns: 1fr;
-                gap: var(--space-lg);
-        }
+	/* Grid — mobile-first responsive, 2 cols on mobile */
+	.projects-grid {
+		display: grid;
+		grid-template-columns: repeat(2, 1fr);
+		gap: var(--space-sm);
+	}
 
-        @media (min-width: 480px) {
-                .projects-grid {
-                        grid-template-columns: repeat(min(var(--grid-cols, 2), 2), 1fr);
-                }
-        }
+	@media (min-width: 480px) {
+		.projects-grid {
+			grid-template-columns: repeat(min(var(--grid-cols, 2), 2), 1fr);
+			gap: var(--space-lg);
+		}
+	}
 
-        @media (min-width: 768px) {
-                .projects-grid {
-                        grid-template-columns: repeat(var(--grid-cols, 2), 1fr);
-                        gap: var(--space-xl);
-                }
-        }
+	@media (min-width: 768px) {
+		.projects-grid {
+			grid-template-columns: repeat(var(--grid-cols, 2), 1fr);
+			gap: var(--space-xl);
+		}
+	}
 
         /* List mode */
         .projects-grid.list-mode {
@@ -334,17 +335,17 @@
                 box-shadow: var(--shadow-md);
         }
 
-        .project-embed iframe {
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: calc(var(--vp, 2.5) * 100%);
-                height: calc(var(--vp, 2.5) * 100%);
-                transform: scale(calc(1 / var(--vp, 2.5)));
-                transform-origin: var(--cam, top left);
-                border: none;
-                pointer-events: none;
-        }
+	.project-embed iframe {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		width: calc(var(--vp, 2.5) * 100%);
+		height: calc(var(--vp, 2.5) * 100%);
+		transform: translate(-50%, -50%) scale(calc(1 / var(--vp, 2.5)));
+		transform-origin: center center;
+		border: none;
+		pointer-events: none;
+	}
 
         /* Static preview image for sites that block iframes */
         .preview-link {

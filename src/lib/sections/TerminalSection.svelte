@@ -89,7 +89,7 @@
         if (line.content.startsWith('__THEME__')) {
           const theme = line.content.replace('__THEME__', '');
           document.documentElement.setAttribute('data-theme', theme);
-          localStorage.setItem('preferred-theme', theme);
+          localStorage.setItem('theme', theme);
           newEntries.push({
             type: 'output',
             content: `<span class="t-success">Theme switched to ${theme}.</span>`,
@@ -575,7 +575,7 @@
 
   .browser-url {
     flex: 1;
-    font-size: 11px;
+    font-size: var(--font-size-xs, 0.75rem);
     color: var(--color-text-muted);
     background: var(--color-bg);
     padding: 4px 10px;
@@ -700,7 +700,7 @@
     gap: var(--space-sm);
     padding: 4px var(--space-md);
     font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
+    font-size: var(--font-size-xs, 0.75rem);
     color: var(--color-text-subtle);
     background: var(--color-bg-alt);
     border: 1px solid var(--border-color-subtle);
@@ -746,7 +746,7 @@
     .tmux-bar {
       left: var(--space-sm);
       right: var(--space-sm);
-      font-size: 10px;
+      font-size: var(--font-size-2xs, 0.75rem);
       bottom: 52px;
     }
   }

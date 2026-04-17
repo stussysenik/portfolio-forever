@@ -34,13 +34,13 @@
 		align-items: center;
 		gap: 3px;
 		min-height: 18px;
-		padding: 2px 5px;
-		border: 1px dashed var(--border-color-subtle, #333);
+		padding: 2px 6px;
+		border: 1px solid var(--admin-keyline, #333);
 		border-radius: 2px;
 		background: transparent;
-		color: var(--color-text-subtle, #444);
-		font-family: var(--font-mono);
-		font-size: 7px;
+		color: var(--admin-text-subtle, #444);
+		font-family: var(--admin-font-mono, monospace);
+		font-size: 8px;
 		text-transform: uppercase;
 		letter-spacing: 0.08em;
 		cursor: pointer;
@@ -50,8 +50,9 @@
 	}
 
 	.reset-button:hover {
-		color: var(--color-text-muted, #737373);
-		border-color: var(--color-text-muted, #737373);
+		color: var(--admin-active-outline, #00FF00);
+		border-color: var(--admin-active-outline, #00FF00);
+		background: rgba(0, 255, 0, 0.05);
 	}
 
 	.reset-button.hidden {
@@ -59,8 +60,9 @@
 	}
 
 	.reset-icon {
-		font-size: 8px;
+		font-size: 9px;
 		line-height: 1;
+		color: var(--admin-active-outline, #00FF00);
 	}
 
 	.reset-label {

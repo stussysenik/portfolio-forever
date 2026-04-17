@@ -302,6 +302,10 @@ export const socialLinks = [
         { label: "linkedin", url: "https://www.linkedin.com/in/mxzou" },
         { label: "instagram", url: "https://instagram.com/mx.zou" },
         { label: "x", url: "https://x.com/mx_zou" },
+        { label: "dribbble", url: "#" },
+        { label: "behance", url: "#" },
+        { label: "letterboxd", url: "#" },
+        { label: "storygraph", url: "#" },
         { label: "email", url: `mailto:${profile.email}` },
 ];
 

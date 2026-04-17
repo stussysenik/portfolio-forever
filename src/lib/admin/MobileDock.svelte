@@ -74,7 +74,7 @@
 		color: var(--admin-accent, #2563eb);
 	}
 	.dock-label {
-		font-size: 9px;
+		font-size: 11px;
 		letter-spacing: 0.1em;
 		text-transform: uppercase;
 		font-weight: 600;

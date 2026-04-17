@@ -1,4 +1,8 @@
 import { z } from 'zod';
+import { pendingChanges } from './pending';
+import { wipBannerDismissed } from '$lib/stores/siteMode';
+import { getFlagEntry } from '$lib/admin/flagIndicatorRegistry';
+import { stagedFlags } from '$lib/stores/stagedFlags';
 
 export type ExecuteContext = {
 	client: any;
@@ -13,8 +17,33 @@ export type ActionSpec<TSchema extends z.ZodTypeAny = z.ZodTypeAny> = {
 	execute: (args: z.infer<TSchema>, ctx: ExecuteContext) => Promise<unknown>;
 };
 
+type PendingFlag = {
+	flagId: string;
+	enabled: boolean;
+};
+
+let pendingFlags: PendingFlag[] = [];
+
 function action<TSchema extends z.ZodTypeAny>(spec: ActionSpec<TSchema>): ActionSpec<TSchema> {
-	return spec;
+	const originalExecute = spec.execute;
+	return {
+		...spec,
+		async execute(args, ctx) {
+			const result = await originalExecute(args, ctx);
+			// Record in adminHistory so sidebar ChangeBadge + HistoryPopover see cmd+K changes
+			try {
+				await ctx.client.mutation(ctx.api.adminHistory.insert, {
+					table: 'commandOs',
+					field: spec.name,
+					oldValue: null,
+					newValue: args,
+				});
+			} catch (_) {
+				// History recording is best-effort — don't break the action
+			}
+			return result;
+		},
+	};
 }
 
 const workStyleOverrides = z
@@ -138,7 +167,19 @@ export const registry = {
 			enabled: z.boolean(),
 		}),
 		async execute({ flagId, enabled }, { client, api }) {
-			return client.mutation(api.siteConfig.setFeatureFlag, { flagId, enabled });
+			const entry = getFlagEntry(flagId);
+			const category = entry?.category ?? 'visual';
+			return client.mutation(api.siteConfig.setFeatureFlag, { key: flagId, enabled, category });
+		},
+	}),
+
+	toggleCubeMode: action({
+		name: 'toggleCubeMode',
+		description: 'Switch between scroll view and 3D cube navigation.',
+		parameters: z.object({ enabled: z.boolean() }),
+		async execute({ enabled }) {
+			stagedFlags.stage('cube-mode', enabled, 'visual', '3D Cube Mode');
+			return { enabled };
 		},
 	}),
 
@@ -149,6 +190,64 @@ export const registry = {
 		async execute({ path }, { goto }) {
 			await goto(path);
 			return { path };
+		},
+	}),
+
+	setWipBadge: action({
+		name: 'setWipBadge',
+		description: 'Show or hide the WIP banner in the visual preview. Changes are staged and committed with "save".',
+		parameters: z.object({ visible: z.boolean() }),
+		async execute({ visible }) {
+			wipBannerDismissed.set(!visible);
+			if (typeof window !== 'undefined') {
+				window.dispatchEvent(new CustomEvent('admin:wipBadge', { detail: { visible } }));
+				const iframes = document.querySelectorAll<HTMLIFrameElement>('iframe[src*="preview=true"]');
+				iframes.forEach((iframe) => {
+					iframe.contentWindow?.postMessage({ type: 'admin:wipBadge', visible }, '*');
+				});
+			}
+			pendingChanges.push({
+				action: 'toggleFlag',
+				args: { flagId: 'wip-banner', enabled: visible },
+				label: visible ? 'Enable WIP banner' : 'Disable WIP banner',
+			});
+			const existing = pendingFlags.findIndex((f) => f.flagId === 'wip-banner');
+			if (existing >= 0) pendingFlags.splice(existing, 1);
+			pendingFlags.push({ flagId: 'wip-banner', enabled: visible });
+			return { visible };
+		},
+	}),
+
+	previewAt: action({
+		name: 'previewAt',
+		description: 'Set the preview pane viewport width. Use 390 for mobile, 768 for tablet, 1440 for desktop, or any pixel value.',
+		parameters: z.object({ width: z.number().min(280).max(3840) }),
+		async execute({ width }) {
+			if (typeof window !== 'undefined') {
+				window.dispatchEvent(new CustomEvent('admin:previewBreakpoint', { detail: { width } }));
+			}
+			return { width };
+		},
+	}),
+
+	commitPending: action({
+		name: 'commitPending',
+		description: 'Commit all staged changes to the database in order.',
+		parameters: z.object({ confirm: z.boolean() }),
+		async execute({ confirm }, { client, api }) {
+			if (!confirm) return { committed: 0, error: 'not confirmed' };
+			let committed = 0;
+			for (const flag of pendingFlags) {
+				await client.mutation(api.siteConfig.setFeatureFlag, {
+					key: flag.flagId,
+					enabled: flag.enabled,
+					category: 'layout',
+				});
+				committed++;
+			}
+			pendingFlags = [];
+			pendingChanges.clear();
+			return { committed };
 		},
 	}),
 } as const satisfies Record<string, ActionSpec>;

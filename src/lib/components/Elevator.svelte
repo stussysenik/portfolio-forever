@@ -323,7 +323,7 @@
     padding: 0;
     
     font-family: inherit;
-    font-size: 11px;
+    font-size: var(--font-size-xs, 0.75rem);
     
     background: transparent;
     border: 1px solid transparent;
@@ -366,13 +366,13 @@
     }
 
     .elevator-label {
-      font-size: 9px;
+      font-size: var(--font-size-2xs, 0.75rem);
     }
 
     .sound-btn {
       width: 16px;
       height: 16px;
-      font-size: 10px;
+      font-size: var(--font-size-2xs, 0.75rem);
     }
   }
 

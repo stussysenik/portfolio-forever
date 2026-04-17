@@ -4,6 +4,8 @@
 	export let open: boolean = false;
 	export let siteUrl: string = '';
 
+	$: previewSiteUrl = siteUrl ? (siteUrl.includes('?') ? siteUrl + '&preview=true' : siteUrl + '?preview=true') : '';
+
 	const dispatch = createEventDispatcher<{ close: void; open: void }>();
 
 	let sheetEl: HTMLElement | undefined;
@@ -109,9 +111,9 @@
 			</div>
 
 			<div class="preview-iframe-wrap">
-				{#if open && siteUrl}
+				{#if open && previewSiteUrl}
 					<iframe
-						src={siteUrl}
+						src={previewSiteUrl}
 						title="Site preview"
 						class="preview-iframe"
 						frameborder="0"

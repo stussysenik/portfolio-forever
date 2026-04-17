@@ -1,6 +1,7 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
-import { stripUndefined } from "./helpers";
+import { stripUndefined, logHistory } from "./helpers";
+import { Id } from "./_generated/dataModel";
 
 export const getVisibleWorks = query({
 	handler: async (ctx) => {
@@ -62,7 +63,14 @@ export const createEntry = mutation({
 		styleOverrides: styleOverridesValidator,
 	},
 	handler: async (ctx, args) => {
-		return await ctx.db.insert("worksEntries", args);
+		const id = await ctx.db.insert("worksEntries", args);
+		await logHistory(ctx, {
+			table: "worksEntries",
+			field: "create",
+			oldValue: null,
+			newValue: args,
+		});
+		return id;
 	},
 });
 
@@ -93,14 +101,33 @@ export const updateEntry = mutation({
 		styleOverrides: styleOverridesValidator,
 	},
 	handler: async (ctx, { id, ...fields }) => {
-		await ctx.db.patch(id, stripUndefined(fields));
+		const oldEntry = await ctx.db.get(id);
+		const patch = stripUndefined(fields);
+		await ctx.db.patch(id, patch);
+
+		// Log each modified field
+		for (const [field, newValue] of Object.entries(patch)) {
+			await logHistory(ctx, {
+				table: "worksEntries",
+				field,
+				oldValue: oldEntry ? (oldEntry as any)[field] : null,
+				newValue,
+			});
+		}
 	},
 });
 
 export const deleteEntry = mutation({
 	args: { id: v.id("worksEntries") },
 	handler: async (ctx, { id }) => {
+		const oldEntry = await ctx.db.get(id);
 		await ctx.db.delete(id);
+		await logHistory(ctx, {
+			table: "worksEntries",
+			field: "delete",
+			oldValue: oldEntry,
+			newValue: null,
+		});
 	},
 });
 
@@ -109,7 +136,14 @@ export const toggleVisibility = mutation({
 	handler: async (ctx, { id }) => {
 		const entry = await ctx.db.get(id);
 		if (entry) {
-			await ctx.db.patch(id, { visible: !entry.visible });
+			const newValue = !entry.visible;
+			await ctx.db.patch(id, { visible: newValue });
+			await logHistory(ctx, {
+				table: "worksEntries",
+				field: "visible",
+				oldValue: entry.visible,
+				newValue,
+			});
 		}
 	},
 });
@@ -123,7 +157,14 @@ export const reorderEntries = mutation({
 	},
 	handler: async (ctx, { updates }) => {
 		for (const { id, order } of updates) {
+			const oldEntry = await ctx.db.get(id);
 			await ctx.db.patch(id, { order });
+			await logHistory(ctx, {
+				table: "worksEntries",
+				field: "order",
+				oldValue: oldEntry?.order,
+				newValue: order,
+			});
 		}
 	},
 });

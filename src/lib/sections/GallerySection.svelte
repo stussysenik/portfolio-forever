@@ -251,7 +251,7 @@
 
   .tile-year {
     font-family: var(--font-mono);
-    font-size: 8px;
+    font-size: var(--font-size-2xs, 0.75rem);
     color: hsla(0,0%,100%,0.6);
   }
 

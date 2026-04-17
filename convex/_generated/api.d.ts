@@ -11,6 +11,7 @@
 import type * as academia from "../academia.js";
 import type * as adminHistory from "../adminHistory.js";
 import type * as blog from "../blog.js";
+import type * as commandOs from "../commandOs.js";
 import type * as cv from "../cv.js";
 import type * as display from "../display.js";
 import type * as gallery from "../gallery.js";
@@ -47,6 +48,7 @@ declare const fullApi: ApiFromModules<{
   academia: typeof academia;
   adminHistory: typeof adminHistory;
   blog: typeof blog;
+  commandOs: typeof commandOs;
   cv: typeof cv;
   display: typeof display;
   gallery: typeof gallery;

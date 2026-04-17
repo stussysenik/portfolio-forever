@@ -1,6 +1,6 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
-import { stripUndefined } from "./helpers";
+import { stripUndefined, logHistory } from "./helpers";
 
 // ── Public queries (no auth required) ──
 
@@ -76,7 +76,14 @@ export const createEntry = mutation({
 		visible: v.boolean(),
 	},
 	handler: async (ctx, args) => {
-		return await ctx.db.insert("cvEntries", args);
+		const id = await ctx.db.insert("cvEntries", args);
+		await logHistory(ctx, {
+			table: "cvEntries",
+			field: "create",
+			oldValue: null,
+			newValue: args,
+		});
+		return id;
 	},
 });
 
@@ -97,14 +104,32 @@ export const updateEntry = mutation({
 		visible: v.optional(v.boolean()),
 	},
 	handler: async (ctx, { id, ...fields }) => {
-		await ctx.db.patch(id, stripUndefined(fields));
+		const oldEntry = await ctx.db.get(id);
+		const patch = stripUndefined(fields);
+		await ctx.db.patch(id, patch);
+
+		for (const [field, newValue] of Object.entries(patch)) {
+			await logHistory(ctx, {
+				table: "cvEntries",
+				field,
+				oldValue: oldEntry ? (oldEntry as any)[field] : null,
+				newValue,
+			});
+		}
 	},
 });
 
 export const deleteEntry = mutation({
 	args: { id: v.id("cvEntries") },
 	handler: async (ctx, { id }) => {
+		const oldEntry = await ctx.db.get(id);
 		await ctx.db.delete(id);
+		await logHistory(ctx, {
+			table: "cvEntries",
+			field: "delete",
+			oldValue: oldEntry,
+			newValue: null,
+		});
 	},
 });
 
@@ -113,7 +138,14 @@ export const toggleVisibility = mutation({
 	handler: async (ctx, { id }) => {
 		const entry = await ctx.db.get(id);
 		if (entry) {
-			await ctx.db.patch(id, { visible: !entry.visible });
+			const newValue = !entry.visible;
+			await ctx.db.patch(id, { visible: newValue });
+			await logHistory(ctx, {
+				table: "cvEntries",
+				field: "visible",
+				oldValue: entry.visible,
+				newValue,
+			});
 		}
 	},
 });
@@ -127,7 +159,14 @@ export const reorderEntries = mutation({
 	},
 	handler: async (ctx, { updates }) => {
 		for (const { id, order } of updates) {
+			const oldEntry = await ctx.db.get(id);
 			await ctx.db.patch(id, { order });
+			await logHistory(ctx, {
+				table: "cvEntries",
+				field: "order",
+				oldValue: oldEntry?.order,
+				newValue: order,
+			});
 		}
 	},
 });
@@ -155,6 +194,17 @@ export const updateProfile = mutation({
 		createdDate: v.optional(v.string()),
 	},
 	handler: async (ctx, { id, ...fields }) => {
-		await ctx.db.patch(id, stripUndefined(fields));
+		const oldProfile = await ctx.db.get(id);
+		const patch = stripUndefined(fields);
+		await ctx.db.patch(id, patch);
+
+		for (const [field, newValue] of Object.entries(patch)) {
+			await logHistory(ctx, {
+				table: "cvProfile",
+				field,
+				oldValue: oldProfile ? (oldProfile as any)[field] : null,
+				newValue,
+			});
+		}
 	},
 });

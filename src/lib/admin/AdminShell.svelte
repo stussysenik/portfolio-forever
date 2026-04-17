@@ -3,10 +3,13 @@
 	import './tokens/admin-tokens.css';
 	import './tokens/admin-shell-tokens.css';
 	import PageSidebar from './PageSidebar.svelte';
+	import CMSidebar from './CMSidebar.svelte';
+	import { adminViewStore } from './stores/adminViewStore';
 	import PageBar from './PageBar.svelte';
 	import PreviewDrawer from './PreviewDrawer.svelte';
 	import AdminIcon from './AdminIcon.svelte';
 	import { IconSettings } from './admin-icons';
+	import WipBadge from './WipBadge.svelte';
 	import MobileDock from './MobileDock.svelte';
 
 	export let pages: any[] = [];
@@ -58,8 +61,7 @@
 		{ id: 'minimal', label: 'Minimal', accent: '#2563EB' },
 		{ id: 'studio', label: 'Studio', accent: '#8B7355' },
 		{ id: 'terminal', label: 'Terminal', accent: '#00FF00' },
-		{ id: 'darkroom', label: 'Darkroom', accent: '#FF4444' },
-		{ id: 'accessible', label: 'A11y', accent: '#0000FF' },
+		{ id: 'bw', label: 'B&W', accent: '#000000' },
 	];
 
 	const FONT_OPTIONS = [
@@ -140,6 +142,7 @@
 			<button class="chip" on:click={() => dispatch('opensettings')} title="Open settings" aria-label="Settings">
 				<AdminIcon icon={IconSettings} size="sm" tone="inherit" />
 			</button>
+			<WipBadge />
 			<div class="topbar-collapsible">
 				<div class="dropdown-wrapper">
 					<button class="chip" on:click={() => { themeDropdownOpen = !themeDropdownOpen; fontDropdownOpen = false; }} title="Select theme">
@@ -297,15 +300,10 @@
 <style>
 	/* === Shell grid === */
 	.admin-shell {
-		display: grid;
-		grid-template-rows: var(--admin-topbar-h) auto minmax(0, 1fr) auto;
-		grid-template-columns: 1fr;
-		grid-template-areas:
-			"topbar"
-			"pills"
-			"builder"
-			"dock";
+		display: flex;
+		flex-direction: column;
 		height: 100dvh;
+		width: 100vw;
 		overflow: hidden;
 		background: var(--admin-chrome-bg);
 		color: var(--admin-text);
@@ -315,6 +313,7 @@
 	/* Tablet: sidebar + main */
 	@media (min-width: 768px) {
 		.admin-shell {
+			display: grid;
 			grid-template-rows: var(--admin-topbar-h) minmax(0, 1fr);
 			grid-template-columns: var(--admin-sidebar-w) 1fr;
 			grid-template-areas:
@@ -326,6 +325,7 @@
 	/* Desktop: sidebar + builder + preview */
 	@media (min-width: 1024px) {
 		.admin-shell {
+			grid-template-rows: var(--admin-topbar-h) minmax(0, 1fr);
 			grid-template-columns: var(--admin-sidebar-w) 1fr 1fr;
 			grid-template-areas:
 				"topbar topbar topbar"
@@ -343,7 +343,7 @@
 
 	/* === Top bar === */
 	.topbar {
-		grid-area: topbar;
+		flex: 0 0 var(--admin-topbar-h);
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
@@ -351,13 +351,20 @@
 		border-bottom: 1px solid var(--admin-keyline);
 		background: var(--admin-chrome-bg);
 		color: var(--admin-text);
-		z-index: 10;
+		width: 100%;
+	}
+
+	@media (min-width: 768px) {
+		.topbar {
+			grid-area: topbar;
+		}
 	}
 
 	.topbar-left {
 		display: flex;
 		align-items: center;
 		gap: var(--admin-space-2, 8px);
+		min-width: 0;
 	}
 
 	.topbar-right {
@@ -368,10 +375,12 @@
 
 	.breadcrumb {
 		font-family: var(--font-mono);
-		font-size: var(--admin-text-sm, 11px);
+		font-size: var(--admin-text-sm, 13px);
 		display: flex;
 		align-items: center;
 		gap: var(--admin-space-1, 4px);
+		overflow: hidden;
+		white-space: nowrap;
 	}
 
 	.breadcrumb-root {
@@ -385,14 +394,16 @@
 	.breadcrumb-current {
 		color: var(--admin-text);
 		font-weight: 500;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 
 	.chip {
 		font-family: var(--admin-font-mono);
-		font-size: var(--admin-text-xs, 9px);
+		font-size: var(--admin-text-xs, 12px);
 		text-transform: uppercase;
 		letter-spacing: 0.06em;
-		padding: var(--admin-space-1, 4px) var(--admin-space-3, 12px);
+		padding: var(--admin-space-2, 8px) var(--admin-space-3, 12px);
 		border: 1px solid var(--admin-keyline);
 		border-radius: 2px;
 		background: transparent;
@@ -400,6 +411,7 @@
 		cursor: pointer;
 		transition: all var(--admin-transition, 120ms ease);
 		white-space: nowrap;
+		min-height: var(--admin-touch-compact, 36px);
 	}
 
 	.chip:hover {
@@ -408,15 +420,15 @@
 	}
 
 	.chip-active {
-		background: var(--admin-accent);
-		border-color: var(--admin-accent);
-		color: #fff;
+		background: var(--admin-active-outline, #00FF00);
+		border-color: var(--admin-active-outline, #00FF00);
+		color: #000;
 	}
 
 	.chip-active:hover {
-		background: var(--admin-accent);
-		border-color: var(--admin-accent);
-		color: #fff;
+		background: var(--admin-active-outline, #00FF00);
+		border-color: var(--admin-active-outline, #00FF00);
+		color: #000;
 	}
 
 	/* === Dropdowns === */
@@ -442,9 +454,9 @@
 		align-items: center;
 		gap: 8px;
 		width: 100%;
-		padding: 6px 8px;
+		padding: 8px 10px;
 		font-family: var(--admin-font-mono);
-		font-size: var(--admin-text-xs, 9px);
+		font-size: var(--admin-text-sm, 13px);
 		background: transparent;
 		border: none;
 		color: var(--admin-text-subtle);
@@ -452,6 +464,7 @@
 		border-radius: 2px;
 		transition: all var(--admin-transition, 120ms ease);
 		text-align: left;
+		min-height: var(--admin-touch-compact, 36px);
 	}
 
 	.dropdown-item:hover {
@@ -460,7 +473,7 @@
 	}
 
 	.dropdown-item-active {
-		color: var(--admin-accent);
+		color: var(--admin-active-outline, #00FF00);
 	}
 
 	.theme-dot {
@@ -495,24 +508,39 @@
 
 	/* === Mobile dock (bottom row, hidden tablet+) === */
 	.mobile-dock-wrap {
-		grid-area: dock;
+		flex: 0 0 auto;
 		display: block;
+		width: 100%;
 	}
 	@media (min-width: 768px) {
 		.mobile-dock-wrap {
+			grid-area: dock;
 			display: none;
 		}
 	}
 
 	/* === Builder (workspace surface) === */
 	.builder {
-		grid-area: builder;
+		flex: 1 1 0%;
 		min-height: 0;
 		overflow-y: auto;
 		overscroll-behavior: contain;
 		padding: var(--admin-space-4, 16px);
 		background: var(--admin-workspace-bg);
 		color: var(--admin-text);
+		width: 100%;
+	}
+
+	@media (min-width: 768px) {
+		.builder {
+			grid-area: builder;
+		}
+	}
+
+	@media (max-width: 767px) {
+		.builder {
+			padding: var(--admin-space-2, 8px) 0;
+		}
 	}
 
 	/* === Preview frame === */
@@ -551,14 +579,14 @@
 
 	.topbar-overflow-chip {
 		font-family: var(--admin-font-mono);
-		font-size: var(--admin-text-xs, 9px);
-		padding: var(--admin-space-1, 4px) var(--admin-space-3, 12px);
+		font-size: var(--admin-text-sm, 13px);
+		padding: var(--admin-space-2, 8px) var(--admin-space-3, 12px);
 		border: 1px solid var(--admin-keyline);
 		border-radius: 2px;
 		background: transparent;
 		color: var(--admin-text-subtle);
 		cursor: pointer;
-		min-height: var(--admin-touch-compact, 28px);
+		min-height: var(--admin-touch-compact, 36px);
 		display: none; /* shown via media query */
 		align-items: center;
 		transition: all var(--admin-transition, 120ms ease);
@@ -593,9 +621,14 @@
 
 	.overflow-label {
 		font-family: var(--admin-font-mono);
-		font-size: var(--admin-text-2xs, 7px);
+		font-size: var(--admin-text-xs, 12px);
 		text-transform: uppercase;
 		letter-spacing: 0.08em;
+		color: var(--admin-text-muted);
+		font-weight: 600;
+	}
+</style>
+08em;
 		color: var(--admin-text-muted);
 		font-weight: 600;
 	}

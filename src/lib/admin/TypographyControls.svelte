@@ -7,7 +7,7 @@
 	export let fontWeight: number = TYPOGRAPHY_DEFAULTS.fontWeight;
 	export let letterSpacing: number = TYPOGRAPHY_DEFAULTS.letterSpacing;
 	export let lineHeight: number = TYPOGRAPHY_DEFAULTS.lineHeight;
-	export let defaults = TYPOGRAPHY_DEFAULTS;
+	export let defaults: { fontSize: number; fontWeight: number; letterSpacing: number; lineHeight: number } = { ...TYPOGRAPHY_DEFAULTS };
 	export let timestamp: number | null = null;
 
 	const dispatch = createEventDispatcher<{

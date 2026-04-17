@@ -2,9 +2,12 @@
 	import { createEventDispatcher, onMount, onDestroy } from 'svelte';
 	import { AdminToggle } from '$lib/admin/primitives';
 	import { FLAG_CATEGORIES } from '$lib/admin/constants';
+	import { stagedFlags, resolveFlagEnabled } from '$lib/stores/stagedFlags';
 
-	/** Flag key → enabled state */
 	export let flags: Record<string, boolean> = {};
+	export let client: any = null;
+	export let api: any = null;
+	export let featureFlags: Array<{ key: string; enabled: boolean; category: string }> = [];
 
 	const dispatch = createEventDispatcher<{
 		toggle: { key: string; category: string };
@@ -30,7 +33,7 @@
 	$: categoryFlagKeys = activeCategory.flags as readonly string[];
 
 	function isEnabled(key: string): boolean {
-		return flags[key] ?? true;
+		return resolveFlagEnabled(key, featureFlags, FLAG_LABELS[key]);
 	}
 
 	function prevCategory() {
@@ -42,7 +45,13 @@
 	}
 
 	function handleToggle(key: string) {
-		dispatch('toggle', { key, category: activeCategory.id });
+		const currentEnabled = isEnabled(key);
+		const newEnabled = !currentEnabled;
+		const category = activeCategory.id;
+		const label = FLAG_LABELS[key] ?? key;
+
+		stagedFlags.stage(key, newEnabled, category, label);
+		dispatch('toggle', { key, category });
 	}
 
 	function handleKeydown(e: KeyboardEvent) {
@@ -75,7 +84,6 @@
 	role="region"
 	aria-label="Feature flags — {activeCategory.label} category"
 >
-	<!-- Category header with nav arrows -->
 	<div class="flags-header">
 		<button
 			class="flags-nav-btn"
@@ -96,7 +104,6 @@
 		</button>
 	</div>
 
-	<!-- Page dots -->
 	<div class="flags-dots" aria-hidden="true">
 		{#each FLAG_CATEGORIES as _, i}
 			<span
@@ -106,7 +113,6 @@
 		{/each}
 	</div>
 
-	<!-- Flag toggles -->
 	<div class="flags-toggle-list">
 		{#each categoryFlagKeys as key}
 			<div class="flags-toggle-row">
@@ -137,7 +143,6 @@
 		border-radius: 2px;
 	}
 
-	/* ── Header: arrows + label ── */
 	.flags-header {
 		display: flex;
 		align-items: center;
@@ -185,7 +190,6 @@
 		cursor: default;
 	}
 
-	/* ── Page dots ── */
 	.flags-dots {
 		display: flex;
 		justify-content: center;
@@ -205,7 +209,6 @@
 		background: var(--admin-blue, #2563EB);
 	}
 
-	/* ── Toggle rows ── */
 	.flags-toggle-list {
 		display: flex;
 		flex-direction: column;

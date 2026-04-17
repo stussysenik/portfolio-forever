@@ -2,9 +2,11 @@
 	import { createEventDispatcher } from 'svelte';
 	import { AdminChipGroup } from '$lib/admin/primitives';
 	import DraggableSectionList from '$lib/admin/DraggableSectionList.svelte';
+	import CubeModeConfig from '$lib/admin/CubeModeConfig.svelte';
 	import { sectionTypeRegistry, resolveComponentKey } from '$lib/sections/registry';
 	import { toast } from '$lib/stores/toast';
 	import { stripConvexMeta } from '$lib/admin/constants';
+	import { resolveFlagEnabled } from '$lib/stores/stagedFlags';
 
 	export let page: any = null;
 	export let featureFlags: any[] = [];
@@ -39,6 +41,7 @@
 	$: pixelEngineFlag = featureFlags.find((f: any) => f.key === 'pixel-engine');
 	$: pixelEngineGlobal = pixelEngineFlag?.enabled ?? false;
 	$: showParticles = hasPixelEngine && pixelEngineGlobal;
+	$: cubeModeEnabled = resolveFlagEnabled('cube-mode', featureFlags);
 
 	/** Current particle presets from first section config */
 	$: activeParticles = sections[0]?.config?.particles ?? [];
@@ -161,6 +164,13 @@
 			<a class="view-live-link" href={pageRoute} target="_blank" rel="noopener noreferrer">VIEW LIVE</a>
 		</div>
 	</div>
+
+	<!-- Cube mode config -->
+	{#if cubeModeEnabled}
+		<div class="builder-section">
+			<CubeModeConfig {page} {client} {api} />
+		</div>
+	{/if}
 
 	<!-- Section list (hidden for single-hero pages — no reorder/add needed) -->
 	{#if !(sections.length === 1 && sections[0]?.sectionType === 'hero')}

@@ -105,7 +105,7 @@ const DEFAULT_NEOFETCH_FIELDS = [
   { label: 'Stack', value: 'SvelteKit · TypeScript · AR/XR' },
   { label: 'Location', value: 'Bed-Stuy, Brooklyn' },
   { label: 'Projects', value: '11 live works' },
-  { label: 'Themes', value: '4 (minimal, studio, darkroom, accessible)' },
+  { label: 'Themes', value: '4 (minimal, studio, terminal, b&w)' },
   { label: 'Shell', value: 'portfolio-terminal v2.0.0' },
 ];
 
@@ -626,7 +626,7 @@ __/ =| o |=-~~\\  /~~\\  /~~\\  /~~\\ ____Y___________|__
       tier: 3,
       desc: 'Switch theme',
       fn: (args) => {
-        const valid = ['minimal', 'studio', 'darkroom', 'accessible'];
+        const valid = ['minimal', 'studio', 'terminal', 'bw'];
         if (!args[0] || !valid.includes(args[0])) {
           return [text(`<span class="t-muted">Usage: theme &lt;${valid.join('|')}&gt;</span>`)];
         }

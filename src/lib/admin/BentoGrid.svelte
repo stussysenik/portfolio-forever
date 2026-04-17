@@ -10,7 +10,7 @@
 	let columns = 12;
 
 	onMount(() => {
-		isDark = document.documentElement.dataset.theme === 'darkroom' || document.documentElement.dataset.theme === 'terminal';
+		isDark = document.documentElement.dataset.theme === 'terminal' || document.documentElement.dataset.theme === 'bw';
 		updateColumns();
 		const mql1024 = window.matchMedia('(max-width: 1024px)');
 		const mql640 = window.matchMedia('(max-width: 640px)');
@@ -31,13 +31,10 @@
 
 	function toggleTheme() {
 		const html = document.documentElement;
-		if (isDark) {
-			html.dataset.theme = 'minimal';
-			isDark = false;
-		} else {
-			html.dataset.theme = 'darkroom';
-			isDark = true;
-		}
+		const next = isDark ? 'minimal' : 'terminal';
+		html.dataset.theme = next;
+		localStorage.setItem('theme', next);
+		isDark = !isDark;
 	}
 </script>
 

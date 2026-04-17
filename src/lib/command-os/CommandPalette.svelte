@@ -9,6 +9,8 @@
 	import { parseLocally, suggestActions } from './parser';
 	import { commandCache } from './cache';
 	import { toast } from '$lib/stores/toast';
+	import { pendingChanges, pendingCount, pendingLabels } from './pending';
+	import { formatRelativeTime } from '$lib/admin/constants';
 
 	type Status = 'idle' | 'loading' | 'preview' | 'error' | 'success';
 
@@ -23,6 +25,12 @@
 	let pendingAction: { name: string; args: Record<string, unknown> } | null = $state(null);
 	let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
+	let stagedCount = $state(0);
+	let stagedLabels = $state<string[]>([]);
+	let recentHistory = $state<Array<{ field: string; newValue: any; timestamp: number }>>([]);
+	pendingCount.subscribe((v) => { stagedCount = v; });
+	pendingLabels.subscribe((v) => { stagedLabels = v; });
+
 	const client = getConvexClient();
 
 	const {
@@ -33,7 +41,7 @@
 		preventScroll: true
 	});
 
-	function openPalette() {
+	async function openPalette() {
 		open.set(true);
 		status = 'idle';
 		errorMessage = '';
@@ -42,6 +50,16 @@
 			const el = document.getElementById('cmd-os-input') as HTMLInputElement | null;
 			el?.focus();
 		});
+		// Fetch recent changes from adminHistory
+		try {
+			const rows = await (client as any).query((api as any).adminHistory.getRecentByTable, {
+				table: 'commandOs',
+				limit: 5,
+			});
+			recentHistory = rows ?? [];
+		} catch (_) {
+			recentHistory = [];
+		}
 	}
 
 	function closePalette() {
@@ -118,7 +136,7 @@
 		status = 'loading';
 		try {
 			const schema = getRegistrySchema();
-			const response: any = await (client as any).action(api.commandOs.routeCommand, {
+			const response: any = await (client as any).action((api as any).commandOs.routeCommand, {
 				input: trimmed,
 				tools: schema
 			});
@@ -229,6 +247,17 @@
 					<p class="cmd-hint" {...$title} use:melt={$title}>
 						available actions
 					</p>
+					{#if stagedCount > 0}
+						<div class="cmd-pending-card">
+							<span class="cmd-pending-badge">{stagedCount} staged</span>
+							<ul class="cmd-pending-list">
+								{#each stagedLabels as label}
+									<li class="cmd-pending-item">{label}</li>
+								{/each}
+							</ul>
+							<p class="cmd-hint" style="margin-top:4px">type "save" to commit</p>
+						</div>
+					{/if}
 					<ul class="cmd-list">
 						{#each suggestions as s}
 							<li class="cmd-row">
@@ -237,10 +266,27 @@
 							</li>
 						{/each}
 					</ul>
+					{#if recentHistory.length > 0}
+						<p class="cmd-hint" style="margin-top:8px">recent changes</p>
+						<ul class="cmd-list">
+							{#each recentHistory as entry}
+								<li class="cmd-row cmd-row-history">
+									<span class="cmd-row-name">{entry.field}</span>
+									<span class="cmd-row-desc">{formatRelativeTime(entry.timestamp)}</span>
+								</li>
+							{/each}
+						</ul>
+					{/if}
 				{:else if status === 'loading'}
 					<p class="cmd-hint">thinking…</p>
 				{:else if status === 'preview' && pendingAction}
-					<p class="cmd-hint">preview &mdash; press enter to run</p>
+					<p class="cmd-hint">
+						{#if pendingAction.name === 'setWipBadge' || pendingAction.name === 'toggleFlag'}
+							preview (staged) &mdash; press enter to stage, then "save" to commit
+						{:else}
+							preview &mdash; press enter to run
+						{/if}
+					</p>
 					<div class="cmd-preview">
 						<div class="cmd-row">
 							<span class="cmd-row-name">action</span>
@@ -248,6 +294,17 @@
 						</div>
 						<pre class="cmd-args">{formatArgs(pendingAction.args)}</pre>
 					</div>
+					{#if stagedCount > 0}
+						<div class="cmd-pending">
+							<span class="cmd-pending-label">{stagedCount} staged</span>
+							<ul class="cmd-pending-list">
+								{#each stagedLabels as label}
+									<li class="cmd-pending-item">{label}</li>
+								{/each}
+							</ul>
+							<p class="cmd-hint">type "save" to commit all staged changes</p>
+						</div>
+					{/if}
 				{:else if status === 'error'}
 					<p class="cmd-hint cmd-hint-error">{errorMessage}</p>
 					{#if suggestions.length > 0}
@@ -268,7 +325,7 @@
 			<footer class="cmd-footer">
 				<span>enter · run</span>
 				<span>esc · close</span>
-				<button type="button" class="cmd-close" {...$close} use:melt={$close}>close</button>
+				<button class="cmd-close" {...$close} use:melt={$close}>close</button>
 			</footer>
 		</div>
 	</div>
@@ -370,6 +427,14 @@
 		background: var(--color-bg-alt, rgba(0, 0, 0, 0.03));
 	}
 
+	.cmd-row-history .cmd-row-name {
+		color: var(--color-text-subtle, #888);
+	}
+
+	.cmd-row-history .cmd-row-desc {
+		font-size: 0.6875rem;
+	}
+
 	.cmd-row-name {
 		flex: 0 0 auto;
 		min-width: 10ch;
@@ -426,5 +491,55 @@
 
 	.cmd-close:hover {
 		background: var(--color-bg-alt, rgba(0, 0, 0, 0.05));
+	}
+
+	.cmd-pending {
+		margin: 0.5rem 1rem 0;
+		padding: 0.5rem 0.75rem;
+		border: 1px solid var(--color-text-subtle, #666);
+		border-radius: 2px;
+		background: var(--color-bg-alt, rgba(0, 0, 0, 0.03));
+	}
+
+	.cmd-pending-label {
+		font-size: 0.6875rem;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-text-subtle, #888);
+	}
+
+	.cmd-pending-list {
+		list-style: none;
+		margin: 0.25rem 0 0;
+		padding: 0;
+	}
+
+	.cmd-pending-item {
+		font-size: 0.75rem;
+		color: var(--color-text, #111);
+		padding: 0.125rem 0;
+	}
+
+	.cmd-pending-item::before {
+		content: '→ ';
+		color: var(--color-text-subtle, #888);
+	}
+
+	.cmd-pending-card {
+		margin: 0.25rem 1rem 0.5rem;
+		padding: 0.5rem 0.75rem;
+		border: 1px dashed var(--color-text-subtle, #666);
+		border-radius: 2px;
+	}
+
+	.cmd-pending-badge {
+		display: inline-block;
+		font-size: 0.625rem;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		padding: 0.125rem 0.375rem;
+		background: var(--color-text, #111);
+		color: var(--color-bg, #fff);
+		border-radius: 2px;
 	}
 </style>

@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount, onDestroy, tick } from "svelte";
+  import { replaceState } from "$app/navigation";
   import { sections } from "$lib/sections/index";
   import { isReaderMode, siteConfig } from "$lib/stores/siteMode";
   import { depthController, physicsEngine } from "$lib/stores/controls";
@@ -23,6 +24,7 @@
   import GiftsSection from "$lib/sections/GiftsSection.svelte";
   import OsSection from "$lib/sections/OsSection.svelte";
   import LabsSection from "$lib/sections/LabsSection.svelte";
+  import MediaSection from "$lib/sections/MediaSection.svelte";
 
   export let blogPosts: any[] = [];
 
@@ -88,6 +90,7 @@
     gifts: GiftsSection,
     os: OsSection,
     labs: LabsSection,
+    media: MediaSection,
   };
 
   let activeSection = "hero";
@@ -96,7 +99,7 @@
   let lazyObs: IntersectionObserver | undefined;
   let ticking = false;
   let scrollY = 0;
-  let parallaxEnabled = true;
+  let parallaxEnabled = false;
 
   // Lazy loading: track which sections are near viewport
   let visibleSections = new Set<string>(["hero"]); // Hero always rendered
@@ -162,7 +165,7 @@
           if (entry.isIntersecting) {
             activeSection = entry.target.id;
             inViewport.add(entry.target.id);
-            history.replaceState(null, "", `/#${activeSection}`);
+            replaceState(`/#${activeSection}`, {});
           } else {
             inViewport.delete(entry.target.id);
           }
@@ -257,22 +260,6 @@
   class:reader-mode={$isReaderMode}
   style:--color-accent={homePage?.themeOverrides?.accentColor ?? null}
 >
-  <!-- Section nav (scroll spy) -->
-  <nav class="section-nav" aria-label="Page sections">
-    {#each filteredSections as id}
-      {@const label = sectionLabels[id]}
-      {#if label && componentMap[id]}
-        <button
-          class="section-nav-item"
-          class:active={activeSection === id}
-          on:click={() => scrollToSection(id)}
-        >
-          {label}
-        </button>
-      {/if}
-    {/each}
-  </nav>
-
   <!-- Sections -->
   {#each filteredSections as id (id)}
     {@const sd = sectionDataMap[id]}
@@ -304,44 +291,6 @@
     position: relative;
   }
 
-  .section-nav {
-    position: sticky;
-    top: var(--header-height, 3.5rem);
-    z-index: 50;
-    display: flex;
-    gap: var(--space-2xs);
-    padding: var(--space-xs) var(--space-md);
-    background: var(--color-bg);
-    border-bottom: 1px solid var(--border-color-subtle);
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-
-  .section-nav::-webkit-scrollbar {
-    display: none;
-  }
-
-  .section-nav-item {
-    all: unset;
-    cursor: pointer;
-    padding: var(--space-3xs) var(--space-xs);
-    font-size: var(--font-size-xs);
-    font-family: var(--font-mono);
-    color: var(--color-text-subtle);
-    white-space: nowrap;
-    border-radius: var(--radius-sm);
-    transition: color var(--duration-fast) var(--easing);
-  }
-
-  .section-nav-item:hover {
-    color: var(--color-text);
-  }
-
-  .section-nav-item.active {
-    color: var(--color-accent);
-    background: var(--color-bg-alt);
-  }
-
   .section-wrapper {
     min-height: 50vh;
     padding-block: var(--space-2xl);
@@ -349,10 +298,5 @@
 
   .section-wrapper.parallaxing {
     will-change: transform;
-  }
-
-  /* Reader mode hides the section nav */
-  .reader-mode .section-nav {
-    display: none;
   }
 </style>

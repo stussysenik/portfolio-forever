@@ -23,7 +23,7 @@ export const upsert = mutation({
 		readerModeRoute: v.optional(v.string()),
 		footerEdition: v.optional(v.string()),
 		footerYear: v.optional(v.number()),
-		navMode: v.optional(v.union(v.literal("auto"), v.literal("manual"))),
+		navMode: v.optional(v.union(v.literal("sidebar"), v.literal("drawer"), v.literal("hybrid"))),
 		heroVisual: v.optional(v.string()),
 	},
 	handler: async (ctx, args) => {

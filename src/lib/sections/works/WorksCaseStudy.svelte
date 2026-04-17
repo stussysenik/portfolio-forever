@@ -105,7 +105,7 @@
     }
 
     .category-badge {
-        font-size: 0.65rem;
+        font-size: var(--font-size-xs, 0.75rem);
         font-family: var(--font-mono, monospace);
         letter-spacing: 0.08em;
         text-transform: uppercase;
@@ -117,7 +117,7 @@
     }
 
     .year {
-        font-size: 0.65rem;
+        font-size: var(--font-size-xs, 0.75rem);
         font-family: var(--font-mono, monospace);
         color: rgba(232, 232, 232, 0.4);
         margin-left: auto;
@@ -147,7 +147,7 @@
     }
 
     .tech-badge {
-        font-size: 0.62rem;
+        font-size: var(--font-size-xs, 0.75rem);
         font-family: var(--font-mono, monospace);
         padding: 0.2em 0.5em;
         border-radius: 3px;
@@ -157,7 +157,7 @@
     }
 
     .visit-link {
-        font-size: 0.72rem;
+        font-size: var(--font-size-xs, 0.75rem);
         font-family: var(--font-mono, monospace);
         color: oklch(0.78 0.14 85 / 0.7);
         margin-top: 0.25rem;
