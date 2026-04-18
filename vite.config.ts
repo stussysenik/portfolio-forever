@@ -4,17 +4,20 @@ import Icons from "unplugin-icons/vite";
 import path from "path";
 import squintPlugin from "./vite-plugin-squint";
 
+const STATE_ENGINE = process.env.PUBLIC_STATE_ENGINE || "clojure";
+
 export default defineConfig({
         plugins: [
                 sveltekit(),
                 Icons({ compiler: "svelte", autoInstall: false }),
-                // squintPlugin({ srcDir: "src/lib/clj", outDir: "src/lib/clj" }),
+                squintPlugin({ srcDir: "src/lib/clj", outDir: "src/lib/clj" }),
         ],
         envPrefix: ["VITE_", "PUBLIC_", "NEXT_PUBLIC_"],
         resolve: {
                 alias: {
                         "$convex": path.resolve("./convex"),
                         "$clj": path.resolve("./clj"),
+                        "$core": path.resolve(`./src/lib/core/${STATE_ENGINE}`),
                 },
         },
         optimizeDeps: {
