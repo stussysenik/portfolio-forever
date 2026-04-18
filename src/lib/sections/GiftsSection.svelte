@@ -1,13 +1,26 @@
 <script lang="ts">
-	import { giftsConfig } from '$lib/data/content';
+	import { onMount } from 'svelte';
+	import { getConvexClient } from '$lib/convex';
+	import { setup_gifts_subscriptions } from '$lib/clj/portfolio/sections/gifts.mjs';
+	import { giftsConfig as staticConfig } from '$lib/data/content';
 
 	export let id = "gifts";
 
-	// Use giftsConfig from Clojure backend port
-	let title = giftsConfig?.title || "Send books, postcards, or art supplies";
-	let manifesto = giftsConfig?.manifesto || "The Promise — an open exchange of creative energy.";
-	let callToAction = giftsConfig?.description || "";
-	let contactEmail = giftsConfig?.email || "itsmxzou@gmail.com";
+	let config = staticConfig;
+
+	$: title = config?.title || "Send books, postcards, or art supplies";
+	$: manifesto = config?.manifesto || "The Promise — an open exchange of creative energy.";
+	$: callToAction = config?.description || "";
+	$: contactEmail = config?.email || "itsmxzou@gmail.com";
+
+	onMount(() => {
+		const client = getConvexClient();
+		return setup_gifts_subscriptions(client, {
+			onConfig: (data: any) => {
+				if (data) config = data;
+			}
+		});
+	});
 </script>
 
 <svelte:head>

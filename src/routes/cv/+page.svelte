@@ -1,11 +1,6 @@
-<script>
-  import { onMount } from "svelte";
+<script lang="ts">
   import CvSection from "$lib/sections/CvSection.svelte";
-  import { redirectIfOnePage } from "$lib/stores/siteMode";
-
-  onMount(() => {
-    redirectIfOnePage("cv");
-  });
+  import DynamicPage from "$lib/components/DynamicPage.svelte";
 </script>
 
-<CvSection />
+<DynamicPage pageId="cv" fallback={CvSection} fallbackId="cv" />

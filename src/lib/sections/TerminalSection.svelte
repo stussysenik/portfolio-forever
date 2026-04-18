@@ -4,12 +4,11 @@
   import { profile } from '$lib/data/content';
   import { getConvexClient } from '$lib/convex';
   import { api } from '$convex/_generated/api';
+  
   import {
-    createCommandRegistry,
-    createShellState,
-    type OutputLine,
-    type TerminalData,
-  } from '$lib/terminal/commands';
+    create_command_registry as createCommandRegistry,
+    create_shell_state as createShellState
+  } from '$lib/clj/portfolio/terminal/commands.mjs';
 
   export let id = "terminal";
   export let embedded = false;
@@ -31,7 +30,7 @@
 
   interface HistoryEntry {
     type: 'input' | 'output';
-    lines?: OutputLine[];
+    lines?: any[];
     content?: string;
     path?: string;
   }
@@ -67,7 +66,7 @@
     scrollToBottom();
   }
 
-  function processOutput(lines: OutputLine[]) {
+  function processOutput(lines: any[]) {
     const newEntries: HistoryEntry[] = [];
 
     for (const line of lines) {
@@ -312,7 +311,7 @@
       const client = getConvexClient();
       unsub = client.onUpdate(api.terminal.getTerminalConfig, {}, (data: any) => {
         if (data) {
-          registry = createCommandRegistry(data as TerminalData);
+          registry = createCommandRegistry(data);
           executeCmd = registry.executeCommand;
           getComps = registry.getCompletions;
         }

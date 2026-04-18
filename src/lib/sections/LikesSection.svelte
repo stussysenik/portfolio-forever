@@ -1,11 +1,22 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
+	import { getConvexClient } from '$lib/convex';
+	import { setup_likes_subscriptions } from '$lib/clj/portfolio/sections/likes.mjs';
 	import GenericListBlock from '$lib/components/blocks/GenericListBlock.svelte';
-	import { likes } from '$lib/data/content';
+	import { likes as staticLikes } from '$lib/data/content';
 
 	export let id = "likes";
 
-	// Use likes from Clojure backend port
-	let categories: { title: string; items: string[] }[] = likes || [];
+	let categories: any[] = staticLikes;
+
+	onMount(() => {
+		const client = getConvexClient();
+		return setup_likes_subscriptions(client, {
+			onLikes: (data: any) => {
+				if (data) categories = data;
+			}
+		});
+	});
 </script>
 
 <svelte:head>

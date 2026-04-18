@@ -1,11 +1,6 @@
-<script>
-  import { onMount } from "svelte";
+<script lang="ts">
   import MinorSection from "$lib/sections/MinorSection.svelte";
-  import { redirectIfOnePage } from "$lib/stores/siteMode";
-
-  onMount(() => {
-    redirectIfOnePage("minor");
-  });
+  import DynamicPage from "$lib/components/DynamicPage.svelte";
 </script>
 
-<MinorSection />
+<DynamicPage pageId="minor" fallback={MinorSection} fallbackId="minor" />

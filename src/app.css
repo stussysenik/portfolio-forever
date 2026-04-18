@@ -7,27 +7,26 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=JetBrains+Mono:wght@300;400;500&family=Crimson+Pro:wght@300;400;600&family=Fira+Code:wght@300;400;500&family=Space+Grotesk:wght@300;400;500;700&family=Rubik:wght@300;400;500;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@300;400;500;700&display=swap');
 @import 'katex/dist/katex.min.css';
 
-/* ---- LAYER 1: Design Tokens ---- */
+/* ---- LAYER 1: Design Tokens (Impeccable/ui.sh) ---- */
 :root {
-  /* === Scale - Breathing Room === */
-  --space-unit: 1rem;
-  --space-3xs: calc(var(--space-unit) * 0.0625);
-  --space-2xs: calc(var(--space-unit) * 0.125);
-  --space-xs: calc(var(--space-unit) * 0.25);
-  --space-sm: calc(var(--space-unit) * 0.5);
-  --space-md: var(--space-unit);
-  --space-lg: calc(var(--space-unit) * 1.5);
-  --space-xl: calc(var(--space-unit) * 2);
-  --space-2xl: calc(var(--space-unit) * 3);
-  --space-3xl: calc(var(--space-unit) * 4);
-  --space-4xl: calc(var(--space-unit) * 6);
-  --space-5xl: calc(var(--space-unit) * 8);
-  --space-6xl: calc(var(--space-unit) * 12);
+  --base-unit: 12px;
+  --space-unit: 12px;
+  
+  --space-3xs: calc(var(--space-unit) * 0.25); /* 3px */
+  --space-2xs: calc(var(--space-unit) * 0.5);  /* 6px */
+  --space-xs:  var(--space-unit);              /* 12px */
+  --space-sm:  calc(var(--space-unit) * 2);    /* 24px */
+  --space-md:  calc(var(--space-unit) * 3);    /* 36px */
+  --space-lg:  calc(var(--space-unit) * 4);    /* 48px */
+  --space-xl:  calc(var(--space-unit) * 6);    /* 72px */
+  --space-2xl: calc(var(--space-unit) * 8);    /* 96px */
+  --space-3xl: calc(var(--space-unit) * 12);   /* 144px */
+  --space-4xl: calc(var(--space-unit) * 16);   /* 192px */
 
   /* Section rhythm for breathing */
   --section-gap: var(--space-3xl);
 
-  /* === Fluid Typography — Modular Scale (1.25 ratio, 12px floor) === */
+  /* Fluid Typography */
   --font-size-3xs: clamp(0.75rem, 0.70rem + 0.25vw, 0.813rem);
   --font-size-2xs: clamp(0.75rem, 0.70rem + 0.25vw, 0.875rem);
   --font-size-xs: clamp(0.75rem, 0.70rem + 0.28vw, 0.875rem);
@@ -40,6 +39,13 @@
   --font-size-4xl: clamp(3.25rem, 2.4rem + 2.6vw, 5rem);
   --font-size-display: clamp(4rem, 2.8rem + 4.2vw, 8rem);
   --font-size-hero: clamp(5rem, 3.5rem + 5.5vw, 12rem);
+
+  /* Container */
+  --container-max: 1440px;
+  --container-padding: var(--space-xl);
+  
+  --grid-columns: 12;
+  --grid-gap: var(--space-xl);
 
   /* === Typography === */
   --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', 'Cascadia Code', monospace;
@@ -798,55 +804,63 @@ a:focus-visible {
   opacity: 1;
 }
 
-/* 12-Column Grid System */
+/* ---- Impeccable Grid System (ui.sh) ---- */
 .grid-container {
   display: grid;
   grid-template-columns: repeat(var(--grid-columns), 1fr);
   gap: var(--grid-gap);
+  max-width: var(--container-max);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--container-padding);
+  padding-right: var(--container-padding);
+  width: 100%;
 }
 
-/* Column spans - Mobile first (4-col base) */
-.col-1 {
-  grid-column: span 1;
-}
+/* Column spans - Mobile base */
+.col-1 { grid-column: span 1; }
+.col-2 { grid-column: span 2; }
+.col-3 { grid-column: span 3; }
+.col-4 { grid-column: span 4; }
+.col-5 { grid-column: span 5; }
+.col-6 { grid-column: span 6; }
+.col-7 { grid-column: span 7; }
+.col-8 { grid-column: span 8; }
+.col-9 { grid-column: span 9; }
+.col-10 { grid-column: span 10; }
+.col-11 { grid-column: span 11; }
+.col-12 { grid-column: span 12; }
+.col-full { grid-column: 1 / -1; }
 
-.col-2 {
-  grid-column: span 2;
-}
-
-.col-3 {
-  grid-column: span 3;
-}
-
-.col-4 {
-  grid-column: span 4;
-}
-
-.col-full {
-  grid-column: 1 / -1;
-}
-
-/* Tablet overrides (8-col) */
 @media (min-width: 768px) {
-  .md\:col-1 {
-    grid-column: span 1;
-  }
+  .md\:col-1 { grid-column: span 1; }
+  .md\:col-2 { grid-column: span 2; }
+  .md\:col-3 { grid-column: span 3; }
+  .md\:col-4 { grid-column: span 4; }
+  .md\:col-5 { grid-column: span 5; }
+  .md\:col-6 { grid-column: span 6; }
+  .md\:col-7 { grid-column: span 7; }
+  .md\:col-8 { grid-column: span 8; }
+  .md\:col-9 { grid-column: span 9; }
+  .md\:col-10 { grid-column: span 10; }
+  .md\:col-11 { grid-column: span 11; }
+  .md\:col-12 { grid-column: span 12; }
+}
 
-  .md\:col-2 {
-    grid-column: span 2;
-  }
-
-  .md\:col-3 {
-    grid-column: span 3;
-  }
-
-  .md\:col-4 {
-    grid-column: span 4;
-  }
-
-  .md\:col-5 {
-    grid-column: span 5;
-  }
+@media (min-width: 1024px) {
+  .lg\:col-1 { grid-column: span 1; }
+  .lg\:col-2 { grid-column: span 2; }
+  .lg\:col-3 { grid-column: span 3; }
+  .lg\:col-4 { grid-column: span 4; }
+  .lg\:col-5 { grid-column: span 5; }
+  .lg\:col-6 { grid-column: span 6; }
+  .lg\:col-7 { grid-column: span 7; }
+  .lg\:col-8 { grid-column: span 8; }
+  .lg\:col-9 { grid-column: span 9; }
+  .lg\:col-10 { grid-column: span 10; }
+  .lg\:col-11 { grid-column: span 11; }
+  .lg\:col-12 { grid-column: span 12; }
+}
 
   .md\:col-6 {
     grid-column: span 6;
@@ -855,7 +869,6 @@ a:focus-visible {
   .md\:col-8 {
     grid-column: span 8;
   }
-}
 
 /* Desktop overrides (12-col) */
 @media (min-width: 1024px) {

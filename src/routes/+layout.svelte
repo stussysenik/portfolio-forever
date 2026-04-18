@@ -494,13 +494,13 @@ if (!isExcluded) {			// Load site config from Convex
 
         .main-content {
                padding-top: var(--header-height, var(--space-3xl));
-               padding-bottom: 80px;
+               padding-bottom: 120px;
         }
 
         .main-content--sidebar {
                margin-left: 220px;
                padding-top: var(--space-xl);
-               padding-bottom: 80px;
+               padding-bottom: 120px;
         }
 
         @media (max-width: 767px) {
@@ -722,7 +722,7 @@ if (!isExcluded) {			// Load site config from Convex
                 border-top: var(--border-width) solid var(--border-color);
                 font-family: var(--font-mono);
                 font-size: var(--font-size-2xs);
-                z-index: 100;
+                z-index: 2001;
                 transition: background-color var(--duration-slow) var(--easing), left var(--duration-normal) var(--easing-out);
         }
 

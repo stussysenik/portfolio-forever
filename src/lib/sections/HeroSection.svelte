@@ -10,10 +10,10 @@
 
 	// Import from Clojure Abstraction Layer
 	import { setup_hero_subscriptions, format_profile_data, get_hero_config_derived } from "$lib/clj/portfolio/sections/hero.mjs";
+	import { get_hero_layout } from "$lib/clj/portfolio/ui/impeccable.mjs";
 	import { stagedOverrides } from "$lib/stores/siteMode";
 	// @ts-ignore
 	import { exports as dataUtils } from '$lib/clj/portfolio/data/overrides.mjs';
-	import DoubleTapEdit from '$lib/components/DoubleTapEdit.svelte';
 
 	export let id = "hero";
 
@@ -24,9 +24,11 @@
 	$: showWave = derivedConfig.showWave;
 	$: layout = derivedConfig.layout;
 
+	$: effectiveLayout = get_hero_layout(layout);
+
 	// Typography styles from config
 	$: heroNameStyles = `
-		font-size: ${effectiveHeroConfig?.heroNameSize ? effectiveHeroConfig.heroNameSize + 'rem' : 'var(--font-size-2xl)'};
+		font-size: ${effectiveHeroConfig?.heroNameSize ? effectiveHeroConfig.heroNameSize + 'rem' : 'var(--font-size-3xl)'};
 		font-weight: ${effectiveHeroConfig?.heroNameWeight ?? 700};
 		letter-spacing: ${effectiveHeroConfig?.heroNameLetterSpacing ? effectiveHeroConfig.heroNameLetterSpacing + 'em' : 'var(--letter-spacing-tight)'};
 		line-height: ${effectiveHeroConfig?.heroNameLineHeight ?? 'var(--line-height-dense)'};
@@ -58,219 +60,118 @@
 	});
 </script>
 
-<!-- Hero - Breathing Space -->
-<section {id}>
-<header class="hero" class:hero--diptych={layout === 'diptych'} class:hero--editorial={layout === 'editorial'} class:hero--stacked={layout === 'stacked'}>
-	<div class="hero-content">
-	import DoubleTapEdit from '$lib/components/DoubleTapEdit.svelte';
-...
-		<div class="hero-main">
-			<h1 class="hero-name" style={heroNameStyles}>
-				<DoubleTapEdit
-					table="cvProfile"
-					docId={profileData._id || 'singleton'}
-					field="name"
-					value={profileData.name}
-					label="Hero Name"
-				/>
-			</h1>
-			<p class="hero-tagline">
-				<DoubleTapEdit
-					table="cvProfile"
-					docId={profileData._id || 'singleton'}
-					field="shortBio"
-					value={profileData.shortBio}
-					label="Hero Tagline"
-				/>
-			</p>
+<!-- Hero - Impeccable 12-Column Grid Layout -->
+<section {id} class="hero-section">
+	<header class="grid-container hero-grid">
+		<!-- Identity Column -->
+		<div class="col-4 md:col-6 lg:col-{effectiveLayout.identity} hero-content">
+			<div class="hero-header">
+				<h1 class="hero-name" style={heroNameStyles}>
+					{profileData.name}
+				</h1>
+				<p class="hero-tagline">
+					{profileData.shortBio}
+				</p>
+			</div>
+
+			<div class="hero-meta-group">
+				<div class="meta-item">
+					<span class="meta-label">Location</span>
+					<span class="meta-value">{profileData.location}</span>
+				</div>
+				<div class="meta-item">
+					<span class="meta-label">Status</span>
+					<span class="meta-value status-available">Available for projects</span>
+				</div>
+			</div>
 		</div>
 
-		<p class="hero-bio">{profileData.shortBio}</p>
-
-		<div class="hero-meta">
-			<span class="hero-location">{profileData.location}</span>
+		<!-- Visual/Donut Column -->
+		<div class="col-4 md:col-6 lg:col-{effectiveLayout.visual} hero-visual-wrapper">
+			<div class="hero-visual">
+				{#if showDonut}<AsciiDonut />{/if}
+				{#if showWave}<AsciiWave />{/if}
+			</div>
 		</div>
-	</div>
-
-	<div class="hero-visual">
-		{#if showDonut}<AsciiDonut />{/if}
-		{#if showWave}<AsciiWave />{/if}
-	</div>
-</header>
-
-<div class="page-sections">
-<!-- THE WORK - First, because it speaks loudest -->
-<section class="section">
-	<header class="section-header">
-		<span class="section-marker">&#9670;</span>
-		<h2 class="section-title">WORKS</h2>
-		<span class="section-count">{works.length}</span>
 	</header>
-	<ul class="entry-list">
-		{#each works as entry}
-			<li class="entry" data-highlight={getHighlight(entry)}
-				style:--hl-text={getHighlightTextColor(entry.featured)}>
-				<span class="entry-date">{formatDate(entry)}</span>
-				<span class="entry-title">{entry.title}</span>
-				{#if entry.url}
-					<span class="entry-links">
-						<a href={entry.url} target="_blank" rel="noopener noreferrer">visit</a>
-					</span>
-				{:else if entry.links && entry.links.length > 0}
-					<span class="entry-links">
-						{#each entry.links as link}
-							<a href={link.url}>{link.label}</a>
+
+	<div class="grid-container body-grid mt-2xl">
+		<!-- WORKS Column - Prominent -->
+		<div class="col-4 md:col-8 lg:col-8 works-column">
+			<section class="section">
+				<header class="section-header">
+					<h2 class="section-title">SELECTED WORKS</h2>
+					<span class="section-count">{works.length}</span>
+				</header>
+				<ul class="entry-list impeccable-list">
+					{#each works as entry}
+						<li class="entry-item" data-highlight={getHighlight(entry)}
+							style:--hl-text={getHighlightTextColor(entry.featured)}>
+							<a href={entry.url || '#'} class="entry-link" target="_blank" rel="noopener noreferrer">
+								<span class="entry-date">{formatDate(entry)}</span>
+								<span class="entry-title-text">{entry.title}</span>
+								<span class="entry-arrow">→</span>
+							</a>
+						</li>
+					{/each}
+				</ul>
+			</section>
+		</div>
+
+		<!-- SIDEBAR - Identity & Links -->
+		<div class="col-4 md:col-8 lg:col-4 sidebar-column">
+			<section class="section">
+				<header class="section-header">
+					<h2 class="section-title">CONNECT</h2>
+				</header>
+				<nav class="connect-nav">
+					{#if profileData.sameAs.length > 0}
+						{#each profileData.sameAs as url}
+							<a href={url} class="connect-link" target="_blank" rel="noopener noreferrer">
+								<span class="connect-label">{sameAsUrlToLabel(url)}</span>
+								<span class="connect-arrow">↗</span>
+							</a>
 						{/each}
-					</span>
-				{/if}
-			</li>
-		{/each}
-	</ul>
-</section>
-
-<!-- Identity -->
-<section class="section">
-	<header class="section-header">
-		<span class="section-marker">&#9670;</span>
-		<h2 class="section-title">IDENTITY</h2>
-		{#if profileData.sameAs.length > 0}
-			<span class="section-count">{profileData.sameAs.length}</span>
-		{/if}
-	</header>
-	<div class="domains">
-		{#if profileData.sameAs.length > 0}
-			{#each profileData.sameAs as url}
-				<span class="domain-group">
-					<a href={url} target="_blank" rel="noopener noreferrer">{sameAsUrlToLabel(url)}</a>
-				</span>
-			{/each}
-		{:else}
-			<!-- SSR fallback: static domains -->
-			<span class="domain-group">
-				<a href="https://mxzou.com" target="_blank" rel="noopener noreferrer">mxzou.com</a>
-				<span class="domains-sep">&middot;</span>
-				<span class="domains-desc">main</span>
-			</span>
-			<span class="domain-group">
-				<a href="https://mengxuanzou.com" target="_blank" rel="noopener noreferrer">mengxuanzou.com</a>
-				<span class="domains-sep">&middot;</span>
-				<span class="domains-desc">filmmaking</span>
-			</span>
-			<span class="domain-group">
-				<a href="https://stussysenik.com" target="_blank" rel="noopener noreferrer">stussysenik.com</a>
-				<span class="domains-sep">&middot;</span>
-				<span class="domains-desc">dev + creative</span>
-			</span>
-		{/if}
+					{:else}
+						<a href="https://github.com/stussysenik" class="connect-link" target="_blank">
+							<span class="connect-label">GitHub</span>
+							<span class="connect-arrow">↗</span>
+						</a>
+						<a href="https://linkedin.com/in/mxzou" class="connect-link" target="_blank">
+							<span class="connect-label">LinkedIn</span>
+							<span class="connect-arrow">↗</span>
+						</a>
+					{/if}
+				</nav>
+			</section>
+		</div>
 	</div>
-</section>
-</div>
 
-<!-- Elevator back-to-top with music -->
-<Elevator showAfter={400} />
+	<Elevator showAfter={400} />
 </section>
 
 <style>
-	/* HERO */
-	.hero {
-		position: relative;
-		display: flex;
-		flex-wrap: wrap;
-		align-items: flex-start;
-		justify-content: space-between;
-		margin-bottom: var(--space-xl);
-		padding-top: var(--space-md);
-		gap: var(--space-2xl);
+	.hero-section {
+		padding-top: var(--space-xl);
+		animation: fadeIn var(--duration-slow) var(--easing);
 	}
 
-	.hero-content {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-lg);
-		max-width: 50ch;
-		flex: 1.618 1 min(320px, 100%);
-	}
-
-	.hero-visual {
-		flex: 1 1 280px;
-		display: flex;
-		justify-content: center;
-		align-items: flex-start;
-		flex-direction: column;
-		gap: var(--space-lg);
-	}
-
-	/* ── DIPTYCH: book-spread, edge-aligned, no gap ────────────────── */
-	.hero--diptych {
-		flex-wrap: nowrap;
-		gap: 0;
-		align-items: stretch;
-	}
-	.hero--diptych .hero-content {
-		flex: 1 1 50%;
-		max-width: none;
-	}
-	.hero--diptych .hero-visual {
-		flex: 1 1 50%;
-	}
-	.hero--diptych .hero-name {
-		font-size: var(--font-size-3xl, clamp(2rem, 5vw, 3.5rem));
-	}
-
-	@media (max-width: 767px) {
-		.hero--diptych {
-			flex-wrap: wrap;
-			gap: var(--space-xl);
-		}
-		.hero--diptych .hero-content,
-		.hero--diptych .hero-visual {
-			flex: 1 1 100%;
-		}
-	}
-
-	/* ── EDITORIAL: full-width name, vertical flow ────────────────── */
-	.hero--editorial {
-		flex-direction: column;
-		gap: var(--space-xl);
-	}
-	.hero--editorial .hero-content {
-		max-width: none;
-		flex: none;
-	}
-	.hero--editorial .hero-name {
-		font-size: clamp(3rem, 8vw, 6rem);
-		line-height: 0.9;
-	}
-
-	/* ── STACKED: centered vertically ─────────────────────────────── */
-	.hero--stacked {
-		flex-direction: column;
+	.hero-grid {
 		align-items: center;
-		text-align: center;
-		gap: var(--space-xl);
-	}
-	.hero--stacked .hero-content {
-		align-items: center;
-		text-align: center;
-	}
-	.hero--stacked .hero-bio {
-		text-align: center;
+		min-height: 40vh;
 	}
 
-	.hero-main {
+	.hero-header {
 		display: flex;
 		flex-direction: column;
-		gap: var(--space-xs);
+		gap: var(--space-md);
 	}
 
 	.hero-name {
-		font-family: var(--font-sans);
-		font-size: var(--font-size-2xl);
-		font-weight: 700;
-		letter-spacing: var(--letter-spacing-tight);
-		color: var(--color-text);
 		margin: 0;
-		line-height: var(--line-height-dense);
+		color: var(--color-text);
+		text-transform: uppercase;
+		letter-spacing: var(--letter-spacing-tighter);
 	}
 
 	.hero-tagline {
@@ -278,132 +179,135 @@
 		font-size: var(--font-size-base);
 		color: var(--color-text-secondary);
 		margin: 0;
-		line-height: var(--line-height-relaxed);
+		line-height: var(--line-height-snug);
+		max-width: 40ch;
 	}
 
-	.hero-bio {
-		font-family: var(--font-sans);
-		font-size: var(--font-size-sm);
-		color: var(--color-text-secondary);
-		margin: 0;
-		line-height: var(--line-height-relaxed);
-		max-width: 45ch;
-	}
-
-	.hero-meta {
+	.hero-meta-group {
 		display: flex;
-		gap: var(--space-md);
-		font-family: var(--font-mono);
-		font-size: var(--font-size-xs);
-		color: var(--color-text-subtle);
+		gap: var(--space-xl);
+		margin-top: var(--space-xl);
 	}
 
-	/* SECTIONS */
-	.section {
-		margin-bottom: var(--section-gap);
-	}
-
-	.section-header {
-		display: flex;
-		align-items: baseline;
-		gap: var(--space-sm);
-		margin-bottom: var(--space-lg);
-		padding-bottom: var(--space-sm);
-		border-bottom: var(--border-width) solid var(--border-color);
-	}
-
-	.section-marker {
-		color: var(--color-accent);
-		font-size: var(--font-size-sm);
-	}
-
-	.section-title {
-		font-family: var(--font-sans);
-		font-size: var(--font-size-xs);
-		font-weight: 600;
-		letter-spacing: var(--letter-spacing-wider);
-		color: var(--color-text);
-		margin: 0;
-	}
-
-	.section-count {
-		font-family: var(--font-mono);
-		font-size: var(--font-size-2xs);
-		color: var(--color-text-subtle);
-	}
-
-	.section-count::before { content: "["; }
-	.section-count::after { content: "]"; }
-
-	/* ENTRY LIST */
-	.entry-list {
+	.meta-item {
 		display: flex;
 		flex-direction: column;
-		gap: var(--space-sm);
-		list-style: none;
-		padding: 0;
+		gap: var(--space-3xs);
 	}
 
-	.entry {
+	.meta-label {
+		font-family: var(--font-mono);
+		font-size: var(--font-size-3xs);
+		color: var(--color-text-subtle);
+		text-transform: uppercase;
+		letter-spacing: var(--letter-spacing-widest);
+	}
+
+	.meta-value {
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+		color: var(--color-text-secondary);
+	}
+
+	.status-available {
+		color: var(--color-success);
+	}
+
+	.hero-visual-wrapper {
 		display: flex;
-		align-items: baseline;
-		gap: var(--space-md);
-		padding: var(--space-sm) 0;
+		justify-content: center;
+		align-items: center;
 	}
 
-	.entry:hover { opacity: 0.9; }
+	.hero-visual {
+		width: 100%;
+		max-width: 500px;
+	}
 
-	.entry[data-highlight] {
-		padding: var(--space-sm);
-		border-radius: var(--radius-sm);
-		color: var(--hl-text, #000);
+	/* Impeccable List Styling */
+	.impeccable-list {
+		margin-top: var(--space-md);
+	}
+
+	.entry-item {
+		border-bottom: 1px solid var(--border-color-subtle);
+		transition: transform var(--duration-fast) var(--easing);
+	}
+
+	.entry-item:hover {
+		transform: translateX(4px);
+		border-bottom-color: var(--border-color);
+	}
+
+	.entry-link {
+		display: grid;
+		grid-template-columns: 80px 1fr auto;
+		align-items: center;
+		padding: var(--space-md) 0;
+		color: var(--color-text);
+		text-decoration: none;
 	}
 
 	.entry-date {
 		font-family: var(--font-mono);
 		font-size: var(--font-size-xs);
-		color: var(--color-text-subtle);
-		min-width: 5ch;
-		flex-shrink: 0;
-		font-variant-numeric: tabular-nums;
+		color: var(--color-text-muted);
 	}
 
-	.entry-title {
-		font-size: var(--font-size-sm);
-		color: var(--color-text);
-		font-weight: 450;
-		flex-grow: 1;
+	.entry-title-text {
+		font-weight: 500;
+		font-size: var(--font-size-base);
 	}
 
-	.entry-links {
-		display: flex;
-		gap: var(--space-sm);
-	}
-
-	.entry-links a {
-		font-family: var(--font-mono);
-		font-size: var(--font-size-xs);
+	.entry-arrow {
 		color: var(--color-accent);
-		text-decoration: none;
+		opacity: 0;
+		transition: opacity var(--duration-fast) var(--easing);
 	}
 
-	.entry-links a:hover { text-decoration: underline; }
+	.entry-item:hover .entry-arrow {
+		opacity: 1;
+	}
 
-	/* DOMAIN DISCOVERY */
-	.domains {
+	/* Sidebar Connections */
+	.connect-nav {
 		display: flex;
-		flex-wrap: wrap;
-		align-items: baseline;
-		gap: var(--space-md);
-		padding: var(--space-xl) 0;
+		flex-direction: column;
+		gap: var(--space-xs);
+	}
+
+	.connect-link {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: var(--space-sm) var(--space-md);
+		background: var(--color-bg-alt);
+		border-radius: var(--radius-sm);
 		font-family: var(--font-mono);
 		font-size: var(--font-size-xs);
-		color: var(--color-text-subtle);
+		color: var(--color-text-secondary);
+		border: 1px solid transparent;
 	}
 
-	.domain-group {
-		display: inline-flex;
-		align-items: baseline;
-		gap: var(--space-xs);
+	.connect-link:hover {
+		background: var(--color-surface);
+		border-color: var(--color-border-strong);
+		color: var(--color-text);
+	}
+
+	.connect-arrow {
+		font-size: 0.8em;
+		opacity: 0.5;
+	}
+
+	@media (max-width: 1023px) {
+		.hero-grid {
+			gap: var(--space-2xl);
+		}
+		
+		.hero-visual-wrapper {
+			order: -1;
+			min-height: 300px;
+		}
 	}
 </style>

@@ -1,31 +1,14 @@
 <script lang="ts">
-  import { processSteps } from '$lib/data/content';
+  import { get_phases, compute_geometry, rect_width, rect_height, rect_x, phase_spacing, center_x, cycle_x } from '$lib/clj/portfolio/sections/process.mjs';
 
   export let id = "process";
 
   /** Use phases from the Clojure backend port */
-  let phases: Array<{ label: string; description?: string; order: number }> = processSteps.map((s: any, i: number) => ({
-    label: s.title,
-    description: s.description,
-    order: i
-  }));
+  let phases = get_phases();
 
-  // SVG layout constants
-  const RECT_WIDTH = 180;
-  const RECT_HEIGHT = 60;
-  const RECT_X = 80;
-  const PHASE_SPACING = 100; // vertical distance between phase tops
-  const FIRST_Y = 20;
-  const CENTER_X = RECT_X + RECT_WIDTH / 2; // 170
-  const CYCLE_MARGIN = 60; // extra space below last phase for cycle-back arrow
-  const CYCLE_X = 40; // x-position of the left vertical line of cycle-back
-
-  // Derived SVG dimensions
-  $: lastPhaseY = FIRST_Y + (phases.length - 1) * PHASE_SPACING;
-  $: viewBoxHeight = lastPhaseY + RECT_HEIGHT + CYCLE_MARGIN;
-
-  // Build the aria label dynamically
-  $: ariaLabel = `Process: ${phases.map((p) => p.label).join(', ')}`;
+  // Derived SVG dimensions from Clojure logic
+  $: geo = compute_geometry(phases.length);
+  $: ariaLabel = `Process: ${phases.map((p: any) => p.label).join(', ')}`;
 </script>
 
 <svelte:head>
@@ -34,7 +17,7 @@
 </svelte:head>
 
 <div class="process-cycle" {id}>
-  <svg class="process-svg" viewBox="0 0 300 {viewBoxHeight}" aria-label={ariaLabel}>
+  <svg class="process-svg" viewBox="0 0 300 {geo.viewBoxHeight}" aria-label={ariaLabel}>
     <defs>
       <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
         <polygon points="0 0, 10 3.5, 0 7" fill="currentColor" />
@@ -45,11 +28,11 @@
 
       {#each phases as phase, i}
         <!-- Phase rectangle -->
-        {@const y = FIRST_Y + i * PHASE_SPACING}
-        <rect x={RECT_X} {y} width={RECT_WIDTH} height={RECT_HEIGHT} />
+        {@const y = 20 + i * phase_spacing}
+        <rect x={rect_x} {y} width={rect_width} height={rect_height} />
         <text
-          x={CENTER_X}
-          y={y + RECT_HEIGHT / 2 + 8}
+          x={center_x}
+          y={y + rect_height / 2 + 8}
           fill="currentColor"
           stroke="none"
           text-anchor="middle"
@@ -61,10 +44,10 @@
         <!-- Arrow to next phase (not after the last one) -->
         {#if i < phases.length - 1}
           <line
-            x1={CENTER_X}
-            y1={y + RECT_HEIGHT}
-            x2={CENTER_X}
-            y2={y + PHASE_SPACING}
+            x1={center_x}
+            y1={y + rect_height}
+            x2={center_x}
+            y2={y + phase_spacing}
             marker-end="url(#arrowhead)"
           />
         {/if}
@@ -72,12 +55,9 @@
 
       <!-- Cycle-back path: bottom of last phase -> down -> left -> up -> into left side of first phase -->
       {#if phases.length > 1}
-        {@const lastBottom = lastPhaseY + RECT_HEIGHT}
-        {@const cycleBottom = lastBottom + (CYCLE_MARGIN - 20)}
-        {@const firstMidY = FIRST_Y + RECT_HEIGHT / 2}
-        <line x1={CENTER_X} y1={lastBottom} x2={CENTER_X} y2={cycleBottom} />
+        <line x1={center_x} y1={geo.lastPhaseY + rect_height} x2={center_x} y2={geo.cycleBottom} />
         <path
-          d="M {CENTER_X} {cycleBottom} L {CYCLE_X} {cycleBottom} L {CYCLE_X} {firstMidY} L {RECT_X - 10} {firstMidY}"
+          d="M {center_x} {geo.cycleBottom} L {cycle_x} {geo.cycleBottom} L {cycle_x} {geo.firstMidY} L {rect_x - 10} {geo.firstMidY}"
           marker-end="url(#arrowhead)"
         />
       {/if}

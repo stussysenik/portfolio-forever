@@ -1,16 +1,28 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
+  import { getConvexClient } from '$lib/convex';
+  import { setup_academia_subscriptions } from '$lib/clj/portfolio/sections/academia.mjs';
   import MuxVideo from '$lib/components/MuxVideo.svelte';
   import GenericListBlock from '$lib/components/blocks/GenericListBlock.svelte';
-  import { academicEntries } from '$lib/data/content';
+  import { academicEntries as staticEntries } from '$lib/data/content';
 
   export let id = "academia";
 
-  // Use academicEntries from Clojure backend port
-  let entries: any[] = academicEntries || [];
-  let loading = false;
+  let entries: any[] = staticEntries;
+  let loading = true;
   let thumbnailConfig: any = { displayMode: 'list' };
 
   $: displayMode = thumbnailConfig?.displayMode ?? 'grid';
+
+  onMount(() => {
+    const client = getConvexClient();
+    return setup_academia_subscriptions(client, {
+      onAcademia: (data: any) => {
+        if (data) entries = data;
+        loading = false;
+      }
+    });
+  });
 </script>
 
 <svelte:head>
@@ -25,13 +37,6 @@
     <p class="academia-meta">
       Stüssy Senik · Cooper Union · FAMU Prague · Bed-Stuy, Brooklyn
     </p>
-    <p class="academia-contact">
-      <a href="mailto:itsmxzou@gmail.com">itsmxzou@gmail.com</a>
-      <span class="sep">·</span>
-      <a href="https://github.com/stussysenik" target="_blank" rel="noopener noreferrer">GitHub</a>
-      <span class="sep">·</span>
-      <a href="https://stussysenik.com" target="_blank" rel="noopener noreferrer">Portfolio</a>
-    </p>
   </header>
 
   <section class="academia-section">
@@ -40,7 +45,7 @@
     {#if loading}
       <p class="academia-empty">Loading...</p>
     {:else if entries.length === 0}
-      <p class="academia-empty">No entries yet. Add research papers from the <a href="/admin">admin panel</a>.</p>
+      <p class="academia-empty">No entries yet.</p>
     {:else}
       {#each entries as entry}
         <div class="paper" class:compact={displayMode === 'list'}>
@@ -101,168 +106,22 @@
 </div>
 
 <style>
-  .academia {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: var(--space-lg) var(--space-md);
-  }
-
-  /* Header */
-  .academia-header {
-    margin-bottom: var(--space-2xl);
-  }
-
-  .academia-name {
-    font-size: var(--font-size-2xl);
-    font-weight: 600;
-    margin-bottom: var(--space-xs);
-  }
-
-  .academia-tagline {
-    color: var(--color-text-secondary);
-    font-size: var(--font-size-base);
-    margin-bottom: var(--space-xs);
-  }
-
-  .academia-meta {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-muted);
-    margin-bottom: var(--space-sm);
-  }
-
-  .academia-contact {
-    font-size: var(--font-size-sm);
-  }
-
-  .academia-contact a {
-    color: var(--color-accent);
-  }
-
-  .academia-contact .sep {
-    color: var(--color-text-subtle);
-    margin: 0 var(--space-xs);
-  }
-
-  /* Section */
-  .academia-section-title {
-    font-size: var(--font-size-lg);
-    font-weight: 600;
-    margin-bottom: var(--space-lg);
-    padding-bottom: var(--space-xs);
-    border-bottom: 1px solid var(--border-color);
-  }
-
-  .academia-empty {
-    color: var(--color-text-muted);
-    font-style: italic;
-  }
-
-  .academia-empty a {
-    color: var(--color-accent);
-  }
-
-  /* Paper entries */
-  .paper {
-    display: flex;
-    gap: var(--space-md);
-    margin-bottom: var(--space-xl);
-    align-items: flex-start;
-  }
-
-  /* Compact/list mode: hide thumbnails */
-  .paper.compact :global(.paper-video),
-  .paper.compact .paper-thumb,
-  .paper.compact .paper-thumb-placeholder {
-    display: none;
-  }
-
-  .paper-thumb {
-    width: 160px;
-    min-width: 160px;
-    height: 100px;
-    object-fit: cover;
-    border-radius: var(--radius-sm);
-    background: var(--color-bg-alt);
-  }
-
-  .paper-thumb-placeholder {
-    border: 1px dashed var(--border-color-subtle);
-  }
-
-  .paper-video {
-    width: 160px;
-    min-width: 160px;
-    border-radius: var(--radius-sm);
-    overflow: hidden;
-  }
-
-  .paper-content {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .paper-title {
-    font-size: var(--font-size-base);
-    font-weight: 600;
-    margin-bottom: var(--space-2xs);
-    line-height: 1.3;
-  }
-
-  .paper-title a {
-    color: var(--color-text);
-    text-decoration: none;
-  }
-
-  .paper-title a:hover {
-    color: var(--color-accent);
-  }
-
-  .paper-authors {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-secondary);
-    margin-bottom: var(--space-2xs);
-  }
-
-  .paper-venue {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-muted);
-    font-style: italic;
-    margin-bottom: var(--space-xs);
-  }
-
-  .paper-desc {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-secondary);
-    line-height: 1.5;
-    margin-bottom: var(--space-xs);
-  }
-
-  .paper-links {
-    display: flex;
-    gap: var(--space-md);
-    font-size: var(--font-size-sm);
-  }
-
-  .paper-links a {
-    color: var(--color-accent);
-    text-decoration: none;
-    font-weight: 500;
-  }
-
-  .paper-links a:hover {
-    text-decoration: underline;
-  }
-
-  /* Mobile */
-  @media (max-width: 600px) {
-    .paper {
-      flex-direction: column;
-    }
-
-    .paper-thumb {
-      width: 100%;
-      min-width: unset;
-      height: 140px;
-    }
-  }
+  .academia { max-width: 800px; margin: 0 auto; padding: var(--space-lg) var(--space-md); }
+  .academia-header { margin-bottom: var(--space-2xl); }
+  .academia-name { font-size: var(--font-size-2xl); font-weight: 600; margin-bottom: var(--space-xs); }
+  .academia-tagline { color: var(--color-text-secondary); font-size: var(--font-size-base); margin-bottom: var(--space-xs); }
+  .academia-meta { font-size: var(--font-size-sm); color: var(--color-text-muted); margin-bottom: var(--space-sm); }
+  .academia-section-title { font-size: var(--font-size-lg); font-weight: 600; margin-bottom: var(--space-lg); border-bottom: 1px solid var(--border-color); }
+  .academia-empty { color: var(--color-text-muted); font-style: italic; }
+  .paper { display: flex; gap: var(--space-md); margin-bottom: var(--space-xl); align-items: flex-start; }
+  .paper.compact .paper-thumb { display: none; }
+  .paper-thumb { width: 160px; min-width: 160px; height: 100px; object-fit: cover; border-radius: var(--radius-sm); background: var(--color-bg-alt); }
+  .paper-content { flex: 1; min-width: 0; }
+  .paper-title { font-size: var(--font-size-base); font-weight: 600; line-height: 1.3; }
+  .paper-authors { font-size: var(--font-size-sm); color: var(--color-text-secondary); }
+  .paper-venue { font-size: var(--font-size-sm); color: var(--color-text-muted); font-style: italic; }
+  .paper-desc { font-size: var(--font-size-sm); color: var(--color-text-secondary); line-height: 1.5; }
+  .paper-links { display: flex; gap: var(--space-md); font-size: var(--font-size-sm); }
+  .paper-links a { color: var(--color-accent); font-weight: 500; }
+  @media (max-width: 600px) { .paper { flex-direction: column; } .paper-thumb { width: 100%; height: 140px; } }
 </style>

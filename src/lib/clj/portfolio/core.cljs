@@ -20,6 +20,10 @@
    Lisp macros, immutable data, functional composition, and REPL-driven
    development while compiling down to the same JS that Svelte consumes.")
 
+;; Components layer
+(require '[portfolio.components.donut :as components-donut])
+(require '[portfolio.ui.impeccable :as impeccable])
+
 ;; Data layer
 (require '[portfolio.data.content :as content])
 (require '[portfolio.data.cv :as cv])
@@ -59,6 +63,16 @@
 (require '[portfolio.sections.hero :as sections-hero])
 (require '[portfolio.sections.works :as sections-works])
 (require '[portfolio.sections.cv :as sections-cv])
+(require '[portfolio.sections.blog :as sections-blog])
+(require '[portfolio.sections.talks :as sections-talks])
+(require '[portfolio.sections.academia :as sections-academia])
+(require '[portfolio.sections.labs :as sections-labs])
+(require '[portfolio.sections.gallery :as sections-gallery])
+(require '[portfolio.sections.process :as sections-process])
+(require '[portfolio.sections.likes :as sections-likes])
+(require '[portfolio.sections.gifts :as sections-gifts])
+(require '[portfolio.sections.minor :as sections-minor])
+(require '[portfolio.sections.os :as sections-os])
 (require '[portfolio.sections.terminal :as sections-terminal])
 
 ;; Utils

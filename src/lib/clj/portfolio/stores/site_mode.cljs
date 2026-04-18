@@ -103,12 +103,7 @@
          (.set result "pixel-engine" false))
        result))))
 
-(def nav-paradigm
-  (derived
-   #js [effective-site-config]
-   (fn [vals]
-     (let [config (aget vals 0)]
-       (or (and config (aget config "navMode")) "sidebar")))))
+(def nav-paradigm (writable "sidebar"))
 
 (def browser? (js* "browser"))
 

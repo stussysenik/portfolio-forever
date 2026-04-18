@@ -1,4 +1,11 @@
 <script lang="ts">
-	import { onMount } from "svelte";
+	import { siteMode } from "$lib/stores/siteMode";
+	import HeroSection from "$lib/sections/HeroSection.svelte";
+	import OnePageView from "$lib/components/OnePageView.svelte";
 </script>
-<h1>Hello</h1>
+
+{#if $siteMode === 'one-page' || $siteMode === 'reader'}
+	<OnePageView />
+{:else}
+	<HeroSection />
+{/if}

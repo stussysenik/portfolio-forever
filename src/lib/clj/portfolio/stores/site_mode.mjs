@@ -121,20 +121,7 @@ result4.set("pixel-engine", false)};
 return result4;
 
 }));
-var nav_paradigm = derived([effective_site_config], (function (vals) {
-const config1 = vals[0];
-const or__23461__auto__2 = (() => {
-const and__23501__auto__3 = config1;
-if (squint_core.truth_(and__23501__auto__3)) {
-return config1["navMode"]} else {
-return and__23501__auto__3};
-
-})();
-if (squint_core.truth_(or__23461__auto__2)) {
-return or__23461__auto__2} else {
-return "sidebar"};
-
-}));
+var nav_paradigm = writable("sidebar");
 var browser_QMARK_ = browser;
 if (squint_core.truth_(browser_QMARK_)) {
 let saved2 = localStorage.getItem("navParadigm");

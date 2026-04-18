@@ -2,7 +2,7 @@
   // Minor things - little lists of life's moments
   import { onMount } from 'svelte';
   import { getConvexClient } from '$lib/convex';
-  import { api } from '$convex/_generated/api';
+  import { setup_minor_subscriptions } from '$lib/clj/portfolio/sections/minor.mjs';
 
   export let id = "minor";
 
@@ -18,27 +18,28 @@
 
   onMount(() => {
     const client = getConvexClient();
-    const unsub = client.onUpdate((api as any).minor.getVisibleMinor, {}, (data: any) => {
-      if (data) {
-        // Group flat rows by category
-        const grouped: Record<string, MinorList> = {};
-        for (const row of data) {
-          const key = row.category ?? row.id ?? 'misc';
-          if (!grouped[key]) {
-            grouped[key] = {
-              id: key,
-              title: row.categoryTitle ?? row.category ?? key,
-              emoji: row.emoji ?? '◇',
-              description: row.description ?? '',
-              items: [],
-            };
+    return setup_minor_subscriptions(client, {
+      onMinor: (data: any) => {
+        if (data) {
+          // Group flat rows by category
+          const grouped: Record<string, MinorList> = {};
+          for (const row of data) {
+            const key = row.category ?? row.id ?? 'misc';
+            if (!grouped[key]) {
+              grouped[key] = {
+                id: key,
+                title: row.categoryTitle ?? row.category ?? key,
+                emoji: row.emoji ?? '◇',
+                description: row.description ?? '',
+                items: [],
+              };
+            }
+            grouped[key].items.push({ text: row.text, year: row.year, note: row.note });
           }
-          grouped[key].items.push({ text: row.text, year: row.year, note: row.note });
+          minorLists = Object.values(grouped);
         }
-        minorLists = Object.values(grouped);
       }
     });
-    return () => unsub();
   });
 
   let expandedList: string | null = null;

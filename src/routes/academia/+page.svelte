@@ -1,11 +1,6 @@
-<script>
-  import { onMount } from "svelte";
+<script lang="ts">
   import AcademiaSection from "$lib/sections/AcademiaSection.svelte";
-  import { redirectIfOnePage } from "$lib/stores/siteMode";
-
-  onMount(() => {
-    redirectIfOnePage("academia");
-  });
+  import DynamicPage from "$lib/components/DynamicPage.svelte";
 </script>
 
-<AcademiaSection />
+<DynamicPage pageId="academia" fallback={AcademiaSection} fallbackId="academia" />

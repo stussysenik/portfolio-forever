@@ -1,4 +1,5 @@
 import { mutation } from "./_generated/server";
+export { syncFromClojure } from "./seedSync";
 
 export const seedWorks = mutation({
 	handler: async (ctx) => {

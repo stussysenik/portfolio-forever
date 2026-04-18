@@ -1,11 +1,6 @@
-<script>
-  import { onMount } from "svelte";
+<script lang="ts">
   import LikesSection from "$lib/sections/LikesSection.svelte";
-  import { redirectIfOnePage } from "$lib/stores/siteMode";
-
-  onMount(() => {
-    redirectIfOnePage("likes");
-  });
+  import DynamicPage from "$lib/components/DynamicPage.svelte";
 </script>
 
-<LikesSection />
+<DynamicPage pageId="likes" fallback={LikesSection} fallbackId="likes" />

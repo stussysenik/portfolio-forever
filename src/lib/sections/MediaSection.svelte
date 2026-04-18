@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { getConvexClient } from '$lib/convex';
-	import { api } from '$convex/_generated/api';
+	import { setup_gallery_subscriptions, is_video, filter_items } from '$lib/clj/portfolio/sections/gallery.mjs';
 
 	export let id = "media";
 
@@ -20,31 +20,14 @@
 
 	onMount(() => {
 		const client = getConvexClient();
-		const unsub = client.onUpdate((api as any).gallery.getVisibleGallery, {}, (data: any) => {
-			if (data) galleryItems = data;
+		return setup_gallery_subscriptions(client, {
+			onItems: (data: any) => {
+				if (data) galleryItems = data;
+			}
 		});
-		return () => unsub();
 	});
 
-	$: filteredItems = activeFilter === 'all'
-		? galleryItems
-		: galleryItems.filter((item: any) => {
-			const cats = Array.isArray(item.category) ? item.category : [item.category];
-			return cats.includes(activeFilter);
-		});
-
-	function isVideo(item: any): boolean {
-		if (item.muxPlaybackId) return true;
-		if (item.fullUrl) {
-			const ext = item.fullUrl.split('.').pop()?.toLowerCase() ?? '';
-			return ['mp4', 'webm', 'mov', 'avi'].includes(ext);
-		}
-		if (item.thumbnailUrl) {
-			const ext = item.thumbnailUrl.split('.').pop()?.toLowerCase() ?? '';
-			return ['mp4', 'webm', 'mov', 'avi'].includes(ext);
-		}
-		return false;
-	}
+	$: filteredItems = filter_items(galleryItems, activeFilter);
 
 	function mediaSrc(item: any): string {
 		return item.fullUrl || item.thumbnailUrl || '';
@@ -105,7 +88,7 @@
 	{:else}
 		<div class="media-grid">
 			{#each filteredItems as item (item._id)}
-				{@const video = isVideo(item)}
+				{@const video = is_video(item)}
 				{@const src = mediaSrc(item)}
 				{@const poster = posterSrc(item)}
 				{@const cats = Array.isArray(item.category) ? item.category : item.category ? [item.category] : []}
@@ -169,7 +152,7 @@
 			<button class="lb-close" on:click={() => { selected = null; playingVideo = null; }} aria-label="Close">&times;</button>
 
 			<div class="lb-media">
-				{#if isVideo(selected)}
+				{#if is_video(selected)}
 					<video
 						src={mediaSrc(selected)}
 						poster={posterSrc(selected)}

@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
   import { getConvexClient } from '$lib/convex';
-  import { api } from '$convex/_generated/api';
+  import { setup_os_subscriptions } from '$lib/clj/portfolio/sections/os.mjs';
 
   export let id = "os";
   export let embedded = false;
@@ -34,11 +34,11 @@
   let draggingId: number | null = null;
   let dragOffset = { x: 0, y: 0 };
 
-  // ── Subscribe to Convex ────────────────────────────────────────────
+  // ── Subscribe to Convex via Clojure ────────────────────────────────
   onMount(() => {
-    try {
-      const client = getConvexClient();
-      const unsub = client.onUpdate(api.os.getOsConfig, {}, (data) => {
+    const client = getConvexClient();
+    return setup_os_subscriptions(client, {
+      onConfig: (data: any) => {
         if (data) {
           // Replace icons with Convex data, sorted by order
           const convexIcons = [...(data.icons ?? [])].sort((a: any, b: any) => (a.order ?? 0) - (b.order ?? 0));
@@ -65,11 +65,8 @@
             desktopColor = data.desktopColor;
           }
         }
-      });
-      return () => unsub();
-    } catch {
-      // Convex unavailable — keep hardcoded defaults
-    }
+      }
+    });
   });
 
   function handleIconClick(icon: any) {
