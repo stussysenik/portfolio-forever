@@ -3,10 +3,16 @@
 	import type { Id } from '$convex/_generated/dataModel';
 	import CropTruthTable from './controls/CropTruthTable.svelte';
 
+	import { stagedChanges } from '$lib/stores/stagedChanges';
+
 	export let client: any;
 	export let api: any;
 	export let entries: any[];
 	export let compact: boolean = false;
+
+	function stageUpdate(id: string, patch: any, label: string) {
+		stagedChanges.stage('worksEntries', id, patch, label);
+	}
 
 	let editingId: string | null = null;
 	let editingField: string | null = null;
@@ -48,12 +54,11 @@
 	}
 
 	async function handleCropChange(entryId: string, detail: { focalX: number; focalY: number; zoom: number }) {
-		await client.mutation(api.works.updateEntry, {
-			id: entryId as Id<"worksEntries">,
+		stageUpdate(entryId, {
 			focalX: detail.focalX,
 			focalY: detail.focalY,
 			zoom: detail.zoom,
-		});
+		}, 'Update Crop');
 	}
 
 	function startEdit(id: string, field: string, currentValue: string) {
@@ -68,61 +73,53 @@
 		expandedId = expandedId === id ? null : id;
 	}
 
-	async function addWorkEntry() {
+	function addWorkEntry() {
 		if (!showNewForm) { showNewForm = true; newTitle = ''; newUrl = ''; newPreview = ''; return; }
 		if (!newUrl.trim()) { toast.error('URL is required'); return; }
-		await client.mutation(api.works.createEntry, {
+		const tempId = `new-${Date.now()}`;
+		stageUpdate(tempId, {
 			title: newTitle.trim() || 'New Project',
 			url: newUrl.trim(),
 			preview: newPreview.trim() || undefined,
-			order: entries.length, visible: true,
-		});
+			order: entries.length, 
+			visible: true,
+			isNew: true
+		}, 'Add Project');
 		showNewForm = false;
-		toast.success('Project added');
 	}
 
 	function cancelNewForm() { showNewForm = false; }
 
-	async function saveObjectPosition(id: string, value: string) {
-		await client.mutation(api.works.updateEntry, {
-			id: id as Id<"worksEntries">, objectPosition: value,
-		});
+	function saveObjectPosition(id: string, value: string) {
+		stageUpdate(id, { objectPosition: value }, 'Update Position');
 	}
 
-	async function togglePreviewMode(id: string, current: string | undefined) {
+	function togglePreviewMode(id: string, current: string | undefined) {
 		const cycle = ['live', 'static', 'video'];
 		const idx = cycle.indexOf(current || 'live');
 		const next = cycle[(idx + 1) % cycle.length];
-		await client.mutation(api.works.updateEntry, {
-			id: id as Id<"worksEntries">, previewMode: next as any,
-		});
-		toast.success(`Preview: ${next}`);
+		stageUpdate(id, { previewMode: next as any }, `Preview: ${next}`);
 	}
 
-	async function deleteWorkEntry(id: string) {
-		await client.mutation(api.works.deleteEntry, { id: id as Id<"worksEntries"> });
-		toast.success('Project deleted');
+	function deleteWorkEntry(id: string) {
+		stageUpdate(id, { _deleted: true }, 'Delete Project');
 	}
 
-	async function toggleWorkVisibility(id: string) {
-		await client.mutation(api.works.toggleVisibility, { id: id as Id<"worksEntries"> });
+	function toggleWorkVisibility(id: string) {
+		const entry = entries.find(e => e._id === id);
+		const current = entry?.visible ?? true;
+		stageUpdate(id, { visible: !current }, `Visibility: ${!current ? 'Show' : 'Hide'}`);
 	}
 
-	async function saveWorkEdit(id: string) {
+	function saveWorkEdit(id: string) {
 		if (!editingField) return;
-		saving = true;
-		try {
-			const numFields = ['viewport', 'year', 'month'];
-			const value = numFields.includes(editingField) ? parseFloat(editBuffer) || 0 : editBuffer;
-			await client.mutation(api.works.updateEntry, {
-				id: id as Id<"worksEntries">, [editingField]: value,
-			});
-		} finally {
-			saving = false; editingId = null; editingField = null; editBuffer = '';
-		}
+		const numFields = ['viewport', 'year', 'month'];
+		const value = numFields.includes(editingField) ? parseFloat(editBuffer) || 0 : editBuffer;
+		stageUpdate(id, { [editingField]: value }, `Edit ${editingField}`);
+		editingId = null; editingField = null; editBuffer = '';
 	}
 
-	async function saveStyleOverride(
+	function saveStyleOverride(
 		entry: any,
 		key: 'accentColor' | 'httpColor' | 'secondaryHighlight',
 		value: string
@@ -131,23 +128,19 @@
 			...(entry.styleOverrides ?? {}),
 			[key]: value || undefined,
 		};
-		await client.mutation(api.works.updateEntry, {
-			id: entry._id as Id<"worksEntries">,
-			styleOverrides: merged,
-		});
+		stageUpdate(entry._id, { styleOverrides: merged }, `Update Style: ${key}`);
 	}
 
-	async function moveWorkEntry(id: string, direction: -1 | 1) {
+	function moveWorkEntry(id: string, direction: -1 | 1) {
 		const sorted = [...entries].sort((a: any, b: any) => a.order - b.order);
 		const idx = sorted.findIndex((e: any) => e._id === id);
 		const newIdx = idx + direction;
 		if (newIdx < 0 || newIdx >= sorted.length) return;
-		// Move element to new position
 		const [moved] = sorted.splice(idx, 1);
 		sorted.splice(newIdx, 0, moved);
-		// Renumber all entries sequentially (0, 1, 2, 3...)
-		const updates = sorted.map((e: any, i: number) => ({ id: e._id, order: i }));
-		await client.mutation(api.works.reorderEntries, { updates });
+		sorted.forEach((e: any, i: number) => {
+			stageUpdate(e._id, { order: i }, 'Reorder Projects');
+		});
 	}
 </script>
 

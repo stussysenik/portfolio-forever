@@ -1,17 +1,33 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { getConvexClient } from '$lib/convex';
-	import { api } from '$convex/_generated/api';
 	import { isScreenPass } from '$lib/stores/controls';
 	import Katex from '$lib/components/Katex.svelte';
 	import { parseMath } from '$lib/utils/parseMath';
+	import { cvData } from '$lib/data/cv';
 
 	export let id = "cv";
 
-	let profile: any = null;
-	let entries: any[] = [];
-	let languages: any[] = [];
-	let sections: any[] = [];
+	// Instead of loading from Convex, we use the Clojure cvData port
+	let profile: any = cvData;
+	let entries: any[] = [
+		...(cvData.workExperience || []),
+		...(cvData.education || []),
+		...(cvData.awards || [])
+	].map(e => ({
+		...e,
+		visible: true,
+		order: 0,
+		title: e.title,
+		organization: e.organization,
+		startDate: e.startDate,
+		endDate: e.endDate,
+	}));
+	let languages: any[] = (cvData.languages || []).map(l => ({ ...l, visible: true, order: 0 }));
+	let sections: any[] = [
+		{ _id: 'sec-work', name: 'Experience', type: 'work', order: 1, visible: true },
+		{ _id: 'sec-edu', name: 'Education', type: 'education', order: 2, visible: true },
+		{ _id: 'sec-awards', name: 'Awards', type: 'award', order: 3, visible: true },
+	];
 
 	$: sortedSections = (() => {
 		const sorted = [...sections].sort((a, b) => a.order - b.order).filter((s) => s.visible);
@@ -21,29 +37,20 @@
 	function getEntriesForType(type: string): any[] {
 		return entries
 			.filter((e) => e.type === type && e.visible)
-			.sort((a, b) => a.order - b.order);
+			.sort((a, b) => {
+				// Simple chronological sort
+				return new Date(b.startDate || 0).getTime() - new Date(a.startDate || 0).getTime();
+			});
 	}
 
 	function formatDateRange(start: string, end?: string): string {
 		const fmt = (d: string) => {
+			if (!d) return 'Present';
 			const date = new Date(d);
 			return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
 		};
-		return end ? `${fmt(start)} — ${fmt(end)}` : `${fmt(start)} — Present`;
+		return end === 'present' || !end ? `${fmt(start)} — Present` : `${fmt(start)} — ${fmt(end)}`;
 	}
-
-	onMount(() => {
-		const client = getConvexClient();
-		const unsub = client.onUpdate(api.cv.getVisibleCV, {}, (data: any) => {
-			if (data) {
-				profile = data.profile ?? null;
-				entries = data.entries ?? [];
-				languages = data.languages ?? [];
-				sections = data.sections ?? [];
-			}
-		});
-		return () => unsub();
-	});
 </script>
 
 <svelte:head>

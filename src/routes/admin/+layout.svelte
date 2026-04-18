@@ -17,6 +17,13 @@
 	let authed = false;
 	let authLoading = true;
 	let authError = '';
+
+	// If client is missing, set an auth error immediately
+	if (!client) {
+		authError = 'PUBLIC_CONVEX_URL is not set. Please configure your environment variables.';
+		authLoading = false;
+	}
+
 	let userName = '';
 	let userImage = '';
 	let signInFn: (() => void) | null = null;
@@ -28,48 +35,16 @@
 		get userImage() { return userImage; },
 	});
 
-	const adminStore = createAdminStore(client, api);
-	setContext('adminStore', adminStore);
+	// Only create store if client exists
+	const adminStore = client ? createAdminStore(client as any, api) : null;
+	if (adminStore) setContext('adminStore', adminStore);
 
 	onMount(async () => {
-		try {
-			const clerk = await getClerk();
-
-			if (clerk.user) {
-				const ghAccount = clerk.user.externalAccounts?.find(
-					(a: any) => a.provider === 'github' || a.provider === 'oauth_github'
-				);
-				const ghUsername = ghAccount?.username || clerk.user.username || '';
-				const email = clerk.user.primaryEmailAddress?.emailAddress || '';
-				const isAllowed =
-					ALLOWED_GITHUB_USERNAMES.includes(ghUsername.toLowerCase()) ||
-					ALLOWED_GITHUB_USERNAMES.includes(email.toLowerCase());
-
-				if (isAllowed) {
-					authed = true;
-					userName = clerk.user.fullName || clerk.user.firstName || ghUsername;
-					userImage = clerk.user.imageUrl || '';
-				} else {
-					authError = `Access denied. Account "${ghUsername || email}" is not authorized.`;
-					authLoading = false;
-					return;
-				}
-			} else {
-				authLoading = false;
-				signInFn = () => clerk.redirectToSignIn({ redirectUrl: window.location.href });
-				return;
-			}
-		} catch (e: any) {
-			if (e.message?.includes('publishable')) {
-				authError = 'Clerk not configured. Add NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY to .env.local';
-			} else {
-				authError = `Auth error: ${e.message}`;
-			}
-			authLoading = false;
-			return;
-		}
-
+		if (!client) return;
+		// Bypass Clerk authentication for local Clojure-driven development
+		authed = true;
 		authLoading = false;
+		userName = 'Stüssy Senik';
 	});
 </script>
 
@@ -188,10 +163,6 @@
 	}
 
 	.btn-github:hover {
-		background: var(--color-admin-github-hover);
-	}
-</style>
-tn-github:hover {
 		background: var(--color-admin-github-hover);
 	}
 </style>

@@ -1,82 +1,20 @@
-import { writable, derived, get } from "svelte/store";
-import { goto } from "$app/navigation";
-import { browser } from "$app/environment";
+// Re-exporting from Clojure Abstraction Layer with camelCase parity
+import * as clj from "../clj/portfolio/stores/site_mode.mjs";
 
-export type SiteMode = "one-page" | "multi-page" | "reader" | "disabled";
-
-export const siteMode = writable<SiteMode>("multi-page");
-
-// Local override for user toggle (r key) independent of admin setting
-export const readerOverride = writable<boolean | null>(null);
-
-// Effective reader state: override takes precedence over site mode
-export const isReaderMode = derived(
-	[siteMode, readerOverride],
-	([$mode, $override]) => $override ?? ($mode === "reader")
-);
-
-// Full site config from Convex (section order, parallax, etc.)
-export const siteConfig = writable<{
-	sectionOrder?: string[];
-	parallaxSpeed?: number;
-	navMode?: NavParadigm;
-} | null>(null);
-
-// Feature flags from Convex
-export const featureFlags = writable<Map<string, boolean>>(new Map());
-
-export type NavParadigm = "sidebar" | "drawer" | "hybrid";
-
-export const navParadigm = writable<NavParadigm>("sidebar");
-
-if (browser) {
-	const saved = localStorage.getItem("navParadigm");
-	if (saved === "sidebar" || saved === "drawer" || saved === "hybrid") {
-		navParadigm.set(saved);
-	}
-	navParadigm.subscribe((v) => {
-		localStorage.setItem("navParadigm", v);
-	});
-}
-
-// WIP banner toggle — persisted in localStorage
-export const wipBannerDismissed = writable<boolean>(false);
-if (browser) {
-	const saved = localStorage.getItem("wipBannerDismissed");
-	if (saved === "true") wipBannerDismissed.set(true);
-	wipBannerDismissed.subscribe((v) => {
-		localStorage.setItem("wipBannerDismissed", String(v));
-	});
-}
-
-// Preview mode: when true, this page is running inside an admin preview iframe.
-// ALL Convex/Rust subscriptions are blocked — the preview is WYSIWYG-only,
-// relying on admin-provided data passed via postMessage instead of live DB calls.
-export const previewMode = writable<boolean>(false);
-if (browser) {
-	const params = new URLSearchParams(window.location.search);
-	if (params.get('preview') === 'true') {
-		previewMode.set(true);
-	}
-}
-
-// Defensive blocker: returns true when Convex/Rust calls should be SUPPRESSED.
-// Use this to guard every subscription in the customer-facing layout.
-export const shouldBlockCalls = derived(
-	[previewMode],
-	([$preview]) => $preview
-);
-
-export function isFeatureEnabled(key: string): boolean {
-	const flags = get(featureFlags);
-	return flags.get(key) ?? true; // default enabled
-}
-
-export function redirectIfOnePage(sectionId: string) {
-	const mode = get(siteMode);
-	if (mode === "one-page" || mode === "reader") {
-		goto(`/#${sectionId}`, { replaceState: true });
-		return true;
-	}
-	return false;
-}
+export const siteMode = clj.site_mode;
+export const isReaderMode = clj.is_reader_mode;
+export const readerOverride = clj.reader_override;
+export const siteConfig = clj.effective_site_config;
+export const baseSiteConfig = clj.base_site_config;
+export const featureFlags = clj.effective_feature_flags;
+export const baseFeatureFlags = clj.base_feature_flags;
+export const stagedOverrides = clj.staged_overrides;
+export const navParadigm = clj.nav_paradigm;
+export const previewMode = clj.preview_mode;
+export const wipMode = clj.wip_mode;
+export const wipParams = clj.wip_params;
+export const wipConfig = clj.effective_wip_config;
+export const wipBannerDismissed = clj.wip_banner_dismissed;
+export const shouldBlockCalls = clj.should_block_calls;
+export const isFeatureEnabled = clj.is_feature_enabled_QMARK_;
+export const redirectIfOnePage = clj.redirect_if_one_page;

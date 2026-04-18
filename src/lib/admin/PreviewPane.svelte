@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
+	import PreviewFrame from './PreviewFrame.svelte';
 
 	export let route: string = '/';
 	export let refreshKey: number = 0;
@@ -103,12 +104,14 @@
 				? `width: ${viewportWidth}px; transform: scale(${iframeScale}); transform-origin: top center;`
 				: 'width: 100%; height: 100%;'}
 		>
-<iframe
-			bind:this={iframeEl}
-			src={previewUrl}
-			title="Page preview"
-			frameborder="0"
-		></iframe>
+			<PreviewFrame {route} url={previewUrl} bind:refreshKey>
+				<iframe
+					bind:this={iframeEl}
+					src={previewUrl}
+					title="Page preview"
+					frameborder="0"
+				></iframe>
+			</PreviewFrame>
 		</div>
 	</div>
 </div>

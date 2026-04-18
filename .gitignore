@@ -41,3 +41,6 @@ inspect-source-code/
 
 # Local task tracking
 tasks/
+
+# Clojure compiled output (regenerated from .cljs sources)
+clj/out/

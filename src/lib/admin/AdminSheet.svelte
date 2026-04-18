@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
+	import { createDialog, melt } from '@melt-ui/svelte';
+	import { fade } from 'svelte/transition';
 	import AdminIcon from './AdminIcon.svelte';
 	import { IconX } from './admin-icons';
 
@@ -9,6 +11,20 @@
 
 	const dispatch = createEventDispatcher<{ close: void }>();
 
+	const {
+		elements: { portalled, overlay, content, title: titleEl, close: closeEl },
+		states: { open: openStore }
+	} = createDialog({
+		forceVisible: true,
+		preventScroll: true
+	});
+
+	// Sync the prop to the melt-ui store
+	$: openStore.set(open);
+	$: if (!$openStore && open) {
+		dispatch('close');
+	}
+
 	let sheetEl: HTMLElement | undefined;
 	let dragging = false;
 	let startY = 0;
@@ -16,14 +32,6 @@
 
 	function close() {
 		dispatch('close');
-	}
-
-	function handleKeydown(e: KeyboardEvent) {
-		if (!open) return;
-		if (e.key === 'Escape') {
-			e.preventDefault();
-			close();
-		}
 	}
 
 	function handleTouchStart(e: TouchEvent) {
@@ -53,13 +61,17 @@
 	}
 </script>
 
-<svelte:window on:keydown={handleKeydown} />
-
-{#if open}
-	<div class="sheet-root" role="dialog" aria-modal="true" aria-label={title || 'admin sheet'}>
-		<!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
-		<div class="sheet-backdrop" on:click={close}></div>
+{#if $openStore}
+	<div {...$portalled} use:melt={$portalled}>
+		<div
+			{...$overlay}
+			use:melt={$overlay}
+			class="sheet-backdrop"
+			transition:fade={{ duration: 150 }}
+		></div>
 		<section
+			{...$content}
+			use:melt={$content}
 			class="sheet-panel"
 			class:sheet-panel--full={height === 'full'}
 			bind:this={sheetEl}
@@ -72,8 +84,15 @@
 				on:touchend={handleTouchEnd}
 			>
 				<div class="sheet-handle" aria-hidden="true"></div>
-				<div class="sheet-title">{title}</div>
-				<button class="sheet-close" type="button" on:click={close} aria-label="Close">
+				<div class="sheet-title" {...$titleEl} use:melt={$titleEl}>{title}</div>
+				<button
+					class="sheet-close"
+					type="button"
+					{...$closeEl}
+					use:melt={$closeEl}
+					on:click={close}
+					aria-label="Close"
+				>
 					<AdminIcon icon={IconX} size="md" tone="inherit" />
 				</button>
 			</header>

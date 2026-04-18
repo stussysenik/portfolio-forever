@@ -391,6 +391,11 @@
                 onpointercancel={handlePointerEnd}
         >
                 <pre class="donut-ascii" aria-hidden="true">{asciiOutput}</pre>
+                {#if isDragging || isPositionalDrag}
+                        <div class="recognition-box">
+                                <span class="recognition-label">donut</span>
+                        </div>
+                {/if}
         </div>
 
         <button
@@ -536,6 +541,39 @@
                 to {
                         opacity: 1;
                         transform: translateY(0);
+                }
+        }
+
+        .recognition-box {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                border: 2px solid var(--color-accent);
+                pointer-events: none;
+                animation: fadeIn 0.1s ease-out;
+        }
+
+        .recognition-label {
+                position: absolute;
+                top: -1px;
+                left: -2px;
+                background: var(--color-accent);
+                color: var(--color-bg);
+                padding: 2px 6px;
+                font-family: var(--font-mono);
+                font-size: var(--font-size-xs);
+                text-transform: uppercase;
+                letter-spacing: var(--letter-spacing-wider);
+        }
+
+        @keyframes fadeIn {
+                from {
+                        opacity: 0;
+                }
+                to {
+                        opacity: 1;
                 }
         }
 </style>

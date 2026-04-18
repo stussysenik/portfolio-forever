@@ -6,7 +6,6 @@
 	import CMSidebar from './CMSidebar.svelte';
 	import { adminViewStore } from './stores/adminViewStore';
 	import PageBar from './PageBar.svelte';
-	import PreviewDrawer from './PreviewDrawer.svelte';
 	import AdminIcon from './AdminIcon.svelte';
 	import { IconSettings } from './admin-icons';
 	import WipBadge from './WipBadge.svelte';
@@ -287,14 +286,6 @@
 			on:openpreview={() => dispatch('openpreview')}
 		/>
 	</div>
-
-	<!-- Legacy preview drawer (tablet only, hidden on mobile + desktop) -->
-	<PreviewDrawer
-		open={previewOpen}
-		siteUrl={typeof window !== 'undefined' ? window.location.origin : ''}
-		on:close={() => (previewOpen = false)}
-		on:open={() => (previewOpen = true)}
-	/>
 </div>
 
 <style>
@@ -624,11 +615,6 @@
 		font-size: var(--admin-text-xs, 12px);
 		text-transform: uppercase;
 		letter-spacing: 0.08em;
-		color: var(--admin-text-muted);
-		font-weight: 600;
-	}
-</style>
-08em;
 		color: var(--admin-text-muted);
 		font-weight: 600;
 	}

@@ -100,18 +100,25 @@
                 { title: "WAVELENGTH RADIO", url: "https://wavelength-radio.vercel.app", category: "music", viewport: 2.0, cam: "center center" },
         ];
 
+        import { siteMode, stagedOverrides, previewMode } from "$lib/stores/siteMode";
+        // @ts-ignore
+        import { exports as dataUtils } from '$lib/clj/portfolio/data/overrides.mjs';
+
         let projects: Project[] = staticProjects;
         let loaded: Record<number, boolean> = {};
         let thumbnailConfig: any = null;
         let sectionConfig: any = null;
 
-        $: displayMode = thumbnailConfig?.displayMode ?? 'grid';
-        $: gridCols = thumbnailConfig?.columns ?? 2;
-        $: showPreview = thumbnailConfig?.showPreview ?? true;
-        $: viewMode = sectionConfig?.immune ? 'grid' : (sectionConfig?.viewMode ?? 'grid');
+        $: effectiveProjects = dataUtils.applyOverrides('worksEntries', projects, $stagedOverrides);
+        $: effectiveThumbnailConfig = dataUtils.applyOverrides('thumbnails', thumbnailConfig, $stagedOverrides);
+        $: effectiveSectionConfig = dataUtils.applyOverrides('pages', sectionConfig, $stagedOverrides);
 
-        // Depth controller: limit visible projects in 5-min "screen pass" mode
-        $: visibleProjects = $isScreenPass ? projects.slice(0, 3) : projects;
+        $: displayMode = effectiveThumbnailConfig?.displayMode ?? 'grid';
+        $: gridCols = effectiveThumbnailConfig?.columns ?? 2;
+        $: showPreview = effectiveThumbnailConfig?.showPreview ?? true;
+        $: viewMode = effectiveSectionConfig?.immune ? 'grid' : (effectiveSectionConfig?.viewMode ?? 'grid');
+
+        $: visibleProjects = $isScreenPass ? effectiveProjects.slice(0, 3) : effectiveProjects;
 
         function handleLoad(index: number) {
                 loaded = { ...loaded, [index]: true };
@@ -157,9 +164,10 @@
         </header>
 
         {#if viewMode === 'grid'}
-                <div class="projects-grid" class:list-mode={displayMode === 'list'} style="--grid-cols: {gridCols};">
+                <div class="projects-grid" role="list" class:list-mode={displayMode === 'list'} style="--grid-cols: {gridCols};">
                         {#each visibleProjects as project, i}
                                 <div class="project-card"
+                                        role="listitem"
                                         use:inview={i}
                                         on:mouseenter={() => hoveredIndex = i}
                                         on:mouseleave={() => hoveredIndex = -1}

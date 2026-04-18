@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { stagedCount, stagedLabels, stagedFlags } from '$lib/stores/stagedFlags';
+	import { stagedChanges, stagedChangesCount, stagedChangesLabels } from '$lib/stores/stagedChanges';
 	import { toast } from '$lib/stores/toast';
 
 	export let client: any;
@@ -8,13 +9,18 @@
 
 	let saving = false;
 
+	$: totalStagedCount = $stagedCount + $stagedChangesCount;
+	$: combinedLabels = [...$stagedLabels, ...$stagedChangesLabels];
+
 	async function handleSave() {
 		if (saving) return;
 		saving = true;
 		try {
-			const count = await stagedFlags.commit(client, api, currentFlags);
-			if (count > 0) {
-				toast.success(`${count} change${count !== 1 ? 's' : ''} saved`);
+			const flagsCount = await stagedFlags.commit(client, api, currentFlags);
+			const changesCount = await stagedChanges.commit(client, api);
+			const total = flagsCount + changesCount;
+			if (total > 0) {
+				toast.success(`${total} change${total !== 1 ? 's' : ''} saved`);
 			}
 		} catch (err: any) {
 			toast.error(err.message || 'Failed to save changes');
@@ -25,6 +31,7 @@
 
 	function handleDiscard() {
 		stagedFlags.clear();
+		stagedChanges.clear();
 		if (typeof window !== 'undefined') {
 			const iframes = document.querySelectorAll<HTMLIFrameElement>(
 				'iframe[src*="preview=true"]'
@@ -34,18 +41,22 @@
 					{ type: 'admin:flagOverrides', overrides: {} },
 					'*'
 				);
+				iframe.contentWindow?.postMessage(
+					{ type: 'admin:stagedChanges', changes: {} },
+					'*'
+				);
 			});
 		}
 		toast.success('Changes discarded');
 	}
 </script>
 
-{#if $stagedCount > 0}
+{#if totalStagedCount > 0}
 	<div class="save-bar" role="status" aria-live="polite">
 		<div class="save-bar-info">
-			<span class="save-bar-count">{$stagedCount} unsaved</span>
+			<span class="save-bar-count">{totalStagedCount} unsaved</span>
 			<ul class="save-bar-labels">
-				{#each $stagedLabels as label}
+				{#each combinedLabels as label}
 					<li class="save-bar-label">{label}</li>
 				{/each}
 			</ul>

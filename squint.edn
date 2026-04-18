@@ -1,0 +1,40 @@
+{:source-paths ["src/lib/clj"]
+ :output-dir "src/lib/clj"
+ :target :esm
+ :imports {"$lib" "$lib"
+           "$app/navigation" "$app/navigation"
+           "$app/environment" "$app/environment"
+           "$convex/_generated/api" "$convex/_generated/api"
+           "$env/dynamic/public" "$env/dynamic/public"}
+ :exports {:portfolio.data {:portfolio.data/content :default
+                            :portfolio.data/cv :default
+                            :portfolio.data/labs :default
+                            :portfolio.data/layout-config :default}
+           :portfolio.utils {:portfolio.utils/contrast :default
+                              :portfolio.utils/scroll-physics :default
+                              :portfolio.utils/depth-filter :default
+                              :portfolio.utils/overlap-detector :default
+                              :portfolio.utils/parse-math :default
+                              :portfolio.utils/section-typography :default
+                              :portfolio.utils/social-links :default}
+           :portfolio.stores {:portfolio.stores/controls :default
+                               :portfolio.stores/site-mode :default
+                               :portfolio.stores/toast :default
+                               :portfolio.stores/staged-flags :default
+                               :portfolio.stores/admin-drafts :default}
+           :portfolio.terminal {:portfolio.terminal/commands :default
+                                :portfolio.terminal/filesystem :default
+                                :portfolio.terminal/github :default}
+           :portfolio.command-os {:portfolio.command-os/cache :default
+                                   :portfolio.command-os/parser :default
+                                   :portfolio.command-os/registry :default
+                                   :portfolio.command-os/schema :default}
+           :portfolio.convex {:portfolio.convex/client :default}
+           :portfolio.sections {:portfolio.sections/registry :default
+                                :portfolio.sections/index :default
+                                :portfolio.sections/hero :default
+                                :portfolio.sections/works :default
+                                :portfolio.sections/cv :default
+                                :portfolio.sections/terminal :default}
+           :portfolio.admin {:portfolio.admin/constants :default}
+           :portfolio.core {:portfolio.core :default}}}

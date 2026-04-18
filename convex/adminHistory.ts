@@ -48,3 +48,15 @@ export const getRecent = query({
 		return rows.slice(0, limit ?? 5);
 	},
 });
+
+export const listRecent = query({
+	args: {
+		limit: v.optional(v.number()),
+	},
+	handler: async (ctx, { limit }) => {
+		return await ctx.db
+			.query("adminHistory")
+			.order("desc")
+			.take(limit ?? 50);
+	},
+});

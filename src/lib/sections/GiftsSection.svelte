@@ -1,27 +1,13 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { getConvexClient } from '$lib/convex';
-	import { api } from '$convex/_generated/api';
+	import { giftsConfig } from '$lib/data/content';
 
 	export let id = "gifts";
 
-	let title = "";
-	let manifesto = "";
-	let callToAction = "";
-	let contactEmail = "";
-
-	onMount(() => {
-		const client = getConvexClient();
-		const unsub = client.onUpdate(api.gifts.getGiftsConfig, {}, (data) => {
-			if (data) {
-				title = data.title || title;
-				manifesto = data.manifesto || manifesto;
-				callToAction = data.callToAction || "";
-				contactEmail = data.contactEmail || "";
-			}
-		});
-		return () => unsub();
-	});
+	// Use giftsConfig from Clojure backend port
+	let title = giftsConfig?.title || "Send books, postcards, or art supplies";
+	let manifesto = giftsConfig?.manifesto || "The Promise — an open exchange of creative energy.";
+	let callToAction = giftsConfig?.description || "";
+	let contactEmail = giftsConfig?.email || "itsmxzou@gmail.com";
 </script>
 
 <svelte:head>

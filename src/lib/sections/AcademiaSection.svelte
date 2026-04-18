@@ -1,31 +1,16 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import { getConvexClient } from '$lib/convex';
-  import { api } from '$convex/_generated/api';
   import MuxVideo from '$lib/components/MuxVideo.svelte';
   import GenericListBlock from '$lib/components/blocks/GenericListBlock.svelte';
+  import { academicEntries } from '$lib/data/content';
 
   export let id = "academia";
 
-  let entries: any[] = [];
-  let loading = true;
-  let thumbnailConfig: any = null;
+  // Use academicEntries from Clojure backend port
+  let entries: any[] = academicEntries || [];
+  let loading = false;
+  let thumbnailConfig: any = { displayMode: 'list' };
 
   $: displayMode = thumbnailConfig?.displayMode ?? 'grid';
-
-  onMount(() => {
-    const client = getConvexClient();
-    const unsub1 = client.onUpdate(api.academia.getVisibleAcademia, {}, (data) => {
-      if (data) {
-        entries = data;
-        loading = false;
-      }
-    });
-    const unsub2 = client.onUpdate(api.thumbnails.getConfig, { section: 'academia' }, (data) => {
-      thumbnailConfig = data;
-    });
-    return () => { unsub1(); unsub2(); };
-  });
 </script>
 
 <svelte:head>

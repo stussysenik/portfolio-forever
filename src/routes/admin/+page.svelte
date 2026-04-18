@@ -1,4 +1,6 @@
 <script lang="ts">
+	import AdminDashboard from '$lib/admin/views/AdminDashboard.svelte';
+	import SaveBar from '$lib/admin/SaveBar.svelte';
 	import { getContext, onMount } from 'svelte';
 	import type { AdminStore } from '$lib/admin/stores/adminStore';
 	import AdminShell from '$lib/admin/AdminShell.svelte';
@@ -16,6 +18,10 @@
 	import { adminViewStore } from '$lib/admin/stores/adminViewStore';
 	import ContentView from '$lib/admin/views/ContentView.svelte';
 	import BlogPostsView from '$lib/admin/views/BlogPostsView.svelte';
+	import HistoryView from '$lib/admin/views/HistoryView.svelte';
+	import TakeoutsView from '$lib/admin/views/TakeoutsView.svelte';
+	import ThemesView from '$lib/admin/views/ThemesView.svelte';
+	import PagesView from '$lib/admin/views/PagesView.svelte';
 
 	const { client, api } = getContext<any>('admin');
 	const adminStore = getContext<AdminStore>('adminStore');
@@ -66,61 +72,45 @@
 		void seedData();
 	});
 
+	import { stagedChanges } from '$lib/stores/stagedChanges';
+
 	function handleSelectPage(e: CustomEvent<{ pageId: string }>) {
 		activePageId = e.detail.pageId;
 	}
 
-	async function handleToggleFlag(e: CustomEvent<{ key: string; category: string }>) {
+	function handleToggleFlag(e: CustomEvent<{ key: string; category: string }>) {
 		const { key, category } = e.detail;
 		const flag = ($featureFlags ?? []).find((f: any) => f.key === key);
-		const newState = !(flag?.enabled ?? true);
-		try {
-			await client.mutation(api.siteConfig.setFeatureFlag, { key, enabled: newState, category });
-			toast.success(`${key}: ${newState ? 'ON' : 'OFF'}`);
-		} catch (err: any) {
-			toast.error(err.message || 'Failed to toggle flag');
-		}
+		const currentState = flag?.enabled ?? false;
+		const label = flag?.label ?? key;
+		import('$lib/stores/stagedFlags').then(({ stagedFlags }) => {
+			const newState = !stagedFlags.getStagedEnabled(key) ?? !currentState;
+			stagedFlags.stage(key, newState, category, label);
+		});
 	}
 
-	async function handleTogglePage(e: CustomEvent<{ pageId: string; visible: boolean }>) {
+	function handleTogglePage(e: CustomEvent<{ pageId: string; visible: boolean }>) {
 		const { pageId, visible } = e.detail;
 		const page = ($pages ?? []).find((p: any) => p.pageId === pageId);
 		if (!page) return;
-		try {
-			await client.mutation(api.pages.upsert, {
-				...stripConvexMeta(page),
-				visible,
-				navVisible: visible ? page.navVisible ?? true : false
-			});
-			toast.success(`${page.label}: ${visible ? 'VISIBLE' : 'HIDDEN'}`);
-		} catch (err: any) {
-			toast.error(err.message || 'Failed to toggle page visibility');
-		}
+		stagedChanges.stage('pages', pageId, { visible, navVisible: visible ? page.navVisible ?? true : false }, `Page Visibility: ${page.label}`);
 	}
 
-	async function handleReorderPages(e: CustomEvent<{ pageIds: string[] }>) {
+	function handleReorderPages(e: CustomEvent<{ pageIds: string[] }>) {
 		const { pageIds } = e.detail;
-		try {
-			for (let i = 0; i < pageIds.length; i++) {
-				const page = ($pages ?? []).find((p) => p.pageId === pageIds[i]);
-				if (page && page.navOrder !== i) {
-					await client.mutation(api.pages.upsert, { ...stripConvexMeta(page), navOrder: i });
-				}
+		for (let i = 0; i < pageIds.length; i++) {
+			const page = ($pages ?? []).find((p) => p.pageId === pageIds[i]);
+			if (page && page.navOrder !== i) {
+				stagedChanges.stage('pages', page.pageId, { navOrder: i }, `Reorder: ${page.label}`);
 			}
-		} catch (err: any) {
-			toast.error(err.message || 'Failed to reorder pages');
 		}
 	}
 
-	async function handleArchivePage(e: CustomEvent<{ pageId: string; archived: boolean }>) {
+	function handleArchivePage(e: CustomEvent<{ pageId: string; archived: boolean }>) {
 		const { pageId, archived } = e.detail;
-		try {
-			await client.mutation(api.pages.setArchived, { pageId, archived });
-			const page = ($pages ?? []).find((p: any) => p.pageId === pageId);
-			toast.success(`${page?.label ?? pageId}: ${archived ? 'ARCHIVED' : 'UNARCHIVED'}`);
-		} catch (err: any) {
-			toast.error(err.message || 'Failed to toggle archive');
-		}
+		const page = ($pages ?? []).find((p: any) => p.pageId === pageId);
+		if (!page) return;
+		stagedChanges.stage('pages', pageId, { archived }, `Archive: ${page.label}`);
 	}
 
 	async function handleAddSection(e: CustomEvent<string>) {
@@ -135,17 +125,8 @@
 			order: activePage.sections?.length ?? 0
 		};
 		const updatedSections = [...(activePage.sections ?? []), newSection];
-		try {
-			await client.mutation(api.pages.updateSections, {
-				pageId: activePage.pageId,
-				sections: updatedSections
-			});
-			showSectionPicker = false;
-			previewRefreshKey++;
-			toast.success(`Added ${def?.label ?? sectionTypeId}`);
-		} catch (err: any) {
-			toast.error(err.message || 'Failed to add section');
-		}
+		stagedChanges.stage('pages', activePage.pageId, { sections: updatedSections }, `Add Section: ${def?.label ?? sectionTypeId}`);
+		showSectionPicker = false;
 	}
 </script>
 
@@ -205,12 +186,10 @@
 				on:opensettings={() => (showSectionPicker = true)}
 			/>
 		{:else}
-			<div class="empty-state">
-				<p>Select a page to start editing</p>
-			</div>
+			<AdminDashboard />
 		{/if}
 	{:else if $adminViewStore.currentView === 'pages'}
-		<div class="placeholder">Pages Management Coming Soon</div>
+		<PagesView />
 	{:else if $adminViewStore.currentView === 'content'}
 		{#if $adminViewStore.currentSubView === 'blogPosts'}
 			<BlogPostsView />
@@ -220,10 +199,16 @@
 	{:else if $adminViewStore.currentView === 'settings'}
 		<div class="placeholder">Global Settings Coming Soon</div>
 	{:else if $adminViewStore.currentView === 'themes'}
-		<div class="placeholder">Theme Editor Coming Soon</div>
+		<ThemesView />
 	{:else if $adminViewStore.currentView === 'history'}
-		<div class="placeholder">Admin History Coming Soon</div>
+		<HistoryView />
+	{:else if $adminViewStore.currentView === 'takeouts'}
+		<TakeoutsView />
 	{/if}
+
+	<svelte:fragment slot="sidebar-footer">
+		<SaveBar {client} {api} currentFlags={$featureFlags} />
+	</svelte:fragment>
 
 	<!-- Preview pane (always visible — section config is now inline) -->
 	<svelte:fragment slot="preview">

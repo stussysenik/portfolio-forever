@@ -1,5 +1,6 @@
-import * as Sentry from '@sentry/sveltekit';
+// import * as Sentry from '@sentry/sveltekit';
 
+/*
 Sentry.init({
 	dsn: import.meta.env.PUBLIC_SENTRY_DSN || '',
 	tracesSampleRate: 1.0,
@@ -8,5 +9,12 @@ Sentry.init({
 	environment: import.meta.env.MODE,
 	enabled: !!import.meta.env.PUBLIC_SENTRY_DSN,
 });
+*/
 
-export const handleError = Sentry.handleErrorWithSentry();
+export function handleError({ error, event }: any) {
+	console.error('Client Error:', error);
+	return {
+		message: error.message || 'Unknown error',
+		stack: error.stack
+	};
+}

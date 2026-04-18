@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { getContext, useState } from 'svelte';
+    import { getContext } from 'svelte';
     import type { AdminStore } from '$lib/admin/stores/adminStore';
     import DataTable from '$lib/admin/components/DataTable.svelte';
     import SchemaForm from '$lib/admin/components/SchemaForm.svelte';

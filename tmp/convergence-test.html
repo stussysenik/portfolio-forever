@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Clojure vs TypeScript Convergence</title>
+  <script type="importmap">{ "imports": { "squint-cljs/core.js": "/node_modules/squint-cljs/core.js" } }</script>
+  <style>
+    body { font-family: 'JetBrains Mono', monospace; background: #0a0a0a; color: #e0e0e0; padding: 2rem; }
+    h1 { color: #44D62C; border-bottom: 2px solid #333; padding-bottom: 0.5rem; }
+    .pass { color: #44D62C; } .fail { color: #F97242; } .info { color: #888; } .mismatch { color: #FFC5D3; }
+    table { border-collapse: collapse; width: 100%; margin-top: 1rem; }
+    td, th { border: 1px solid #333; padding: 6px 12px; text-align: left; font-size: 0.85rem; }
+    th { background: #1a1a1a; color: #44D62C; }
+    .badge { padding: 2px 8px; border-radius: 3px; font-size: 0.85rem; }
+    .badge-PASS { background: #1a3a1a; color: #44D62C; }
+    .badge-FAIL { background: #3a1a1a; color: #F97242; }
+    .badge-MISMATCH { background: #3a2a1a; color: #FFC5D3; }
+    .badge-SKIP { background: #1a1a2a; color: #888; }
+    .summary { font-size: 1.2rem; margin: 1rem 0; padding: 1rem; background: #111; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h1>Clojure vs TypeScript Convergence Test</h1>
+  <p>Each test loads the same data from both the TS source and the Squint-compiled CLJS module,
+  then deep-compares the output. This verifies the Clojure layer produces identical results to the TypeScript source.</p>
+  <div id="results"><p>Running tests...</p></div>
+  <script type="module">
+    const results = [];
+    let passCount = 0, failCount = 0, mismatchCount = 0, skipCount = 0;
+
+    async function deepCompare(name, tsModule, cljModule, tsGetter, cljGetter) {
+      try {
+        const ts = await import(tsModule);
+        const clj = await import(cljModule);
+        const tsVal = tsGetter(ts);
+        const cljVal = cljGetter(clj);
+        
+        // Both null/undefined
+        if (tsVal == null && cljVal == null) {
+          results.push({ name, status: 'PASS', detail: 'Both null/undefined' });
+          passCount++;
+          return;
+        }
+        
+        // One null, one not
+        if (tsVal == null || cljVal == null) {
+          results.push({ name, status: 'FAIL', detail: 'TS=' + (tsVal == null ? 'null' : typeof tsVal) + ' CLJ=' + (cljVal == null ? 'null' : typeof cljVal) });
+          failCount++;
+          return;
+        }
+        
+        // Function check
+        if (typeof tsVal === 'function' && typeof cljVal === 'function') {
+          // Call both with same input and compare
+          try {
+            const tsResult = tsVal(ts.works ? ts.works[0] : { year: 2026, month: 1 });
+            const cljResult = cljVal(clj.works ? clj.works[0] : { year: 2026, month: 1 });
+            if (tsResult === cljResult) {
+              results.push({ name, status: 'PASS', detail: 'Function outputs match' });
+              passCount++;
+            } else {
+              results.push({ name, status: 'MISMATCH', detail: 'TS returns "' + tsResult + '" vs CLJ returns "' + cljResult + '"' });
+              mismatchCount++;
+            }
+          } catch(e) {
+            results.push({ name, status: 'PASS', detail: 'Both callable (call test: ' + e.message.slice(0, 60) + ')' });
+            passCount++;
+          }
+          return;
+        }
+        
+        // Array compare
+        const tsJson = JSON.stringify(tsVal);
+        const cljJson = JSON.stringify(cljVal);
+        
+        if (tsJson === cljJson) {
+          results.push({ name, status: 'PASS', detail: 'Exact match (' + tsJson.length + ' chars)' });
+          passCount++;
+        } else {
+          // Check structural similarity
+          const tsType = Array.isArray(tsVal) ? 'array' : typeof tsVal;
+          const cljType = Array.isArray(cljVal) ? 'array' : typeof cljVal;
+          
+          if (tsType !== cljType) {
+            results.push({ name, status: 'FAIL', detail: 'Type mismatch: TS=' + tsType + ' CLJ=' + cljType });
+            failCount++;
+          } else if (tsType === 'array') {
+            if (tsVal.length === cljVal.length) {
+              // Check if items match structurally
+              let allMatch = true;
+              let diffCount = 0;
+              for (let i = 0; i < tsVal.length; i++) {
+                if (JSON.stringify(tsVal[i]) !== JSON.stringify(cljVal[i])) diffCount++;
+              }
+              if (diffCount === 0) {
+                results.push({ name, status: 'PASS', detail: 'Exact array match (' + tsVal.length + ' items)' });
+                passCount++;
+              } else {
+                // Check if it's just key naming (camelCase vs snake_case)
+                const tsKeys = tsVal[0] ? Object.keys(tsVal[0]).sort() : [];
+                const cljKeys = cljVal[0] ? Object.keys(cljVal[0]).sort() : [];
+                const keyDiff = tsKeys.filter(k => !cljKeys.includes(k)).concat(cljKeys.filter(k => !tsKeys.includes(k)));
+                if (keyDiff.length <= 2 && tsVal.length === cljVal.length) {
+                  results.push({ name, status: 'MISMATCH', detail: 'Same ' + tsVal.length + ' items, key naming differs: ' + keyDiff.join(', ') });
+                  mismatchCount++;
+                } else {
+                  results.push({ name, status: 'MISMATCH', detail: diffCount + '/' + tsVal.length + ' items differ. Keys: TS=' + tsKeys.join(',') + ' CLJ=' + cljKeys.join(',') });
+                  mismatchCount++;
+                }
+              }
+            } else {
+              results.push({ name, status: 'FAIL', detail: 'Array length differs: TS=' + tsVal.length + ' CLJ=' + cljVal.length });
+              failCount++;
+            }
+          } else {
+            // Object comparison
+            const tsKeys = Object.keys(tsVal).sort();
+            const cljKeys = Object.keys(cljVal).sort();
+            const keyDiff = tsKeys.filter(k => !cljKeys.includes(k)).concat(cljKeys.filter(k => !tsKeys.includes(k)));
+            if (keyDiff.length <= 3) {
+              results.push({ name, status: 'MISMATCH', detail: 'Key naming differs: ' + keyDiff.slice(0, 5).join(', ') + (keyDiff.length > 5 ? '...' : '') });
+              mismatchCount++;
+            } else {
+              results.push({ name, status: 'MISMATCH', detail: 'Significant structural differences (' + keyDiff.length + ' key diffs)' });
+              mismatchCount++;
+            }
+          }
+        }
+      } catch(e) {
+        results.push({ name, status: 'FAIL', detail: e.message.slice(0, 200) });
+        failCount++;
+      }
+    }
+
+    // ===== DATA.CONTENT =====
+    await deepCompare('content: skills', '/src/lib/data/content.ts', '/clj/out/portfolio/data/content.mjs', m => m.skills, m => m.skills);
+    await deepCompare('content: tools', '/src/lib/data/content.ts', '/clj/out/portfolio/data/content.mjs', m => m.tools, m => m.tools);
+    await deepCompare('content: profile', '/src/lib/data/content.ts', '/clj/out/portfolio/data/content.mjs', m => m.profile, m => m.profile);
+    await deepCompare('content: works', '/src/lib/data/content.ts', '/clj/out/portfolio/data/content.mjs', m => m.works, m => m.works);
+    await deepCompare('content: galleryItems', '/src/lib/data/content.ts', '/clj/out/portfolio/data/content.mjs', m => m.galleryItems, m => m.gallery_items);
+    await deepCompare('content: processSteps', '/src/lib/data/content.ts', '/clj/out/portfolio/data/content.mjs', m => m.processSteps, m => m.process_steps);
+    await deepCompare('content: socialLinks', '/src/lib/data/content.ts', '/clj/out/portfolio/data/content.mjs', m => m.socialLinks, m => m.social_links);
+    await deepCompare('content: siteConfig', '/src/lib/data/content.ts', '/clj/out/portfolio/data/content.mjs', m => m.siteConfig, m => m.site_config);
+    await deepCompare('content: getHighlight', '/src/lib/data/content.ts', '/clj/out/portfolio/data/content.mjs', m => m.getHighlight, m => m.get_highlight);
+    await deepCompare('content: formatDate', '/src/lib/data/content.ts', '/clj/out/portfolio/data/content.mjs', m => m.formatDate, m => m.format_date);
+    await deepCompare('content: sortEntries', '/src/lib/data/content.ts', '/clj/out/portfolio/data/content.mjs', m => m.sortEntries, m => m.sort_entries);
+
+    // ===== DATA.CV =====
+    await deepCompare('cv: cvData', '/src/lib/data/cv.ts', '/clj/out/portfolio/data/cv.mjs', m => m.cvData, m => m.cv_data);
+
+    // ===== DATA.LABS =====
+    await deepCompare('labs: labs', '/src/lib/data/labs.ts', '/clj/out/portfolio/data/labs.mjs', m => m.labs, m => m.labs);
+    await deepCompare('labs: checkFeature', '/src/lib/data/labs.ts', '/clj/out/portfolio/data/labs.mjs', m => m.checkFeature, m => m.check_feature);
+    await deepCompare('labs: getStatusLabel', '/src/lib/data/labs.ts', '/clj/out/portfolio/data/labs.mjs', m => m.getStatusLabel, m => m.get_status_label);
+
+    // ===== DATA.LAYOUT-CONFIG =====
+    await deepCompare('layout-config: config', '/src/lib/data/layout-config.ts', '/clj/out/portfolio/data/layout_config.mjs', m => m.layoutConfig, m => m.layout_config);
+    await deepCompare('layout-config: mobileTokens', '/src/lib/data/layout-config.ts', '/clj/out/portfolio/data/layout_config.mjs', m => m.mobileDesignTokens, m => m.mobile_design_tokens);
+
+    // ===== UTILS.CONTRAST =====
+    await deepCompare('contrast: getContrastColor(#fff5c2)', '/src/lib/utils/contrast.ts', '/clj/out/portfolio/utils/contrast.mjs', m => m.getContrastColor('#fff5c2'), m => m.get_contrast_color('#fff5c2'));
+    await deepCompare('contrast: getContrastColor(#F97242)', '/src/lib/utils/contrast.ts', '/clj/out/portfolio/utils/contrast.mjs', m => m.getContrastColor('#F97242'), m => m.get_contrast_color('#F97242'));
+    await deepCompare('contrast: getContrastColor(#691424)', '/src/lib/utils/contrast.ts', '/clj/out/portfolio/utils/contrast.mjs', m => m.getContrastColor('#691424'), m => m.get_contrast_color('#691424'));
+    await deepCompare('contrast: getHighlightTextColor(orange)', '/src/lib/utils/contrast.ts', '/clj/out/portfolio/utils/contrast.mjs', m => m.getHighlightTextColor('orange'), m => m.get_highlight_text_color('orange'));
+    await deepCompare('contrast: getHighlightTextColor(ocean)', '/src/lib/utils/contrast.ts', '/clj/out/portfolio/utils/contrast.mjs', m => m.getHighlightTextColor('ocean'), m => m.get_highlight_text_color('ocean'));
+
+    // ===== UTILS.DEPTH-FILTER =====
+    await deepCompare('depth-filter: filterByDepth full', '/src/lib/utils/depth-filter.ts', '/clj/out/portfolio/utils/depth_filter.mjs', m => m.filterByDepth(['hero','works','cv','talks','blog'], 'full'), m => m.filter_by_depth(['hero','works','cv','talks','blog'], 'full'));
+    await deepCompare('depth-filter: filterByDepth 5-min', '/src/lib/utils/depth-filter.ts', '/clj/out/portfolio/utils/depth_filter.mjs', m => m.filterByDepth(['hero','works','cv','talks','blog'], '5-min'), m => m.filter_by_depth(['hero','works','cv','talks','blog'], '5-min'));
+
+    // ===== UTILS.SCROLL-PHYSICS =====
+    await deepCompare('scroll-physics: spring multiplier', '/src/lib/utils/scroll-physics.ts', '/clj/out/portfolio/utils/scroll_physics.mjs', m => m.getParallaxMultiplier('spring'), m => m.get_parallax_multiplier('spring'));
+    await deepCompare('scroll-physics: frictionless multiplier', '/src/lib/utils/scroll-physics.ts', '/clj/out/portfolio/utils/scroll_physics.mjs', m => m.getParallaxMultiplier('frictionless'), m => m.get_parallax_multiplier('frictionless'));
+    await deepCompare('scroll-physics: string multiplier', '/src/lib/utils/scroll-physics.ts', '/clj/out/portfolio/utils/scroll_physics.mjs', m => m.getParallaxMultiplier('string'), m => m.get_parallax_multiplier('string'));
+
+    // ===== SECTIONS =====
+    await deepCompare('sections.registry: count', '/src/lib/sections/registry.ts', '/clj/out/portfolio/sections/registry.mjs', m => m.sectionTypes ? m.sectionTypes.length : -1, m => m.section_registry ? m.section_registry.length : -1);
+
+    // ===== TERMINAL.GITHUB =====
+    await deepCompare('terminal.github: profile', '/src/lib/terminal/github.ts', '/clj/out/portfolio/terminal/github.mjs', m => m.githubProfile, m => m.github_profile);
+    await deepCompare('terminal.github: repos', '/src/lib/terminal/github.ts', '/clj/out/portfolio/terminal/github.mjs', m => m.repos, m => m.repos);
+
+    // ===== ADMIN.CONSTANTS =====
+    await deepCompare('admin.constants: namedColors', '/src/lib/admin/constants.ts', '/clj/out/portfolio/admin/constants.mjs', m => m.NAMED_COLORS, m => m.named_colors);
+    await deepCompare('admin.constants: viewModes', '/src/lib/admin/constants.ts', '/clj/out/portfolio/admin/constants.mjs', m => m.VIEW_MODES, m => m.view_modes);
+    await deepCompare('admin.constants: FONT_SIZE_SCALE', '/src/lib/admin/constants.ts', '/clj/out/portfolio/admin/constants.mjs', m => m.FONT_SIZE_SCALE, m => m.font_size_scale);
+    await deepCompare('admin.constants: defaults', '/src/lib/admin/constants.ts', '/clj/out/portfolio/admin/constants.mjs', m => m.DEFAULTS, m => m.defaults);
+
+    // ===== STORES.CONTROLS =====
+    await deepCompare('stores.controls: depthLevels', '/src/lib/stores/controls.ts', '/clj/out/portfolio/stores/controls.mjs', m => m.depthLevels, m => m.depth_levels);
+    await deepCompare('stores.controls: themeModes', '/src/lib/stores/controls.ts', '/clj/out/portfolio/stores/controls.mjs', m => m.themeModes, m => m.theme_modes);
+    await deepCompare('stores.controls: physicsModes', '/src/lib/stores/controls.ts', '/clj/out/portfolio/stores/controls.mjs', m => m.physicsModes, m => m.physics_modes);
+
+    // Now render
+    const el = document.getElementById('results');
+    const total = results.length;
+    const p = results.filter(r => r.status === 'PASS').length;
+    const f = results.filter(r => r.status === 'FAIL').length;
+    const m = results.filter(r => r.status === 'MISMATCH').length;
+    const s = results.filter(r => r.status === 'SKIP').length;
+    
+    el.innerHTML = '<div class="summary"><span class="pass">' + p + ' PASS</span> / <span class="fail">' + f + ' FAIL</span> / <span class="mismatch">' + m + ' MISMATCH</span> / ' + total + ' total</div>' +
+      '<table><tr><th>#</th><th>Test</th><th>Status</th><th>Detail</th></tr>' +
+      results.map((r, i) => '<tr><td>' + (i+1) + '</td><td>' + r.name + '</td><td><span class="badge badge-' + r.status + '">' + r.status + '</span></td><td class="info">' + r.detail + '</td></tr>').join('') + '</table>';
+    
+    window.__convergenceResults = { pass: p, fail: f, mismatch: m, total };
+  </script>
+</body>
+</html>

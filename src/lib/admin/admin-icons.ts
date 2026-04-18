@@ -53,6 +53,13 @@ import IconTrash from "~icons/lucide/trash-2";
 import IconPencil from "~icons/lucide/pencil";
 import IconCheck from "~icons/lucide/check";
 import IconSearch from "~icons/lucide/search";
+import IconDownload from "~icons/lucide/download";
+import IconHistory from "~icons/lucide/history";
+import IconRotateCw from "~icons/lucide/rotate-cw";
+import IconClock from "~icons/lucide/clock";
+import IconUser from "~icons/lucide/user";
+import IconDatabase from "~icons/lucide/database";
+import IconActivity from "~icons/lucide/activity";
 
 export {
 	IconHome,
@@ -100,6 +107,13 @@ export {
 	IconPencil,
 	IconCheck,
 	IconSearch,
+	IconDownload,
+	IconHistory,
+	IconRotateCw,
+	IconClock,
+	IconUser,
+	IconDatabase,
+	IconActivity,
 };
 
 export type AdminIconComponent = typeof IconHome;

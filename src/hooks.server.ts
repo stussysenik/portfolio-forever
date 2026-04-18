@@ -7,5 +7,10 @@ Sentry.init({
 	enabled: !!import.meta.env.PUBLIC_SENTRY_DSN,
 });
 
-export const handleError = Sentry.handleErrorWithSentry();
-export const handle = Sentry.sentryHandle();
+export function handleError({ error, event }: any) {
+	console.error('Server Error:', error);
+	return {
+		message: error.message || 'Unknown error',
+		stack: error.stack
+	};
+}

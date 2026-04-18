@@ -2,16 +2,19 @@ import { sveltekit } from "@sveltejs/kit/vite";
 import { defineConfig } from "vite";
 import Icons from "unplugin-icons/vite";
 import path from "path";
+import squintPlugin from "./vite-plugin-squint";
 
 export default defineConfig({
         plugins: [
                 sveltekit(),
                 Icons({ compiler: "svelte", autoInstall: false }),
+                // squintPlugin({ srcDir: "src/lib/clj", outDir: "src/lib/clj" }),
         ],
         envPrefix: ["VITE_", "PUBLIC_", "NEXT_PUBLIC_"],
         resolve: {
                 alias: {
                         "$convex": path.resolve("./convex"),
+                        "$clj": path.resolve("./clj"),
                 },
         },
         optimizeDeps: {
@@ -19,7 +22,7 @@ export default defineConfig({
         },
         server: {
                 fs: {
-                        allow: ["convex"],
+                        allow: ["convex", "clj"],
                 },
         },
         build: {

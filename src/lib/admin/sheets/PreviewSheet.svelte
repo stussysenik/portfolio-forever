@@ -1,21 +1,25 @@
 <script lang="ts">
 	import AdminSheet from '../AdminSheet.svelte';
+	import PreviewFrame from '../PreviewFrame.svelte';
 
 	export let open: boolean = false;
 	export let siteUrl: string = '';
 	export let path: string = '/';
 
+	let refreshKey = 0;
 	$: iframeSrc = siteUrl ? `${siteUrl}${path}` : path;
 </script>
 
 <AdminSheet {open} title="Preview" height="full" on:close>
 	<div class="preview-sheet-body">
 		{#if open && iframeSrc}
-			<iframe
-				src={iframeSrc}
-				title="Site preview"
-				sandbox="allow-scripts allow-same-origin allow-forms"
-			></iframe>
+			<PreviewFrame route={path} url={iframeSrc} bind:refreshKey>
+				<iframe
+					src={iframeSrc}
+					title="Site preview"
+					sandbox="allow-scripts allow-same-origin allow-forms"
+				></iframe>
+			</PreviewFrame>
 		{/if}
 	</div>
 </AdminSheet>

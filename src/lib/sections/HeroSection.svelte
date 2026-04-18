@@ -6,45 +6,55 @@
 	import Elevator from "$lib/components/Elevator.svelte";
 	import { onMount } from "svelte";
 	import { getConvexClient } from "$lib/convex";
-	import { api } from "$convex/_generated/api";
 	import { sameAsUrlToLabel } from "$lib/utils/social-links";
+
+	// Import from Clojure Abstraction Layer
+	import { setup_hero_subscriptions, format_profile_data, get_hero_config_derived } from "$lib/clj/portfolio/sections/hero.mjs";
+	import { stagedOverrides } from "$lib/stores/siteMode";
+	// @ts-ignore
+	import { exports as dataUtils } from '$lib/clj/portfolio/data/overrides.mjs';
+	import DoubleTapEdit from '$lib/components/DoubleTapEdit.svelte';
 
 	export let id = "hero";
 
 	let heroConfig: any = null;
-	$: showDonut = heroConfig?.showAsciiDonut ?? true;
-	$: showWave = heroConfig?.showAsciiWave ?? false;
-	$: layout = heroConfig?.layout ?? 'default';
+	$: effectiveHeroConfig = dataUtils.applyOverrides('heroConfig', heroConfig, $stagedOverrides);
+	$: derivedConfig = get_hero_config_derived(effectiveHeroConfig);
+	$: showDonut = derivedConfig.showDonut;
+	$: showWave = derivedConfig.showWave;
+	$: layout = derivedConfig.layout;
 
-	let profileData: any = {
+	// Typography styles from config
+	$: heroNameStyles = `
+		font-size: ${effectiveHeroConfig?.heroNameSize ? effectiveHeroConfig.heroNameSize + 'rem' : 'var(--font-size-2xl)'};
+		font-weight: ${effectiveHeroConfig?.heroNameWeight ?? 700};
+		letter-spacing: ${effectiveHeroConfig?.heroNameLetterSpacing ? effectiveHeroConfig.heroNameLetterSpacing + 'em' : 'var(--letter-spacing-tight)'};
+		line-height: ${effectiveHeroConfig?.heroNameLineHeight ?? 'var(--line-height-dense)'};
+		text-wrap: ${effectiveHeroConfig?.heroNameTextWrap ?? 'wrap'};
+	`;
+
+	let profileData: any = format_profile_data(null, {
 		name: "Stüssy Senik",
 		taglines: [{ lang: "de", text: "Design Engineer · Creative Producer" }],
 		shortBio: "Building at the intersection of engineering, creative production, and design — from code to camera",
 		location: "NYC / PRAGUE",
 		sameAs: [] as string[],
-	};
+	});
 	let works: any[] = staticWorks;
 
 	onMount(() => {
 		const client = getConvexClient();
-		const unsub1 = client.onUpdate(api.cv.getVisibleCV, {}, (data: any) => {
-			if (data?.profile) {
-				profileData = {
-					name: data.profile.name,
-					taglines: data.profile.taglines || profileData.taglines,
-					shortBio: data.profile.shortBio || data.profile.summary,
-					location: data.profile.location || profileData.location,
-					sameAs: data.profile.sameAs || [],
-				};
+		return setup_hero_subscriptions(client, {
+			onProfile: (data: any) => {
+				profileData = format_profile_data(data, profileData);
+			},
+			onWorks: (data: any) => {
+				works = Array.isArray(data) ? data : staticWorks;
+			},
+			onConfig: (data: any) => {
+				heroConfig = data;
 			}
 		});
-		const unsub2 = client.onUpdate(api.works.getVisibleWorks, {}, (data: any) => {
-			works = Array.isArray(data) ? data : staticWorks;
-		});
-		const unsub3 = client.onUpdate(api.hero.getHeroConfig, {}, (data: any) => {
-			heroConfig = data;
-		});
-		return () => { unsub1(); unsub2(); unsub3(); };
 	});
 </script>
 
@@ -52,9 +62,27 @@
 <section {id}>
 <header class="hero" class:hero--diptych={layout === 'diptych'} class:hero--editorial={layout === 'editorial'} class:hero--stacked={layout === 'stacked'}>
 	<div class="hero-content">
+	import DoubleTapEdit from '$lib/components/DoubleTapEdit.svelte';
+...
 		<div class="hero-main">
-			<h1 class="hero-name">{profileData.name}</h1>
-			<p class="hero-tagline">{profileData.taglines[0]?.text ?? profileData.shortBio}</p>
+			<h1 class="hero-name" style={heroNameStyles}>
+				<DoubleTapEdit
+					table="cvProfile"
+					docId={profileData._id || 'singleton'}
+					field="name"
+					value={profileData.name}
+					label="Hero Name"
+				/>
+			</h1>
+			<p class="hero-tagline">
+				<DoubleTapEdit
+					table="cvProfile"
+					docId={profileData._id || 'singleton'}
+					field="shortBio"
+					value={profileData.shortBio}
+					label="Hero Tagline"
+				/>
+			</p>
 		</div>
 
 		<p class="hero-bio">{profileData.shortBio}</p>

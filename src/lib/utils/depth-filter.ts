@@ -1,17 +1,7 @@
-import type { DepthLevel } from "$lib/stores/controls";
+// Re-exporting from Clojure Abstraction Layer with camelCase parity
+import * as clj from "$lib/clj/portfolio/utils/depth_filter.mjs";
 
-/** Sections visible in 5-min "screen pass" mode */
-const SCREEN_PASS_SECTIONS = ["hero", "works", "cv"];
-
-/**
- * Filter section IDs by depth level.
- * - "full": all sections (current default behavior)
- * - "15-min": all sections (same set, truncation handled per-section)
- * - "5-min": hero + works + cv only
- */
-export function filterByDepth(sections: string[], depth: DepthLevel): string[] {
-	if (depth === "5-min") {
-		return sections.filter((id) => SCREEN_PASS_SECTIONS.includes(id));
-	}
-	return sections;
-}
+export const filterByDepth = clj.filter_by_depth;
+export const isScreenPass = clj.is_screen_pass;
+export const isDeepDive = clj.is_deep_dive;
+export const isFullArchive = clj.is_full_archive;

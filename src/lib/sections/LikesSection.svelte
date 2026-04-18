@@ -1,22 +1,11 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { getConvexClient } from '$lib/convex';
-	import { api } from '$convex/_generated/api';
 	import GenericListBlock from '$lib/components/blocks/GenericListBlock.svelte';
+	import { likes } from '$lib/data/content';
 
 	export let id = "likes";
 
-	let categories: { title: string; items: string[] }[] = [];
-
-	onMount(() => {
-		const client = getConvexClient();
-		const unsub = client.onUpdate(api.likes.getVisibleLikes, {}, (data) => {
-			if (data && data.length > 0) {
-				categories = data.map((c: any) => ({ title: c.title, items: c.items }));
-			}
-		});
-		return () => unsub();
-	});
+	// Use likes from Clojure backend port
+	let categories: { title: string; items: string[] }[] = likes || [];
 </script>
 
 <svelte:head>

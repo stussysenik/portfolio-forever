@@ -5,6 +5,7 @@
 <div class="error-page">
 	<h1>{$page.status}</h1>
 	<p>{$page.error?.message || 'Something went wrong'}</p>
+	<pre style="text-align: left; max-width: 800px; overflow: auto; padding: 1rem; background: #eee;">{JSON.stringify($page.error, Object.getOwnPropertyNames($page.error || {}), 2)}</pre>
 	<a href="/">← Back to home</a>
 </div>
 

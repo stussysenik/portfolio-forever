@@ -1,28 +1,14 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import { getConvexClient } from '$lib/convex';
-  import { api } from '$convex/_generated/api';
+  import { processSteps } from '$lib/data/content';
 
   export let id = "process";
 
-  /** Default phases used when Convex has no data yet */
-  const DEFAULT_PHASES = [
-    { label: "IMAGINE", order: 0 },
-    { label: "RE-THINK", order: 1 },
-    { label: "SHIP", order: 2 },
-  ];
-
-  let phases: Array<{ label: string; description?: string; order: number }> = DEFAULT_PHASES;
-
-  onMount(() => {
-    const client = getConvexClient();
-    const unsub = client.onUpdate(api.process.getProcessConfig, {}, (data) => {
-      if (data && data.phases && data.phases.length > 0) {
-        phases = [...data.phases].sort((a, b) => a.order - b.order);
-      }
-    });
-    return () => unsub();
-  });
+  /** Use phases from the Clojure backend port */
+  let phases: Array<{ label: string; description?: string; order: number }> = processSteps.map((s: any, i: number) => ({
+    label: s.title,
+    description: s.description,
+    order: i
+  }));
 
   // SVG layout constants
   const RECT_WIDTH = 180;

@@ -2,12 +2,18 @@
 	import { AdminChipGroup, AdminSlider, AdminToggle } from '$lib/admin/primitives';
 	import { DEFAULTS } from '$lib/admin/constants';
 	import { toast } from '$lib/stores/toast';
+	import { stagedChanges } from '$lib/stores/stagedChanges';
+	import { stagedFlags } from '$lib/stores/stagedFlags';
 
 	export let client: any;
 	export let api: any;
 	export let siteConfig: any = null;
 	export let featureFlags: any[] = [];
 	export let heroConfig: any = null;
+
+	// Reference props to suppress unused-export warnings
+	$: void client;
+	$: void api;
 
 	// Accordion state
 	let layoutOpen = true;
@@ -52,59 +58,23 @@
 
 	const HERO_VISUAL_OPTIONS = ['none', 'donut', 'wave', 'pixel'] as const;
 
-	// ── Mutation helpers ──
+	// ── Staging helpers ──
 
-	async function setMode(m: string) {
-		try {
-			await client.mutation(api.siteConfig.upsert, { mode: m });
-			toast.success(`Mode: ${m}`);
-		} catch (e: any) {
-			toast.error(e.message || 'Failed to set mode');
-		}
+	function stageSiteConfig(patch: Record<string, any>, label: string) {
+		stagedChanges.stage('siteConfig', 'singleton', patch, label);
 	}
 
-	async function setParallax(speed: number) {
-		try {
-			await client.mutation(api.siteConfig.upsert, { parallaxSpeed: speed });
-		} catch (e: any) {
-			toast.error(e.message || 'Failed to set parallax');
-		}
+	function stageHeroConfig(patch: Record<string, any>, label: string) {
+		stagedChanges.stage('heroConfig', 'singleton', patch, label);
 	}
 
-	async function setHeroLayout(layout: string) {
-		try {
-			await client.mutation(api.hero.upsertHeroConfig, { layout });
-			toast.success(`Hero layout: ${layout}`);
-		} catch (e: any) {
-			toast.error(e.message || 'Failed to set hero layout');
-		}
-	}
-
-	async function setHeroConfig(field: string, value: any) {
-		try {
-			await client.mutation(api.hero.upsertHeroConfig, { [field]: value });
-		} catch (_) { /* ignore */ }
-	}
-
-	async function toggleFlag(key: string) {
+	function handleToggleFlag(key: string) {
 		const flag = featureFlags.find((f: any) => f.key === key);
-		const newState = !(flag?.enabled ?? true);
+		const currentState = flag?.enabled ?? false;
 		const category = flag?.category ?? 'visual';
-		try {
-			await client.mutation(api.siteConfig.setFeatureFlag, { key, enabled: newState, category });
-			toast.success(`${key}: ${newState ? 'ON' : 'OFF'}`);
-		} catch (e: any) {
-			toast.error(e.message || 'Failed to toggle flag');
-		}
-	}
-
-	async function setHeroVisual(visual: string) {
-		try {
-			await client.mutation(api.siteConfig.upsert, { heroVisual: visual });
-			toast.success(`Hero visual: ${visual}`);
-		} catch (e: any) {
-			toast.error(e.message || 'Failed to set hero visual');
-		}
+		const label = flag?.label ?? key;
+		const newState = !stagedFlags.getStagedEnabled(key) ?? !currentState;
+		stagedFlags.stage(key, newState, category, label);
 	}
 
 	function getSingleValue(value: string | string[]): string {
@@ -130,7 +100,7 @@
 						mode="exclusive"
 						color="blue"
 						equalWidth={true}
-						on:change={(e) => setMode(getSingleValue(e.detail.value))}
+						on:change={(e) => stageSiteConfig({ mode: getSingleValue(e.detail.value) }, 'Site Mode')}
 					/>
 				</div>
 
@@ -143,7 +113,7 @@
 						mode="exclusive"
 						color="blue"
 						equalWidth={true}
-						on:change={(e) => setHeroLayout(getSingleValue(e.detail.value))}
+						on:change={(e) => stageHeroConfig({ layout: getSingleValue(e.detail.value) }, 'Hero Layout')}
 					/>
 				</div>
 
@@ -157,7 +127,7 @@
 						label="Parallax"
 						format={(v) => v.toFixed(1)}
 						width="fill"
-						on:change={(e) => setParallax(e.detail.value)}
+						on:change={(e) => stageSiteConfig({ parallaxSpeed: e.detail.value }, 'Parallax')}
 					/>
 				</div>
 			</div>
@@ -184,7 +154,7 @@
 						format={(v) => v + 'rem'}
 						showReset={heroNameSize !== DEFAULTS.hero.heroNameSize}
 						resetValue={DEFAULTS.hero.heroNameSize}
-						on:change={(e) => setHeroConfig('heroNameSize', e.detail.value)}
+						on:change={(e) => stageHeroConfig({ heroNameSize: e.detail.value }, 'Hero Font Size')}
 					/>
 				</div>
 
@@ -194,7 +164,7 @@
 					<AdminChipGroup
 						options={WEIGHT_OPTIONS}
 						value={String(heroNameWeight)}
-						on:change={(e) => setHeroConfig('heroNameWeight', parseInt(getSingleValue(e.detail.value), 10))}
+						on:change={(e) => stageHeroConfig({ heroNameWeight: parseInt(getSingleValue(e.detail.value), 10) }, 'Hero Font Weight')}
 					/>
 				</div>
 
@@ -210,7 +180,7 @@
 						format={(v) => v.toFixed(2) + 'em'}
 						showReset={Math.abs(heroNameLetterSpacing - DEFAULTS.hero.heroNameLetterSpacing) > 0.001}
 						resetValue={DEFAULTS.hero.heroNameLetterSpacing}
-						on:change={(e) => setHeroConfig('heroNameLetterSpacing', e.detail.value)}
+						on:change={(e) => stageHeroConfig({ heroNameLetterSpacing: e.detail.value }, 'Hero Letter Spacing')}
 					/>
 				</div>
 
@@ -226,7 +196,7 @@
 						format={(v) => v.toFixed(2)}
 						showReset={Math.abs(heroNameLineHeight - DEFAULTS.hero.heroNameLineHeight) > 0.01}
 						resetValue={DEFAULTS.hero.heroNameLineHeight}
-						on:change={(e) => setHeroConfig('heroNameLineHeight', e.detail.value)}
+						on:change={(e) => stageHeroConfig({ heroNameLineHeight: e.detail.value }, 'Hero Line Height')}
 					/>
 				</div>
 
@@ -236,7 +206,7 @@
 					<AdminChipGroup
 						options={WRAP_OPTIONS}
 						value={heroNameTextWrap}
-						on:change={(e) => setHeroConfig('heroNameTextWrap', getSingleValue(e.detail.value))}
+						on:change={(e) => stageHeroConfig({ heroNameTextWrap: getSingleValue(e.detail.value) }, 'Hero Text Wrap')}
 					/>
 				</div>
 			</div>
@@ -254,11 +224,11 @@
 				<!-- Pixel Engine (feature flag) -->
 				<div class="toggle-row">
 					<AdminToggle
-						checked={pixelEngineOn}
+						checked={stagedFlags.getStagedEnabled('pixel-engine') ?? pixelEngineOn}
 						size="sm"
 						color="green"
 						label="Pixel Engine"
-						on:change={() => toggleFlag('pixel-engine')}
+						on:change={() => handleToggleFlag('pixel-engine')}
 					/>
 					<span class="toggle-label">Pixel Engine</span>
 				</div>
@@ -270,7 +240,7 @@
 						size="sm"
 						color="green"
 						label="ASCII Donut"
-						on:change={() => setHeroConfig('showAsciiDonut', !donutOn)}
+						on:change={() => stageHeroConfig({ showAsciiDonut: !donutOn }, 'Hero Donut')}
 					/>
 					<span class="toggle-label">ASCII Donut</span>
 				</div>
@@ -282,7 +252,7 @@
 						size="sm"
 						color="green"
 						label="ASCII Wave"
-						on:change={() => setHeroConfig('showAsciiWave', !waveOn)}
+						on:change={() => stageHeroConfig({ showAsciiWave: !waveOn }, 'Hero Wave')}
 					/>
 					<span class="toggle-label">ASCII Wave</span>
 				</div>
@@ -296,7 +266,7 @@
 						mode="exclusive"
 						color="blue"
 						equalWidth={true}
-						on:change={(e) => setHeroVisual(getSingleValue(e.detail.value))}
+						on:change={(e) => stageSiteConfig({ heroVisual: getSingleValue(e.detail.value) }, 'Hero Visual')}
 					/>
 				</div>
 			</div>

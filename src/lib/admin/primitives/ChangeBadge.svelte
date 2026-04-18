@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
-	import { formatRelativeTime } from '$lib/admin/constants';
+	import { format_relative_time as formatRelativeTime } from '$lib/clj/portfolio/admin/constants.mjs';
 
 	export let timestamp: number | null = null;
 	export let isDefault: boolean = true;

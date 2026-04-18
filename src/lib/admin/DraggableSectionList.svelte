@@ -17,6 +17,7 @@
 	export let pageId: string = '';
 	export let client: any = null;
 	export let api: any = null;
+	export let page: any = null;
 
 	const dispatch = createEventDispatcher<{
 		reorder: { order: number[] };
@@ -279,6 +280,7 @@
 				{pageId}
 				{client}
 				{api}
+				{page}
 				on:close={() => expandedIndex = null}
 			/>
 		{/if}

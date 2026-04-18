@@ -1,20 +1,8 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-  import { getConvexClient } from '$lib/convex';
-  import { api } from '$convex/_generated/api';
+  import { blogPosts } from '$lib/data/content';
 
-  export let posts: any[] = [];
+  export let posts: any[] = blogPosts || [];
   export let id = "blog";
-
-  onMount(() => {
-    const client = getConvexClient();
-    const unsub = client.onUpdate(api.blog.getVisiblePosts, {}, (data: any) => {
-      if (data) {
-        posts = data;
-      }
-    });
-    return () => unsub();
-  });
 
   // Sort by date
   $: sortedNotes = [...(posts || [])]

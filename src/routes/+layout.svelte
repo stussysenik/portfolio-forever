@@ -12,7 +12,7 @@
         import Toast from "$lib/components/Toast.svelte";
         import { overlapDetector } from "$lib/utils/overlap-detector";
         import { initPostHog, trackPageView } from "$lib/posthog";
-        import { siteMode, readerOverride, isReaderMode, siteConfig as siteConfigStore, featureFlags, wipBannerDismissed, previewMode, navParadigm } from "$lib/stores/siteMode";
+        import { siteMode, readerOverride, isReaderMode, siteConfig as siteConfigStore, baseSiteConfig, featureFlags, baseFeatureFlags, wipBannerDismissed, previewMode, navParadigm, stagedOverrides, wipMode, wipConfig } from "$lib/stores/siteMode";
         import { getConvexClient } from "$lib/convex";
         import { api } from "$convex/_generated/api";
         import Embellishments from "$lib/components/Embellishments.svelte";
@@ -138,7 +138,7 @@ if (!isExcluded) {			// Load site config from Convex
 						siteMode.set(config.mode);
 					}
 					if (config) {
-						siteConfigStore.set({
+						baseSiteConfig.set({
 							sectionOrder: config.sectionOrder,
 							parallaxSpeed: config.parallaxSpeed,
 							navMode: config.navMode,
@@ -164,7 +164,7 @@ if (!isExcluded) {			// Load site config from Convex
 					if (flags) {
 						const map = new Map<string, boolean>();
 						for (const f of flags) map.set(f.key, f.enabled);
-						featureFlags.set(map);
+						baseFeatureFlags.set(map);
 					}
 				});
 				// Subscribe to profile for nav (name + social links)
@@ -190,7 +190,7 @@ if (!isExcluded) {			// Load site config from Convex
 				if (e.data?.type === 'admin:siteConfig' && e.data.config) {
 					const config = e.data.config;
 					if (config.mode) siteMode.set(config.mode);
-					siteConfigStore.set({
+					baseSiteConfig.set({
 						sectionOrder: config.sectionOrder,
 						parallaxSpeed: config.parallaxSpeed,
 						navMode: config.navMode,
@@ -210,7 +210,7 @@ if (!isExcluded) {			// Load site config from Convex
 				if (e.data?.type === 'admin:featureFlags' && e.data.flags) {
 					const map = new Map<string, boolean>();
 					for (const f of e.data.flags) map.set(f.key, f.enabled);
-					featureFlags.set(map);
+					baseFeatureFlags.set(map);
 				}
 				if (e.data?.type === 'admin:profile' && e.data.profile) {
 					if (e.data.profile.name) profileName = e.data.profile.name;

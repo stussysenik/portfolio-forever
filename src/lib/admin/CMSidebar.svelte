@@ -7,7 +7,8 @@
         IconLayers, 
         IconSettings, 
         IconSparkles,
-        IconTerminal
+        IconHistory,
+        IconDownload
     } from './admin-icons';
 
     const mainNavItems = [
@@ -16,7 +17,8 @@
         { view: 'content', label: 'Content', icon: IconLayers },
         { view: 'themes', label: 'Themes', icon: IconSparkles },
         { view: 'settings', label: 'Settings', icon: IconSettings },
-        { view: 'history', label: 'History', icon: IconTerminal },
+        { view: 'history', label: 'History', icon: IconHistory },
+        { view: 'takeouts', label: 'Takeouts', icon: IconDownload },
     ];
 
     let currentView = 'dashboard';

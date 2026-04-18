@@ -5,12 +5,14 @@
 	import { sectionTypeRegistry } from '$lib/sections/registry';
 	import { sectionEditors } from '$lib/admin/section-editors';
 	import { VIEW_MODES, DEFAULTS, TYPOGRAPHY_DEFAULTS } from '$lib/admin/constants';
+	import { stagedChanges } from '$lib/stores/stagedChanges';
 
 	export let section: any = null;
 	export let sectionIndex: number = 0;
 	export let pageId: string = '';
 	export let client: any;
 	export let api: any;
+	export let page: any = null; // Add page prop to get full page state for staging
 
 	const dispatch = createEventDispatcher<{ close: void }>();
 
@@ -81,105 +83,95 @@
 		return Array.isArray(value) ? value[0] ?? '' : value;
 	}
 
-	async function setHeroConfig(field: string, value: any) {
-		try {
-			await client.mutation(api.hero.upsertHeroConfig, { [field]: value });
-		} catch (_) { /* ignore */ }
+	function stagePageUpdate(patch: any, label: string) {
+		stagedChanges.stage('pages', pageId, patch, label);
 	}
 
-	async function resetHeroDefaults() {
-		try {
-			await client.mutation(api.hero.upsertHeroConfig, {
-				heroNameSize: DEFAULTS.hero.heroNameSize,
-				heroNameWeight: DEFAULTS.hero.heroNameWeight,
-				heroNameLetterSpacing: DEFAULTS.hero.heroNameLetterSpacing,
-				heroNameLineHeight: DEFAULTS.hero.heroNameLineHeight,
-				heroNameTextWrap: DEFAULTS.hero.heroNameTextWrap,
-			});
-		} catch (_) { /* ignore */ }
+	function stageHeroConfig(patch: any, label: string) {
+		stagedChanges.stage('heroConfig', 'singleton', patch, label);
 	}
 
-	async function handleBoxModelChange(e: CustomEvent<{ layer: 'margin' | 'padding'; side: string; value: number }>) {
+	function resetHeroDefaults() {
+		stageHeroConfig({
+			heroNameSize: DEFAULTS.hero.heroNameSize,
+			heroNameWeight: DEFAULTS.hero.heroNameWeight,
+			heroNameLetterSpacing: DEFAULTS.hero.heroNameLetterSpacing,
+			heroNameLineHeight: DEFAULTS.hero.heroNameLineHeight,
+			heroNameTextWrap: DEFAULTS.hero.heroNameTextWrap,
+		}, 'Reset Hero Typography');
+	}
+
+	function handleBoxModelChange(e: CustomEvent<{ layer: 'margin' | 'padding'; side: string; value: number }>) {
 		const { layer, side, value } = e.detail;
+		if (!page) return;
+
+		const newSections = [...page.sections];
+		const s = { ...newSections[sectionIndex] };
 
 		if (layer === 'margin') {
-			// Margin top/bottom map to spacingBefore/After
-			const fieldMap: Record<string, string> = { top: 'spacingBefore', bottom: 'spacingAfter' };
-			const field = fieldMap[side];
-			if (field) {
-				try {
-					await client.mutation(api.pages.updateSectionSpacing, {
-						pageId,
-						sectionIndex,
-						[field]: value,
-					});
-				} catch (_) { /* ignore */ }
-			}
+			if (side === 'top') s.spacingBefore = value;
+			if (side === 'bottom') s.spacingAfter = value;
 		} else if (layer === 'padding') {
-			// Padding values stored in themeOverrides
 			const cssKey = `padding${side.charAt(0).toUpperCase() + side.slice(1)}`;
-			try {
-				await client.mutation(api.pages.updateSectionThemeOverrides, {
-					pageId,
-					sectionIndex,
-					themeOverrides: { [cssKey]: value },
-				});
-			} catch (_) { /* ignore */ }
+			s.themeOverrides = { ...(s.themeOverrides ?? {}), [cssKey]: value };
 		}
+
+		newSections[sectionIndex] = s;
+		stagePageUpdate({ sections: newSections }, `Section Spacing: ${side}`);
 	}
 
-	async function toggleVisibility() {
-		try {
-			const page = await client.query(api.pages.getByPageId, { pageId });
-			if (!page) return;
-			const sections = [...page.sections];
-			sections[sectionIndex] = {
-				...sections[sectionIndex],
-				visible: !visible,
-			};
-			await client.mutation(api.pages.updateSections, { pageId, sections });
-		} catch (_) { /* ignore */ }
+	function toggleVisibility() {
+		if (!page) return;
+		const newSections = [...page.sections];
+		newSections[sectionIndex] = {
+			...newSections[sectionIndex],
+			visible: !visible,
+		};
+		stagePageUpdate({ sections: newSections }, `Section Visibility: ${visible ? 'Hide' : 'Show'}`);
 	}
 
-	async function setSectionTypography(field: string, value: any) {
-		try {
-			await client.mutation(api.pages.updateSectionConfig, {
-				pageId,
-				sectionIndex,
-				config: { ...config, typography: { ...sectionTypography, [field]: value } },
-			});
-		} catch (_) { /* ignore */ }
+	function setSectionTypography(field: string, value: any) {
+		if (!page) return;
+		const newSections = [...page.sections];
+		const config = newSections[sectionIndex].config ?? {};
+		const typography = config.typography ?? {};
+		
+		newSections[sectionIndex] = {
+			...newSections[sectionIndex],
+			config: { ...config, typography: { ...typography, [field]: value } },
+		};
+		stagePageUpdate({ sections: newSections }, `Section Typography: ${field}`);
 	}
 
-	async function resetSectionTypography() {
-		try {
-			await client.mutation(api.pages.updateSectionConfig, {
-				pageId,
-				sectionIndex,
-				config: { ...config, typography: { ...TYPOGRAPHY_DEFAULTS } },
-			});
-		} catch (_) { /* ignore */ }
+	function resetSectionTypography() {
+		if (!page) return;
+		const newSections = [...page.sections];
+		newSections[sectionIndex] = {
+			...newSections[sectionIndex],
+			config: { ...(newSections[sectionIndex].config ?? {}), typography: { ...TYPOGRAPHY_DEFAULTS } },
+		};
+		stagePageUpdate({ sections: newSections }, 'Reset Section Typography');
 	}
 
-	async function applySpacingPreset(top: number, bottom: number) {
-		try {
-			await client.mutation(api.pages.updateSectionSpacing, {
-				pageId,
-				sectionIndex,
-				spacingBefore: top,
-				spacingAfter: bottom,
-			});
-		} catch (_) { /* ignore */ }
+	function applySpacingPreset(top: number, bottom: number) {
+		if (!page) return;
+		const newSections = [...page.sections];
+		newSections[sectionIndex] = {
+			...newSections[sectionIndex],
+			spacingBefore: top,
+			spacingAfter: bottom,
+		};
+		stagePageUpdate({ sections: newSections }, 'Apply Spacing Preset');
 	}
 
-	async function setViewMode(mode: string) {
-		try {
-			await client.mutation(api.pages.updateSectionConfig, {
-				pageId,
-				sectionIndex,
-				config: { ...config, viewMode: mode },
-			});
-		} catch (_) { /* ignore */ }
+	function setViewMode(mode: string) {
+		if (!page) return;
+		const newSections = [...page.sections];
+		newSections[sectionIndex] = {
+			...newSections[sectionIndex],
+			config: { ...(newSections[sectionIndex].config ?? {}), viewMode: mode },
+		};
+		stagePageUpdate({ sections: newSections }, `View Mode: ${mode}`);
 	}
 
 	onMount(() => {
@@ -231,7 +223,7 @@
 				format={(v) => v + 'rem'}
 				showReset={heroNameSize !== DEFAULTS.hero.heroNameSize}
 				resetValue={DEFAULTS.hero.heroNameSize}
-				on:change={(e) => setHeroConfig('heroNameSize', e.detail.value)}
+				on:change={(e) => stageHeroConfig({ heroNameSize: e.detail.value }, 'Hero Font Size')}
 			/>
 		</div>
 
@@ -240,7 +232,7 @@
 			<AdminChipGroup
 				options={WEIGHT_OPTIONS}
 				value={String(heroNameWeight)}
-				on:change={(e) => setHeroConfig('heroNameWeight', parseInt(getSingleValue(e.detail.value), 10))}
+				on:change={(e) => stageHeroConfig({ heroNameWeight: parseInt(getSingleValue(e.detail.value), 10) }, 'Hero Font Weight')}
 			/>
 		</div>
 
@@ -255,7 +247,7 @@
 				format={(v) => v.toFixed(2) + 'em'}
 				showReset={Math.abs(heroNameLetterSpacing - DEFAULTS.hero.heroNameLetterSpacing) > 0.001}
 				resetValue={DEFAULTS.hero.heroNameLetterSpacing}
-				on:change={(e) => setHeroConfig('heroNameLetterSpacing', e.detail.value)}
+				on:change={(e) => stageHeroConfig({ heroNameLetterSpacing: e.detail.value }, 'Hero Letter Spacing')}
 			/>
 		</div>
 
@@ -270,7 +262,7 @@
 				format={(v) => v.toFixed(2)}
 				showReset={Math.abs(heroNameLineHeight - DEFAULTS.hero.heroNameLineHeight) > 0.01}
 				resetValue={DEFAULTS.hero.heroNameLineHeight}
-				on:change={(e) => setHeroConfig('heroNameLineHeight', e.detail.value)}
+				on:change={(e) => stageHeroConfig({ heroNameLineHeight: e.detail.value }, 'Hero Line Height')}
 			/>
 		</div>
 
@@ -279,7 +271,7 @@
 			<AdminChipGroup
 				options={WRAP_OPTIONS}
 				value={heroNameTextWrap}
-				on:change={(e) => setHeroConfig('heroNameTextWrap', e.detail.value)}
+				on:change={(e) => stageHeroConfig({ heroNameTextWrap: getSingleValue(e.detail.value) }, 'Hero Text Wrap')}
 			/>
 		</div>
 
@@ -296,7 +288,7 @@
 				size="sm"
 				color="green"
 				label="Show ASCII Donut"
-				on:change={() => setHeroConfig('showAsciiDonut', !(heroConfig?.showAsciiDonut ?? false))}
+				on:change={() => stageHeroConfig({ showAsciiDonut: !(heroConfig?.showAsciiDonut ?? false) }, 'Hero Donut')}
 			/>
 		</div>
 
@@ -307,7 +299,7 @@
 				size="sm"
 				color="green"
 				label="Show ASCII Wave"
-				on:change={() => setHeroConfig('showAsciiWave', !(heroConfig?.showAsciiWave ?? false))}
+				on:change={() => stageHeroConfig({ showAsciiWave: !(heroConfig?.showAsciiWave ?? false) }, 'Hero Wave')}
 			/>
 		</div>
 	{/if}

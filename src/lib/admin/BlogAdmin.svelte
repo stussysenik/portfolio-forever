@@ -12,33 +12,40 @@
 	let editingField: string | null = null;
 	let editBuffer = '';
 
+	import { stagedChanges } from '$lib/stores/stagedChanges';
+
+	function stageUpdate(id: string, patch: any, label: string) {
+		stagedChanges.stage('blogPosts', id, patch, label);
+	}
+
 	function startEdit(id: string, field: string, currentValue: string) {
 		editingId = id; editingField = field; editBuffer = currentValue || '';
 	}
 	function cancelEdit() { editingId = null; editingField = null; editBuffer = ''; }
 
-	async function addPost() {
-		await client.mutation(api.blog.createPost, {
+	function addPost() {
+		const tempId = `new-${Date.now()}`;
+		stageUpdate(tempId, {
 			title: 'New Post', slug: 'new-post-' + Date.now(),
 			visible: false,
-		});
+			isNew: true
+		}, 'Add Blog Post');
 	}
 
-	async function deletePost(id: string) {
-		await client.mutation(api.blog.deletePost, { id: id as Id<"blogPosts"> });
-		toast.success('Post deleted');
+	function deletePost(id: string) {
+		stageUpdate(id, { _deleted: true }, 'Delete Blog Post');
 	}
 
-	async function toggleVisibility(id: string) {
-		await client.mutation(api.blog.toggleVisibility, { id: id as Id<"blogPosts"> });
+	function toggleVisibility(id: string) {
+		const entry = entries.find(e => e._id === id);
+		const current = entry?.visible ?? true;
+		stageUpdate(id, { visible: !current }, `Visibility: ${!current ? 'Show' : 'Hide'}`);
 	}
 
-	async function saveEdit(id: string) {
+	function saveEdit(id: string) {
 		if (!editingField) return;
 		const value = parseFieldValue(editingField, editBuffer, { arrays: ['tags'] });
-		await client.mutation(api.blog.updatePost, {
-			id: id as Id<"blogPosts">, [editingField]: value,
-		});
+		stageUpdate(id, { [editingField]: value }, `Edit ${editingField}`);
 		cancelEdit();
 	}
 </script>

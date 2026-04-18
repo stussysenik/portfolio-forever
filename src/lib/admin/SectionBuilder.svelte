@@ -48,38 +48,30 @@
 
 	/* ── Handlers ── */
 
-	async function handleReorder(e: CustomEvent<{ order: number[] }>) {
-		if (!page?.pageId) return;
-		try {
-			const newOrder = e.detail.order;
-			const sortedSections = [...sections].sort((a: any, b: any) => a.order - b.order);
-			const reordered = newOrder.map((oldIdx: number, newIdx: number) => ({
-				...sortedSections[oldIdx],
-				order: newIdx,
-			}));
-			await client.mutation(api.pages.upsert, {
-				...stripConvexMeta(page),
-				sections: reordered,
-			});
-		} catch (err: any) {
-			toast.error(err.message || 'Failed to reorder sections');
-		}
+	import { stagedChanges } from '$lib/stores/stagedChanges';
+
+	function stagePageUpdate(patch: any, label: string) {
+		stagedChanges.stage('pages', page?.pageId, patch, label);
 	}
 
-	async function handleDelete(e: CustomEvent<{ index: number }>) {
+	function handleReorder(e: CustomEvent<{ order: number[] }>) {
+		if (!page?.pageId) return;
+		const newOrder = e.detail.order;
+		const sortedSections = [...sections].sort((a: any, b: any) => a.order - b.order);
+		const reordered = newOrder.map((oldIdx: number, newIdx: number) => ({
+			...sortedSections[oldIdx],
+			order: newIdx,
+		}));
+		stagePageUpdate({ sections: reordered }, 'Reorder Sections');
+	}
+
+	function handleDelete(e: CustomEvent<{ index: number }>) {
 		if (!page?.pageId) return;
 		const sorted = [...sections].sort((a: any, b: any) => a.order - b.order);
 		const updated = sorted
 			.filter((_: any, i: number) => i !== e.detail.index)
 			.map((s: any, i: number) => ({ ...s, order: i }));
-		try {
-			await client.mutation(api.pages.upsert, {
-				...stripConvexMeta(page),
-				sections: updated,
-			});
-		} catch (err: any) {
-			toast.error(err.message || 'Failed to delete section');
-		}
+		stagePageUpdate({ sections: updated }, 'Delete Section');
 	}
 
 	function handleSelect(e: CustomEvent<{ index: number }>) {
@@ -95,21 +87,14 @@
 		dispatch('opensettings');
 	}
 
-	async function handleAccentChange(color: string | null) {
+	function handleAccentChange(color: string | null) {
 		if (!page?.pageId) return;
 		const themeOverrides = { ...(page?.themeOverrides ?? {}), accentColor: color };
 		if (color === null) delete themeOverrides.accentColor;
-		try {
-			await client.mutation(api.pages.upsert, {
-				...stripConvexMeta(page),
-				themeOverrides,
-			});
-		} catch (err: any) {
-			toast.error(err.message || 'Failed to update accent color');
-		}
+		stagePageUpdate({ themeOverrides }, 'Page Accent Color');
 	}
 
-	async function handleParticleChange(e: CustomEvent<{ value: string | string[] }>) {
+	function handleParticleChange(e: CustomEvent<{ value: string | string[] }>) {
 		if (!page?.sections?.length) return;
 		const newParticles = Array.isArray(e.detail.value) ? e.detail.value : [e.detail.value];
 		const updated = page.sections.map((s: any, i: number) => {
@@ -118,14 +103,7 @@
 			}
 			return s;
 		});
-		try {
-			await client.mutation(api.pages.upsert, {
-				...stripConvexMeta(page),
-				sections: updated,
-			});
-		} catch (err: any) {
-			toast.error(err.message || 'Failed to update particles');
-		}
+		stagePageUpdate({ sections: updated }, 'Update Particles');
 	}
 </script>
 

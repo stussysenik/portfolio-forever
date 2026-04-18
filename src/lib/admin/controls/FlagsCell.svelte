@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { createEventDispatcher, onMount, onDestroy } from 'svelte';
 	import { AdminToggle } from '$lib/admin/primitives';
-	import { FLAG_CATEGORIES } from '$lib/admin/constants';
+	import { flag_categories as FLAG_CATEGORIES } from '$lib/clj/portfolio/admin/constants.mjs';
 	import { stagedFlags, resolveFlagEnabled } from '$lib/stores/stagedFlags';
 
 	export let flags: Record<string, boolean> = {};
