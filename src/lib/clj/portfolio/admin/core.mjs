@@ -35,6 +35,18 @@ var stage_hero_config = function (patch, label) {
 return staging.stage("heroConfig", "singleton", patch, label);
 
 };
-var exports = ({"stageWorkEntry": stage_work_entry, "stageBlogPost": stage_blog_post, "stagePageSections": stage_page_sections, "stageSiteConfig": stage_site_config, "stageHeroConfig": stage_hero_config, "commit": staging.commit, "clear": staging.clear});
+var stage_page = function (page_id, patch, label) {
+return staging.stage("pages", page_id, patch, label);
 
-export { stage_work_entry, stage_blog_post, stage_page_sections, stage_site_config, stage_hero_config, exports }
+};
+var stage_generic = function (table, doc_id, patch, label) {
+return staging.stage(table, doc_id, patch, label);
+
+};
+var unstage = function (id) {
+return staging.unstage(id);
+
+};
+var exports = ({"stage": staging.stage, "stageSiteConfig": stage_site_config, "stageHeroConfig": stage_hero_config, "stagePageSections": stage_page_sections, "stageWorkEntry": stage_work_entry, "unstage": unstage, "commit": staging.commit, "stageBlogPost": stage_blog_post, "stagePage": stage_page, "stageGeneric": stage_generic, "clear": staging.clear});
+
+export { stage_hero_config, unstage, exports, stage_page_sections, stage_generic, stage_page, stage_blog_post, stage_work_entry, stage_site_config }

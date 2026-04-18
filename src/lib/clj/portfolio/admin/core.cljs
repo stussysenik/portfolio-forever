@@ -17,11 +17,24 @@
 (defn stage-hero-config [patch label]
   (staging/stage "heroConfig" "singleton" patch label))
 
+(defn stage-page [page-id patch label]
+  (staging/stage "pages" page-id patch label))
+
+(defn stage-generic [table doc-id patch label]
+  (staging/stage table doc-id patch label))
+
+(defn unstage [id]
+  (staging/unstage id))
+
 (def exports
   #js {:stageWorkEntry stage-work-entry
        :stageBlogPost stage-blog-post
        :stagePageSections stage-page-sections
        :stageSiteConfig stage-site-config
        :stageHeroConfig stage-hero-config
+       :stagePage stage-page
+       :stageGeneric stage-generic
        :commit staging/commit
-       :clear staging/clear})
+       :clear staging/clear
+       :unstage unstage
+       :stage staging/stage})

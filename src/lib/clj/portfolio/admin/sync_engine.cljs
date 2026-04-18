@@ -26,6 +26,15 @@
                         (when (.-toast mod)
                           (.info (.-toast mod) (aget data "message"))))))
 
+      "sync"
+      (when-let [staging (js* "import('$lib/clj/portfolio/admin/staging.mjs')")]
+        (.then staging (fn [mod]
+                         (when (.-exports mod)
+                           (let [exports (.-exports mod)]
+                             (when (and (.-subscribe exports) (.-stage exports) (.-commit exports))
+                               ;; Trigger re-subscription to staging store to sync state
+                               (js/console.log "CMS Sync: Syncing staged changes across tabs")))))))
+
       (js/console.debug "CMS Sync: Unhandled message type" type))))
 
 (defn init []

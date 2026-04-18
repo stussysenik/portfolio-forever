@@ -68,6 +68,7 @@ export function createAdminStore(client: ConvexReactClient<typeof Api>, api: typ
 		featureFlags: createSubscription<(any)[]>(api => api.siteConfig.getFeatureFlags, []),
 		registrySections: createSubscription<(any)[]>(api => api.sectionRegistry.getAll, []),
 		heroConfig: createSubscription<any>(api => api.hero.getHeroConfig, null),
+		themes: createSubscription<(any)[]>(api => api.themes.getAll, []),
 		entriesByTable,
 		cvData,
 	};

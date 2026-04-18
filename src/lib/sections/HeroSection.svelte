@@ -65,7 +65,7 @@
 	<header class="grid-container hero-grid">
 		<!-- Identity Column -->
 		<div class="col-4 md:col-6 lg:col-{effectiveLayout.identity} hero-content">
-			<div class="hero-header">
+			<div class="hero-header s-t3U1eD8QnXou" id="greeting-0">
 				<h1 class="hero-name" style={heroNameStyles}>
 					{profileData.name}
 				</h1>
@@ -161,10 +161,14 @@
 		min-height: 40vh;
 	}
 
+	/* FIRST GREETING ELEMENT - Always rendering priority */
 	.hero-header {
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-md);
+		order: -10; /* Ensure it renders first regardless of DOM position */
+		position: relative;
+		z-index: 10; /* Ensure visual priority */
 	}
 
 	.hero-name {

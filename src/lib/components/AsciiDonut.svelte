@@ -5,15 +5,23 @@
 
   let asciiOutput = $state("LOADING DONUT...");
   
-  // Static rotation angles
-  let A = 1.0; 
-  let B = 1.5;
-
   const buffers = create_buffers();
 
   onMount(() => {
-    // Render the frame once
-    asciiOutput = compute_frame(buffers, A, B);
+    let frameId: number;
+    let A = 1.0;
+    let B = 1.5;
+
+    function render() {
+      A += 0.04;
+      B += 0.02;
+      asciiOutput = compute_frame(buffers, A, B);
+      frameId = requestAnimationFrame(render);
+    }
+    
+    render();
+    
+    return () => cancelAnimationFrame(frameId);
   });
 </script>
 

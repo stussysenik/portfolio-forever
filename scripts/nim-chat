@@ -1,0 +1,26 @@
+#!/bin/bash
+# NVIDIA NIM Chat Wrapper - Use GLM-5.1 or Kimi K2.5 via NVIDIA NIM API
+
+NVIDIA_API_KEY="${NVIDIA_API_KEY:-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}"
+MODEL="${1:-z-ai/glm-5.1}"
+shift
+
+if [ -z "$1" ]; then
+    echo "Usage: nim-chat [model] <message>"
+    echo "Models: z-ai/glm-5.1, moonshotai/kimi-k2.5, z-ai/glm-5, z-ai/glm4.7"
+    exit 1
+fi
+
+curl -s -X POST "https://integrate.api.nvidia.com/v1/chat/completions" \
+  -H "Authorization: Bearer $NVIDIA_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"model\": \"$MODEL\",
+    \"messages\": [{\"role\": \"user\", \"content\": \"$@\"}],
+    \"max_tokens\": 512
+  }" 2>/dev/null | python3 -c "
+import json, sys
+data = json.load(sys.stdin)
+msg = data.get('choices',[{}])[0].get('message',{})
+print(msg.get('content') or msg.get('reasoning') or 'No response')
+"

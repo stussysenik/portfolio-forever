@@ -77,6 +77,24 @@ export const setDefault = mutation({
 	},
 });
 
+/** Remove a theme by themeId */
+export const remove = mutation({
+	args: { themeId: v.string() },
+	handler: async (ctx, { themeId }) => {
+		const theme = await ctx.db
+			.query("themes")
+			.withIndex("by_themeId", (q) => q.eq("themeId", themeId))
+			.unique();
+		if (!theme) {
+			throw new Error(`Theme with ID ${themeId} not found`);
+		}
+		if (theme.isBuiltIn) {
+			throw new Error(`Cannot delete built-in theme: ${themeId}`);
+		}
+		await ctx.db.delete(theme._id);
+	},
+});
+
 /** Seed built-in themes (idempotent) */
 export const seedBuiltIn = internalMutation({
 	args: {},

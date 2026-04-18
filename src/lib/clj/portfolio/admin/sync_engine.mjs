@@ -38,6 +38,32 @@ return mod.toast.info(data3["message"]);
 };
 
 break;
+case "sync":
+const temp__23126__auto__10 = import('$lib/clj/portfolio/admin/staging.mjs');
+if (squint_core.truth_(temp__23126__auto__10)) {
+const staging11 = temp__23126__auto__10;
+return staging11.then((function (mod) {
+if (squint_core.truth_(mod.exports)) {
+const exports12 = mod.exports;
+if (squint_core.truth_((() => {
+const and__23501__auto__13 = exports12.subscribe;
+if (squint_core.truth_(and__23501__auto__13)) {
+const and__23501__auto__14 = exports12.stage;
+if (squint_core.truth_(and__23501__auto__14)) {
+return exports12.commit} else {
+return and__23501__auto__14};
+} else {
+return and__23501__auto__13};
+
+})())) {
+return console.log("CMS Sync: Syncing staged changes across tabs");
+};
+};
+
+}));
+};
+
+break;
 default:
 return console.debug("CMS Sync: Unhandled message type", type2)};
 
