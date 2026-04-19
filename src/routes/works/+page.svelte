@@ -1,6 +1,6 @@
 <script>
   import { onMount } from "svelte";
-  import WorksSection from "$lib/sections/WorksSection.svelte";
+  import ColorfulWorksTable from "$lib/components/ColorfulWorksTable.svelte";
   import { redirectIfOnePage } from "$lib/stores/siteMode";
 
   onMount(() => {
@@ -8,4 +8,4 @@
   });
 </script>
 
-<WorksSection />
+<ColorfulWorksTable />

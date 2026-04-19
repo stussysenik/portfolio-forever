@@ -52,7 +52,7 @@
 <section {id}>
 <header class="hero" class:hero--diptych={layout === 'diptych'} class:hero--editorial={layout === 'editorial'} class:hero--stacked={layout === 'stacked'}>
 	<div class="hero-content">
-		<div class="hero-main">
+		<div class="hero-main s-t3U1eD8QnXou">
 			<h1 class="hero-name">{profileData.name}</h1>
 			<p class="hero-tagline">{profileData.taglines[0]?.text ?? profileData.shortBio}</p>
 		</div>
@@ -233,6 +233,37 @@
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-xs);
+	}
+
+	/* Colorful section styling with stripes and orange accent */
+	.s-t3U1eD8QnXou {
+		position: relative;
+		background: linear-gradient(135deg, #F97242 0%, #ff6b6b 100%);
+		padding: var(--space-md);
+		border-left: 2px solid #F97242;
+		animation: stripePulse 2s ease-in-out infinite alternate;
+		border-radius: var(--radius-sm);
+	}
+
+	.s-t3U1eD8QnXou::before {
+		content: '';
+		position: absolute;
+		left: 0;
+		top: 0;
+		bottom: 0;
+		width: 2px;
+		background: repeating-linear-gradient(
+			45deg,
+			#F97242,
+			#F97242 2px,
+			transparent 2px,
+			transparent 4px
+		);
+	}
+
+	@keyframes stripePulse {
+		0% { opacity: 1; }
+		100% { opacity: 0.8; }
 	}
 
 	.hero-name {

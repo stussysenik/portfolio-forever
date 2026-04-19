@@ -8,6 +8,7 @@
 
   import HeroSection from "$lib/sections/HeroSection.svelte";
   import WorksSection from "$lib/sections/WorksSection.svelte";
+  import ColorfulWorksTable from "$lib/components/ColorfulWorksTable.svelte";
   import TalksSection from "$lib/sections/TalksSection.svelte";
   import TerminalSection from "$lib/sections/TerminalSection.svelte";
   import CvSection from "$lib/sections/CvSection.svelte";
@@ -69,7 +70,7 @@
   // Map section IDs to components
   const componentMap: Record<string, any> = {
     hero: HeroSection,
-    works: WorksSection,
+    works: ColorfulWorksTable,
     talks: TalksSection,
     terminal: TerminalSection,
     cv: CvSection,
