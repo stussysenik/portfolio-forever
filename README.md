@@ -39,9 +39,10 @@ Personal portfolio built with SvelteKit 5, Convex real-time backend, and a termi
 
 ```bash
 bun install
-cp .env.example .env.local  # Add Convex credentials
 bun run dev
 ```
+
+> **Note:** ClojureScript files are in a separate repo (`portfolio-clojure`) linked via symlinks. They compile automatically when you run the Svelte project.
 
 ## Design System
 
