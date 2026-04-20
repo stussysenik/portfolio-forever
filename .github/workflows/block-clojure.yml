@@ -1,0 +1,18 @@
+name: 🚫 Block Clojure Files
+
+on: [push, pull_request]
+
+jobs:
+  check:
+    name: No Clojure in Svelte repo
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for Clojure files
+        run: |
+          if git ls-files | grep -E '\.(cljs|clj|cljc|edn)$'; then
+            echo "::error title=Clojure files detected::Clojure files (.cljs/.clj/.cljc/.edn) belong in portfolio-clojure/"
+            echo "::error::Move them to ../portfolio-clojure/ and remove from here"
+            exit 1
+          fi
