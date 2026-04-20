@@ -2,51 +2,28 @@
         /**
          * Colorful Works Table Component
          * 
-         * A Svelte component that renders a colorful striped table of works/projects.
+         * A Svelte component that renders a colorful table of works/projects.
+         * Matches the "WORKS" list in the user screenshot.
          */
 
         import { onMount } from 'svelte';
         import { getConvexClient } from '$lib/convex';
         import { api } from '$convex/_generated/api';
-        import { works as staticWorks } from '$lib/data/content';
+        import { works as staticWorks, formatDate } from '$lib/data/content';
 
         export let pageId = 'works';
-        export let viewMode: 'table' | 'grid' | 'list' = 'table';
-        export let palette: 'rainbow' | 'pastel' | 'cyberpunk' | 'monokai' = 'rainbow';
         export let maxCount: number | null = null;
-        export let columns: string[] = ['title', 'category', 'description'];
 
         interface Work {
                 title: string;
                 url: string;
                 category?: string;
-                preview?: string;
-                previewMode?: 'live' | 'static' | 'video';
-                videoPreview?: string;
-                viewport?: number;
-                cam?: string;
-                objectPosition?: string;
-                focalX?: number;
-                focalY?: number;
-                zoom?: number;
-                styleOverrides?: {
-                        accentColor?: string;
-                        httpColor?: string;
-                        secondaryHighlight?: string;
-                };
-                description?: string;
-                tags?: string[];
                 date?: string;
+                year?: number;
+                month?: number;
+                featured?: string;
                 hidden?: boolean;
         }
-
-        // Color palettes
-        const palettes: Record<string, string[]> = {
-                rainbow: ['#ff0000', '#ff7f00', '#ffff00', '#00ff00', '#0000ff', '#4b0082', '#9400d3'],
-                pastel: ['#ffd1dc', '#ffec8b', '#c1ff8a', '#8afff6', '#e6e6fa', '#f0e6ff'],
-                cyberpunk: ['#ff2ced', '#00ffff', '#ff00ff', '#ffff00', '#00ff00', '#ff6600'],
-                monokai: ['#ff6188', '#fc9867', '#ffd866', '#a9dc76', '#78dce8', '#ab9df2']
-        };
 
         let works: Work[] = [];
         let loaded = false;
@@ -61,19 +38,10 @@
                                                 title: w.title ?? w.name ?? 'Untitled',
                                                 url: w.url ?? w.link ?? '#',
                                                 category: w.category,
-                                                preview: w.preview,
-                                                previewMode: w.previewMode,
-                                                videoPreview: w.videoPreview,
-                                                viewport: w.viewport,
-                                                cam: w.cam,
-                                                objectPosition: w.objectPosition,
-                                                focalX: w.focalX,
-                                                focalY: w.focalY,
-                                                zoom: w.zoom,
-                                                styleOverrides: w.styleOverrides,
-                                                description: w.description,
-                                                tags: w.tags,
+                                                featured: w.featured || w.styleOverrides?.accentColor,
                                                 date: w.date,
+                                                year: w.year,
+                                                month: w.month,
                                                 hidden: w.hidden ?? false
                                         }));
                                         loaded = true;
@@ -81,184 +49,172 @@
                         });
                 } catch (e) {
                         console.warn('Failed to load Convex data:', e);
-                        works = staticWorks as any;
+                        works = (staticWorks as any).map((w: any) => ({
+                                ...w,
+                                url: w.links?.[0]?.url ?? w.url ?? '#'
+                        }));
                         loaded = true;
                 }
         }
 
-        // Determine which works to display
-        $: effectiveWorks = works.length > 0 ? works : (staticWorks as any);
+        $: effectiveWorks = works.length > 0 ? works : (staticWorks as any).map((w: any) => ({
+                ...w,
+                url: w.links?.[0]?.url ?? w.url ?? '#'
+        }));
 
         $: sortedWorks = [...effectiveWorks]
                 .filter(w => !w.hidden)
                 .sort((a, b) => {
-                        const aDate = a.date ?? '0000-00-00';
-                        const bDate = b.date ?? '0000-00-00';
-                        return bDate.localeCompare(aDate);
+                        const yearDiff = (b.year || 0) - (a.year || 0);
+                        if (yearDiff !== 0) return yearDiff;
+                        return (b.month || 0) - (a.month || 0);
                 });
 
         $: displayWorks = maxCount ? sortedWorks.slice(0, maxCount) : sortedWorks;
 
-        $: selectedPalette = palettes[palette] ?? palettes.rainbow;
+        // Map featured color names to actual CSS values - More vibrant as per screenshot
+        const colorMap: Record<string, string> = {
+                orange: '#F97242',
+                cloud: '#EBEBEB',
+                ocean: '#BAF1F9',
+                gold: '#DAB230',
+                pink: '#FFC0CB',
+                'electric-green': '#39FF14',
+                green: '#4CAF50',
+                yellow: '#FFEB3B',
+                red: '#F44336'
+        };
 
-        // CSS custom properties for color overrides
-        $: stripeColor = selectedPalette[0];
-        $: httpColor = selectedPalette[1];
-        $: secondaryHighlight = selectedPalette[2];
-
-        onMount(() => {
-                loadConvexData();
-        });
+        function getRowStyle(work: any) {
+                const color = work.featured ? (colorMap[work.featured] || work.featured) : null;
+                if (!color) return '';
+                return `--row-bg: ${color}`;
+        }
 </script>
 
-<section class="colorful-works-table" id={pageId}>
+<section class="works-list-container" id={pageId}>
         <style>
-                .colorful-table {
+                .works-list-container {
                         width: 100%;
-                        border-collapse: collapse;
                         font-family: var(--font-mono);
-                        font-size: var(--font-size-sm);
-                }
-
-                .colorful-table th {
-                        padding: var(--space-sm) var(--space-md);
-                        text-align: left;
-                        font-weight: 600;
-                        color: var(--color-text);
-                        border-bottom: 2px solid var(--border-color);
-                }
-
-                .colorful-table td {
-                        padding: var(--space-sm) var(--space-md);
-                        border-bottom: 1px solid var(--border-color);
-                        vertical-align: middle;
-                }
-
-                .colorful-table tr {
-                        transition: background-color 0.2s ease;
-                        position: relative;
-                }
-
-                .colorful-table tr:hover {
-                        background-color: var(--color-surface);
-                }
-
-                .colorful-table tr::before {
-                        content: '';
-                        position: absolute;
-                        left: 0;
-                        top: 0;
-                        bottom: 0;
-                        width: 3px;
-                        background: var(--works-stripe-color, var(--color-accent));
-                        transform: skewX(-15deg);
-                        transform-origin: bottom left;
-                }
-
-                .colorful-table a {
-                        color: var(--works-http-color, var(--color-accent));
-                        text-decoration: none;
-                }
-
-                .colorful-table a:hover {
-                        text-decoration: underline;
-                }
-
-                .category-badge {
-                        display: inline-block;
-                        padding: 2px 8px;
-                        background: var(--works-secondary-highlight, var(--color-bg-alt));
-                        border-radius: 4px;
-                        font-size: var(--font-size-2xs);
-                        color: var(--color-text-subtle);
-                        text-transform: lowercase;
+                        margin-bottom: var(--space-xl);
                 }
 
                 .table-header {
-                    display: flex;
-                    align-items: center;
-                    gap: var(--space-sm);
-                    margin-bottom: var(--space-md);
-                    padding-top: var(--space-xl);
+                        display: flex;
+                        align-items: center;
+                        gap: var(--space-xs);
+                        padding-bottom: var(--space-xs);
+                        border-bottom: 1px solid var(--border-color-subtle);
+                        margin-bottom: var(--space-md);
                 }
 
                 .table-marker {
-                    color: var(--color-accent);
-                    font-size: var(--font-size-lg);
+                        color: #2563eb; /* Blue diamond */
+                        font-size: 0.7rem;
                 }
 
                 .table-title {
-                    font-family: var(--font-sans);
-                    font-size: var(--font-size-sm);
-                    font-weight: 700;
-                    margin: 0;
-                    letter-spacing: var(--letter-spacing-wider);
+                        font-family: var(--font-sans);
+                        font-size: 0.7rem;
+                        font-weight: 700;
+                        letter-spacing: 0.05em;
+                        margin: 0;
+                        text-transform: uppercase;
                 }
 
-                .table-meta {
-                    font-family: var(--font-mono);
-                    font-size: var(--font-size-2xs);
-                    color: var(--color-text-subtle);
-                    margin-left: auto;
+                .table-count {
+                        font-family: var(--font-mono);
+                        font-size: 0.7rem;
+                        color: var(--color-text-subtle);
                 }
 
-                @media (max-width: 768px) {
-                        .colorful-table {
-                                font-size: var(--font-size-xs);
+                .works-list {
+                        display: block;
+                }
+
+                .work-row {
+                        display: grid;
+                        grid-template-columns: 80px 1fr 60px;
+                        align-items: center;
+                        padding: 6px var(--space-md);
+                        background: transparent;
+                        border-bottom: 1px solid var(--border-color-subtle);
+                        transition: transform 0.1s ease;
+                        text-decoration: none;
+                        color: var(--color-text);
+                        position: relative;
+                        min-height: 28px;
+                }
+
+                .work-row:hover {
+                        background: var(--color-bg-alt);
+                        z-index: 10;
+                }
+
+                .work-date {
+                        font-size: 0.7rem;
+                        color: var(--color-text-subtle);
+                        opacity: 0.8;
+                }
+
+                .work-title {
+                        font-size: 0.8rem;
+                        font-weight: 500;
+                        white-space: normal;
+                        line-height: 1.2;
+                }
+
+                .work-link {
+                        font-size: 0.7rem;
+                        text-align: right;
+                        color: #2563eb;
+                        opacity: 0.8;
+                }
+
+                .work-row[style*="--row-bg"] {
+                        background: var(--row-bg);
+                        border-bottom: none;
+                        margin-bottom: 2px;
+                        border-radius: 2px;
+                }
+
+                .work-row[style*="--row-bg"] .work-date,
+                .work-row[style*="--row-bg"] .work-title,
+                .work-row[style*="--row-bg"] .work-link {
+                        color: #000 !important;
+                        opacity: 1;
+                }
+
+                @media (max-width: 640px) {
+                        .work-row {
+                                grid-template-columns: 70px 1fr;
                         }
-                        .colorful-table th,
-                        .colorful-table td {
-                                padding: var(--space-xs) var(--space-sm);
-                        }
-                        .colorful-table tr::before {
-                                width: 2px;
-                        }
-                        .table-meta {
-                            display: none;
+                        .work-link {
+                                display: none;
                         }
                 }
         </style>
 
         <header class="table-header">
-                <span class="table-marker">⣿</span>
+                <span class="table-marker">◆</span>
                 <h2 class="table-title">WORKS</h2>
-                <span class="table-meta">
-                        {displayWorks.length} projects · colorful table
-                </span>
+                <span class="table-count">[{displayWorks.length}]</span>
         </header>
 
-        {#if viewMode === 'table'}
-                <table class="colorful-table">
-                        <thead>
-                                <tr>
-                                        {#if columns.includes('title')}<th>Project</th>{/if}
-                                        {#if columns.includes('category')}<th>Category</th>{/if}
-                                        {#if columns.includes('description')}<th>Description</th>{/if}
-                                </tr>
-                        </thead>
-                        <tbody>
-                                {#each displayWorks as work, i}
-                                        <tr style="--works-stripe-color: {selectedPalette[i % selectedPalette.length]}; --works-http-color: {httpColor}; --works-secondary-highlight: {secondaryHighlight}">
-                                                {#if columns.includes('title')}
-                                                <td>
-                                                        <a href={work.url} target="_blank" rel="noopener noreferrer">
-                                                                {work.title ?? 'Untitled'}
-                                                        </a>
-                                                </td>
-                                                {/if}
-                                                {#if columns.includes('category')}
-                                                <td>
-                                                        {#if work.category}
-                                                                <span class="category-badge">{work.category}</span>
-                                                        {/if}
-                                                </td>
-                                                {/if}
-                                                {#if columns.includes('description')}
-                                                <td>{work.description ?? ''}</td>
-                                                {/if}
-                                        </tr>
-                                {/each}
-                        </tbody>
-                </table>
-        {/if}
+        <div class="works-list">
+                {#each displayWorks as work}
+                        <a 
+                                href={work.url} 
+                                target="_blank" 
+                                rel="noopener noreferrer" 
+                                class="work-row"
+                                style={getRowStyle(work)}
+                        >
+                                <span class="work-date">{formatDate(work)}</span>
+                                <span class="work-title">{work.title}</span>
+                                <span class="work-link">visit</span>
+                        </a>
+                {/each}
+        </div>
 </section>

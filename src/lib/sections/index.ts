@@ -6,7 +6,8 @@ export interface SectionMeta {
 
 export const sections: SectionMeta[] = [
 	{ id: "hero", label: "Home", route: "/" },
-	{ id: "works", label: "Works", route: "/works" },
+	{ id: "colored_works", label: "Colorful Works", route: "/#colored_works" },
+	{ id: "works", label: "Selected Works", route: "/works" },
 	{ id: "talks", label: "Talks", route: "/talks" },
 	{ id: "terminal", label: "Terminal", route: "/terminal" },
 	{ id: "cv", label: "CV", route: "/cv" },

@@ -42,7 +42,7 @@ if (squint_core.truth_(or__23461__auto__7)) {
 return or__23461__auto__7} else {
 return default_profile["location"]};
 
-})(), "sameAs": (() => {
+})(), "available": ((!squint_core._EQ_(p2["available"], undefined)) ? (p2["available"]) : (default_profile["available"])), "sameAs": (() => {
 const or__23461__auto__8 = p2["sameAs"];
 if (squint_core.truth_(or__23461__auto__8)) {
 return or__23461__auto__8} else {
@@ -105,7 +105,7 @@ if (squint_core.truth_(or__23461__auto__3)) {
 return or__23461__auto__3} else {
 return "default"};
 
-})()) : ("default"))});
+})()) : ("default")), "archived": ((squint_core.truth_(config)) ? (((!squint_core._EQ_(config["archived"], undefined)) ? (config["archived"]) : (true))) : (true))});
 
 };
 

@@ -29,12 +29,12 @@ import { browser } from '$app/environment';
 
 // @ts-ignore - Clojure compiled modules
 declare const clj_works: {
-	/setup_works_subscriptions: Function;
-	/override_vars: Function;
-	/use_static_preview_QMARK_: Function;
-	/use_video_preview_QMARK_: Function;
-	/get_object_position: Function;
-	/get_zoom_style: Function;
+	setup_works_subscriptions: Function;
+	override_vars: Function;
+	use_static_preview_QMARK_: Function;
+	use_video_preview_QMARK_: Function;
+	get_object_position: Function;
+	get_zoom_style: Function;
 };
 
 // @ts-ignore - Clojure data utilities

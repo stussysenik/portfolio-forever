@@ -37,11 +37,28 @@
   $: pageSections = homePage?.sections
     ? [...homePage.sections].sort((a: any, b: any) => a.order - b.order)
     : null;
-  $: sectionOrder = pageSections
+  $: rawSectionOrder = pageSections
     ? pageSections
         .filter((s: any) => s.visible !== false)
         .map((s: any) => resolveComponentKey(s.sectionType))
     : ($siteConfig?.sectionOrder || sections.map((s) => s.id));
+    
+  $: sectionOrder = (() => {
+      const order = [...(rawSectionOrder || [])];
+      
+      const worksIdx = order.indexOf('works');
+      if (!order.includes('colored_works')) {
+          if (worksIdx !== -1) {
+              order.splice(worksIdx, 0, 'colored_works');
+          } else {
+              order.push('colored_works');
+          }
+      }
+
+      if (!order.includes('cv')) order.push('cv');
+      if (!order.includes('process')) order.push('process');
+      return order;
+  })();
   $: parallaxSpeed = $siteConfig?.parallaxSpeed ?? 0.5;
 
   // Depth-filtered sections: "full" returns all (default behavior unchanged)
@@ -78,7 +95,8 @@
   // Map section IDs to components
   const componentMap: Record<string, any> = {
     hero: HeroSection,
-    works: ColorfulWorksTable,
+    colored_works: ColorfulWorksTable,
+    works: WorksSection,
     talks: TalksSection,
     terminal: TerminalSection,
     cv: CvSection,
@@ -265,10 +283,12 @@
 <svelte:window on:keydown={handleKeydown} on:scroll={handleScroll} />
 
 <div
-  class="one-page"
+  class="one-page safe-boundary-viewport"
   class:reader-mode={$isReaderMode}
   style:--color-accent={homePage?.themeOverrides?.accentColor ?? null}
 >
+  <div class="safety-rectangle"></div>
+  
   <!-- Sections -->
   {#each filteredSections as id (id)}
     {@const sd = sectionDataMap[id]}
@@ -298,11 +318,34 @@
 <style>
   .one-page {
     position: relative;
+    width: 100%;
+  }
+
+  /* Predictable layout: 10% cut off safety rectangle */
+  .safe-boundary-viewport {
+    padding: var(--space-xl) clamp(4%, 10vw, 10%); /* DOM space and layout margin */
+    box-sizing: border-box;
+    min-height: 100vh;
+  }
+
+  .safety-rectangle {
+    position: fixed;
+    top: 5vh;
+    left: 5vw;
+    right: 5vw;
+    bottom: 5vh;
+    border: 1px dotted var(--border-color);
+    pointer-events: none;
+    z-index: 100;
+    opacity: 0.15;
+    border-radius: var(--radius-lg);
   }
 
   .section-wrapper {
     min-height: 50vh;
     padding-block: var(--space-2xl);
+    position: relative;
+    z-index: 1;
   }
 
   .section-wrapper.parallaxing {

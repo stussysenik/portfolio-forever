@@ -1,7 +1,10 @@
 import { Plugin } from 'vite';
-import { execSync } from 'child_process';
+import { execSync, exec } from 'child_process';
+import { promisify } from 'util';
 import { watch } from 'fs';
 import { resolve, relative } from 'path';
+
+const execAsync = promisify(exec);
 
 /**
  * Vite plugin: compiles Clojure (Squint) sources to ESM JavaScript.
@@ -19,11 +22,11 @@ export default function squintPlugin(options: {
   const outDir = options.outDir || 'clj/out';
   const shouldWatch = options.watch ?? (process.env.NODE_ENV === 'development');
 
-  function compileFile(filePath: string) {
+  async function compileFile(filePath: string) {
     try {
-      execSync(
+      await execAsync(
         `npx squint compile "${filePath}" --output-dir "${outDir}" --paths "${srcDir}"`,
-        { stdio: 'pipe', cwd: process.cwd() }
+        { cwd: process.cwd() }
       );
       return true;
     } catch (err: any) {
@@ -32,16 +35,36 @@ export default function squintPlugin(options: {
     }
   }
 
-  function compileAll() {
+  async function compileAll() {
     try {
       const files = execSync(`find ${srcDir} -name '*.cljs'`, { encoding: 'utf-8' })
         .trim()
         .split('\n')
         .filter(Boolean);
       let ok = true;
-      for (const f of files) {
-        if (!compileFile(f)) ok = false;
+      let completed = 0;
+      const total = files.length;
+      
+      const startTime = Date.now();
+      const timer = setInterval(() => {
+        const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+        process.stdout.write(`\r[squint] ⏱️  Live Timer: ${elapsed}s | Progress: ${completed}/${total} files compiled...`);
+      }, 100);
+
+      const CONCURRENCY = 5;
+      for (let i = 0; i < total; i += CONCURRENCY) {
+        const chunk = files.slice(i, i + CONCURRENCY);
+        const results = await Promise.all(chunk.map(async (f) => {
+          const res = await compileFile(f);
+          completed++;
+          return res;
+        }));
+        if (results.includes(false)) ok = false;
       }
+
+      clearInterval(timer);
+      const totalTime = ((Date.now() - startTime) / 1000).toFixed(1);
+      process.stdout.write(`\r[squint] ✅ Finished compiling ${total} files in ${totalTime}s!                      \n`);
       return ok;
     } catch {
       return false;
@@ -51,11 +74,12 @@ export default function squintPlugin(options: {
   return {
     name: 'vite-plugin-squint',
 
-    buildStart() {
-      if (!compileAll()) {
+    async buildStart() {
+      console.log('\n[squint] Starting batch compilation...');
+      if (!(await compileAll())) {
         console.warn('[squint] Initial compilation had errors — some modules may be stale');
       } else {
-        console.log('[squint] Clojure sources compiled to ESM');
+        // console.log('[squint] Clojure sources compiled to ESM');
       }
     },
 

@@ -23,6 +23,7 @@ export const upsertHeroConfig = mutation({
         heroNameLetterSpacing: v.optional(v.number()),
         heroNameLineHeight: v.optional(v.number()),
         heroNameTextWrap: v.optional(v.string()),
+        archived: v.optional(v.boolean()),
     },
     handler: async (ctx, args) => {
         const { id, ...fields } = args;
@@ -32,7 +33,7 @@ export const upsertHeroConfig = mutation({
         if (id) {
             const doc = await ctx.db.get(id);
             if (doc) {
-                const trackableFields = ['heroNameSize', 'heroNameWeight', 'heroNameLetterSpacing', 'heroNameLineHeight', 'heroNameTextWrap'] as const;
+                const trackableFields = ['heroNameSize', 'heroNameWeight', 'heroNameLetterSpacing', 'heroNameLineHeight', 'heroNameTextWrap', 'archived'] as const;
                 for (const field of trackableFields) {
                     if (args[field] !== undefined && doc[field] !== args[field]) {
                         await ctx.db.insert("adminHistory", {
@@ -50,7 +51,7 @@ export const upsertHeroConfig = mutation({
         }
         const existing = await ctx.db.query("heroConfig").first();
         if (existing) {
-            const trackableFields = ['heroNameSize', 'heroNameWeight', 'heroNameLetterSpacing', 'heroNameLineHeight', 'heroNameTextWrap'] as const;
+            const trackableFields = ['heroNameSize', 'heroNameWeight', 'heroNameLetterSpacing', 'heroNameLineHeight', 'heroNameTextWrap', 'archived'] as const;
             for (const field of trackableFields) {
                 if (args[field] !== undefined && existing[field] !== args[field]) {
                     await ctx.db.insert("adminHistory", {
@@ -77,6 +78,7 @@ export const upsertHeroConfig = mutation({
             heroNameLetterSpacing: args.heroNameLetterSpacing,
             heroNameLineHeight: args.heroNameLineHeight,
             heroNameTextWrap: args.heroNameTextWrap,
+            archived: args.archived ?? false,
         });
     },
 });

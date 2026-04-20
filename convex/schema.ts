@@ -239,6 +239,7 @@ export default defineSchema({
 		heroNameLetterSpacing: v.optional(v.number()),
 		heroNameLineHeight: v.optional(v.number()),
 		heroNameTextWrap: v.optional(v.string()),
+		archived: v.optional(v.boolean()),
 	}),
 
 	// Gallery items

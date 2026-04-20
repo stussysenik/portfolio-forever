@@ -166,24 +166,6 @@
 			</div>
 		{/each}
 
-		<!-- Available toggle -->
-		<div class="field-row">
-			<span class="field-label">Available</span>
-			<button class="btn-sm" class:btn-save={profile?.available}
-				on:click={async () => {
-					try {
-						await client.mutation(api.cv.updateProfile, {
-							id: profile._id, available: !profile?.available
-						});
-						toast.success(profile?.available ? 'Set unavailable' : 'Set available');
-					} catch (e: any) {
-						toast.error(`Save failed: ${e.message}`);
-					}
-				}}>
-				{profile?.available ? 'YES' : 'NO'}
-			</button>
-		</div>
-
 		<!-- Taglines editor -->
 		<div class="field-row field-row--column">
 			<div class="taglines-header">

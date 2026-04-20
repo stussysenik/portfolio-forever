@@ -35,6 +35,7 @@
                                 :portfolio.sections/hero :default
                                 :portfolio.sections/works :default
                                 :portfolio.sections/cv :default
-                                :portfolio.sections/terminal :default}
+                                :portfolio.sections/terminal :default
+                                :portfolio.sections/ascii :default}
            :portfolio.admin {:portfolio.admin/constants :default}
            :portfolio.core {:portfolio.core :default}}}

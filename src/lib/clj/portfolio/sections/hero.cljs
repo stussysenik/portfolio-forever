@@ -14,6 +14,7 @@
            :taglines (or (aget p "taglines") (aget default-profile "taglines"))
            :shortBio (or (aget p "shortBio") (aget p "summary") (aget default-profile "shortBio"))
            :location (or (aget p "location") (aget default-profile "location"))
+           :available (if (not= (aget p "available") js/undefined) (aget p "available") (aget default-profile "available"))
            :sameAs (or (aget p "sameAs") #js [])})
     default-profile))
 
@@ -41,4 +42,5 @@
   "Derives UI flags from hero config."
   #js {:showDonut (if config (or (aget config "showAsciiDonut") true) true)
        :showWave (if config (or (aget config "showAsciiWave") false) false)
-       :layout (if config (or (aget config "layout") "default") "default")})
+       :layout (if config (or (aget config "layout") "default") "default")
+       :archived (if config (if (not= (aget config "archived") js/undefined) (aget config "archived") true) true)})

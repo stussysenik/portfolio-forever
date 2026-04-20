@@ -2,7 +2,58 @@ import * as squint_core from 'squint-cljs/core.js';
 import * as clojure_DOT_string from 'squint-cljs/src/squint/string.js';
 import * as convex from './../convex/client.mjs';
 import * as portfolio_DOT_convex_DOT_client from './../convex/client.mjs';
+import * as data from './../data/content.mjs';
+import * as portfolio_DOT_data_DOT_content from './../data/content.mjs';
 import { api } from '$lib/app-shims';;
+var use_static_preview_QMARK_ = function (project) {
+const or__23461__auto__1 = (project["previewMode"] === "static");
+if (or__23461__auto__1) {
+return or__23461__auto__1} else {
+const and__23501__auto__2 = project["preview"];
+if (squint_core.truth_(and__23501__auto__2)) {
+return squint_core.not(project["videoPreview"])} else {
+return and__23501__auto__2};
+};
+
+};
+var use_video_preview_QMARK_ = function (project) {
+const or__23461__auto__1 = (project["previewMode"] === "video");
+if (or__23461__auto__1) {
+return or__23461__auto__1} else {
+const and__23501__auto__2 = project["videoPreview"];
+if (squint_core.truth_(and__23501__auto__2)) {
+return project["preview"]} else {
+return and__23501__auto__2};
+};
+
+};
+var get_object_position = function (project) {
+const or__23461__auto__1 = project["objectPosition"];
+if (squint_core.truth_(or__23461__auto__1)) {
+return or__23461__auto__1} else {
+const fx2 = project["focalX"];
+const fy3 = project["focalY"];
+if (squint_core.truth_((() => {
+const and__23501__auto__4 = fx2;
+if (squint_core.truth_(and__23501__auto__4)) {
+return fy3} else {
+return and__23501__auto__4};
+
+})())) {
+return `${fx2??''}${"% "}${fy3??''}${"%"}`} else {
+return "center top"};
+};
+
+};
+var get_zoom_style = function (project) {
+const temp__23055__auto__1 = project["zoom"];
+if (squint_core.truth_(temp__23055__auto__1)) {
+const zoom2 = temp__23055__auto__1;
+return `${"transform: scale("}${zoom2??''}${"); transform-origin: "}${get_object_position(project)??''}${";"}`;
+} else {
+return ""};
+
+};
 var override_vars = function (project) {
 "Collect styleOverrides as inline CSS var declarations.";
 const o1 = (() => {
@@ -36,58 +87,57 @@ return `${"--works-secondary-highlight: "}${v8??''}`;
 })()]));
 
 };
-var use_static_preview_QMARK_ = function (project) {
-return ((project["previewMode"] === "static") && squint_core.not(squint_core.empty_QMARK_(project["preview"])));
+var color_map = ({"cloud": "#EBEBEB", "gold": "#DAB230", "orange": "#F97242", "ocean": "#BAF1F9", "yellow": "#FFEB3B", "pink": "#FFC0CB", "green": "#4CAF50", "electric-green": "#39FF14", "red": "#F44336"});
+var get_row_style = function (work) {
+const featured1 = work["featured"];
+const style_overrides2 = work["styleOverrides"];
+const temp__23055__auto__3 = squint_core.get(color_map, featured1);
+if (squint_core.truth_(temp__23055__auto__3)) {
+const color4 = temp__23055__auto__3;
+return `${"--row-bg: "}${color4??''}`;
+} else {
+if (squint_core.truth_((() => {
+const and__23501__auto__5 = style_overrides2;
+if (squint_core.truth_(and__23501__auto__5)) {
+return style_overrides2["accentColor"]} else {
+return and__23501__auto__5};
+
+})())) {
+return `${"--row-bg: "}${style_overrides2["accentColor"]??''}`} else {
+return ""}};
 
 };
-var use_video_preview_QMARK_ = function (project) {
-return ((project["previewMode"] === "video") && squint_core.not(squint_core.empty_QMARK_(project["videoPreview"])));
+var format_work_date = function (work) {
+const y1 = work["year"];
+const m2 = work["month"];
+if (squint_core.truth_((() => {
+const and__23501__auto__3 = y1;
+if (squint_core.truth_(and__23501__auto__3)) {
+return m2} else {
+return and__23501__auto__3};
 
-};
-var get_object_position = function (project) {
-"Compute CSS object-position from focal point. Fallback: focal -> cam -> objectPosition -> 'center top'.";
-const fx1 = project["focalX"];
-const fy2 = project["focalY"];
-if (squint_core.truth_((!(fx1 == null) && !(fy2 == null)))) {
-return `${fx1??''}${"% "}${fy2??''}${"%"}`} else {
-const or__23461__auto__3 = project["cam"];
-if (squint_core.truth_(or__23461__auto__3)) {
-return or__23461__auto__3} else {
-const or__23461__auto__4 = project["objectPosition"];
+})())) {
+return `${y1??''}${"."}${`${m2??''}`.padStart(2, "0")??''}`} else {
+const or__23461__auto__4 = y1;
 if (squint_core.truth_(or__23461__auto__4)) {
 return or__23461__auto__4} else {
-return "center top"};
-};
+return ""};
 };
 
 };
-var get_zoom_style = function (project) {
-"Zoom transform when zoom > 1.";
-const zoom1 = (() => {
-const or__23461__auto__2 = project["zoom"];
-if (squint_core.truth_(or__23461__auto__2)) {
-return or__23461__auto__2} else {
-return 1};
+var get_works_hiccup = function (projects, display_mode, grid_cols, show_preview, view_mode, is_screen_pass) {
+"Returns the works section as a Hiccup-like structure.";
+const visible_projects1 = ((squint_core.truth_(is_screen_pass)) ? (projects.slice(0, 11)) : (projects));
+const children2 = squint_core.map((function (p) {
+return ["a", ({"href": p["url"], "target": "_blank", "class": "work-row", "style": get_row_style(p)}), ["span", ({"class": "work-date"}), format_work_date(p)], ["span", ({"class": "work-title"}), p["title"]], ["span", ({"class": "work-link"}), "visit"]];
 
-})();
-if ((zoom1 <= 1)) {
-return ""} else {
-const ox3 = (() => {
-const or__23461__auto__4 = project["focalX"];
-if (squint_core.truth_(or__23461__auto__4)) {
-return or__23461__auto__4} else {
-return 50};
-
-})();
-const oy5 = (() => {
-const or__23461__auto__6 = project["focalY"];
-if (squint_core.truth_(or__23461__auto__6)) {
-return or__23461__auto__6} else {
-return 50};
-
-})();
-return `${"transform: scale("}${zoom1??''}${"); transform-origin: "}${ox3??''}${"% "}${oy5??''}${"%;"}`;
+}), visible_projects1);
+const div3 = ["div", ({"class": "works-list"})];
+for (let G__4 of squint_core.iterable(children2)) {
+const c5 = G__4;
+div3.push(c5)
 };
+return ["section", ({"class": "works-list-container", "id": "works"}), ["header", ({"class": "table-header"}), ["span", ({"class": "table-marker"}), "◆"], ["h2", ({"class": "table-title"}), "WORKS"], ["span", ({"class": "table-count"}), `${"["}${squint_core.count(projects)??''}${"]"}`]], div3];
 
 };
 var setup_works_subscriptions = function (client, callbacks) {
@@ -123,4 +173,4 @@ return unsub_section7();
 
 };
 
-export { override_vars, use_static_preview_QMARK_, use_video_preview_QMARK_, get_object_position, get_zoom_style, setup_works_subscriptions }
+export { get_object_position, get_works_hiccup, setup_works_subscriptions, get_zoom_style, use_static_preview_QMARK_, use_video_preview_QMARK_, color_map, get_row_style, override_vars, format_work_date }

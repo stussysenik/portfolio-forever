@@ -206,7 +206,11 @@
     padding: var(--space-xs) var(--space-sm);
     
     cursor: pointer;
-    z-index: 90;
+    z-index: 100;
+    
+    /* Ensure it doesn't hopelessly block text reading */
+    backdrop-filter: blur(8px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
     
     opacity: 0;
     transform: translateY(8px);

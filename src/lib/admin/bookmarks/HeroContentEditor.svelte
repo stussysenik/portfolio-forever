@@ -5,7 +5,7 @@
 	// ── Props ──────────────────────────────────────────────────────────────────
 
 	export let heroConfig: any = null;
-	export let cvProfile: any = null;    // { name, taglines, shortBio, location }
+	export let cvProfile: any = null;    // { name, taglines, shortBio, location, available }
 	export let client: any;
 	export let api: any;
 
@@ -20,7 +20,7 @@
 
 	function updateProfile(patch: Record<string, any>) {
 		if (!cvProfile) return;
-		client.mutation(api.cv.updateProfile, { ...patch });
+		client.mutation(api.cv.updateProfile, { id: cvProfile._id, ...patch });
 	}
 
 	// ── Field handlers ────────────────────────────────────────────────────────
@@ -34,7 +34,7 @@
 		const value = (e.currentTarget as HTMLInputElement).value;
 		// Preserve existing taglines array; replace index 0
 		const existing = cvProfile?.taglines ?? [];
-		const updated = [value, ...existing.slice(1)];
+		const updated = [{ lang: existing[0]?.lang ?? 'en', text: value }, ...existing.slice(1)];
 		updateProfile({ taglines: updated });
 	}
 
@@ -46,6 +46,17 @@
 	function handleLocation(e: Event) {
 		const value = (e.currentTarget as HTMLInputElement).value;
 		updateProfile({ location: value });
+	}
+
+	function toggleAvailable() {
+		updateProfile({ available: !cvProfile?.available });
+	}
+
+	function toggleArchived() {
+		client.mutation(api.hero.upsertHeroConfig, {
+			id: heroConfig?._id,
+			archived: !heroConfig?.archived
+		});
 	}
 </script>
 
@@ -75,6 +86,23 @@
 				});
 			}}
 		/>
+	</div>
+
+	<!-- ── ARCHIVE / STATUS ─────────────────────────────────────────────────── -->
+	<div class="group">
+		<span class="group-label">ARCHIVE / STATUS</span>
+		<div class="field-row">
+			<span class="field-label">AVAILABLE</span>
+			<button class="btn-toggle" class:active={cvProfile?.available} on:click={toggleAvailable}>
+				{cvProfile?.available ? 'ACTIVE' : 'INACTIVE'}
+			</button>
+		</div>
+		<div class="field-row">
+			<span class="field-label">ARCHIVE s-t3U1eD8QnXou</span>
+			<button class="btn-toggle" class:active={heroConfig?.archived ?? true} on:click={toggleArchived}>
+				{heroConfig?.archived ?? true ? 'ARCHIVED' : 'VISIBLE'}
+			</button>
+		</div>
 	</div>
 
 	<!-- ── PROFILE ──────────────────────────────────────────────────────────── -->
@@ -167,6 +195,14 @@
 		gap: 4px;
 	}
 
+	/* ── Field row ───────────────────────────────────────────────────── */
+	.field-row {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 4px 0;
+	}
+
 	/* ── Field label ─────────────────────────────────────────────────── */
 	.field-label {
 		font-family: var(--font-mono);
@@ -176,6 +212,30 @@
 		letter-spacing: 0.08em;
 		color: var(--color-text-subtle);
 		line-height: 1;
+	}
+
+	/* ── Toggle Button ───────────────────────────────────────────────── */
+	.btn-toggle {
+		background: transparent;
+		border: 1px solid var(--border-color-subtle);
+		border-radius: 4px;
+		color: var(--color-text-subtle);
+		font-family: var(--font-mono);
+		font-size: var(--admin-text-2xs, 7px);
+		padding: 4px 12px;
+		cursor: pointer;
+		transition: all 150ms ease;
+	}
+
+	.btn-toggle:hover {
+		border-color: var(--color-text-subtle);
+		color: var(--color-text);
+	}
+
+	.btn-toggle.active {
+		background: var(--color-success-bg, #e6fffa);
+		color: var(--color-success, #2d3748);
+		border-color: var(--color-success);
 	}
 
 	/* ── Inputs ──────────────────────────────────────────────────────── */
