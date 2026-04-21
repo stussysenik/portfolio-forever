@@ -1,0 +1,16 @@
+---
+import GiftsSection from "../lib/sections/GiftsSection.svelte";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { getPublicRuntimeState } from "../lib/server/convex";
+
+const runtime = await getPublicRuntimeState();
+---
+
+<BaseLayout
+	title="Gifts | Stüssy Senik"
+	description="An open exchange for books, postcards, art supplies, and other creative offerings."
+	activePath="/gifts"
+	runtime={runtime}
+>
+	<GiftsSection client:load />
+</BaseLayout>

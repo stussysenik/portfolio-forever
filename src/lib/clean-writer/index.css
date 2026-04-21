@@ -1,0 +1,152 @@
+/* Design Tokens — CSS Custom Properties */
+:root {
+  /* Touch targets (WCAG 2.5.5) */
+  --touch-min: 44px;
+  --touch-spacing: 8px;
+
+  /* Typography scale */
+  --type-xs: 0.75rem;
+  --type-sm: 0.875rem;
+  --type-base: 1rem;
+  --type-lg: 1.125rem;
+  --type-xl: 1.25rem;
+  --type-2xl: 1.5rem;
+  --type-3xl: 2rem;
+  --type-4xl: 3rem;
+
+  /* Line heights (golden ratio aligned) */
+  --lh-tight: 1.25;
+  --lh-normal: 1.625;
+  --lh-relaxed: 1.75;
+
+  /* Golden ratio spacing (from spacing.ts) */
+  --space-xs: 8px;
+  --space-sm: 13px;
+  --space-md: 21px;
+  --space-lg: 34px;
+  --space-xl: 55px;
+  --space-xxl: 89px;
+
+  /* Motion */
+  --duration-fast: 150ms;
+  --duration-normal: 300ms;
+  --duration-slow: 500ms;
+  --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* WCAG contrast thresholds (informational) */
+  --contrast-body: 4.5;
+  --contrast-large: 3;
+  --contrast-ui: 3;
+}
+
+/* Selection styling using CSS custom property */
+::selection {
+  background-color: var(--selection-color);
+}
+
+::-moz-selection {
+  background-color: var(--selection-color);
+}
+
+/* Touch-friendly styles */
+.touch-manipulation {
+  touch-action: manipulation;
+}
+
+/* Ensure minimum tap target sizes */
+.tap-target {
+  min-width: var(--touch-min);
+  min-height: var(--touch-min);
+}
+
+/* Settings tab content fade-in */
+@keyframes tab-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-tab-fade-in {
+  animation: tab-fade-in var(--duration-fast) var(--ease-default) both;
+}
+
+/* Frontier marker — green "available" badge */
+@keyframes frontier-in {
+  from { opacity: 0; transform: scale(0.85); }
+  to { opacity: 1; transform: scale(1); }
+}
+.animate-frontier-in {
+  animation: frontier-in 250ms var(--ease-spring) both;
+}
+
+@keyframes frontier-dot-ring {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+  50% { box-shadow: 0 0 0 3px rgba(34, 197, 94, 0); }
+}
+.animate-frontier-dot {
+  animation: frontier-dot-ring 2s ease-in-out infinite;
+}
+
+/* QuickColorPicker popover entrance */
+@keyframes quick-picker-in {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.animate-quick-picker-in {
+  animation: quick-picker-in var(--duration-fast) var(--ease-spring) both;
+}
+
+/* Hide scrollbar but keep scroll functionality */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Horizontal scroll fade edges for theme dots on mobile */
+.theme-scroll-fade {
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 8px,
+    black calc(100% - 16px),
+    transparent
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 8px,
+    black calc(100% - 16px),
+    transparent
+  );
+}
+@media (min-width: 768px) {
+  .theme-scroll-fade {
+    mask-image: none;
+    -webkit-mask-image: none;
+  }
+}
+
+/* Frosted glass pill effect */
+.liquid-glass {
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1),
+              inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}

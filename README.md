@@ -5,11 +5,12 @@
 ![Demo](demo.gif)
 
 
-### Personal portfolio with ASCII aesthetics
+### Personal portfolio with an Astro host, live Convex runtime, and Sanity editorial preview
 
-![SvelteKit](https://img.shields.io/badge/SvelteKit-5-FF3E00?style=flat-square&logo=svelte&logoColor=white)
+![Astro](https://img.shields.io/badge/Astro-6-FF5D01?style=flat-square&logo=astro&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=flat-square&logo=typescript)
 ![Convex](https://img.shields.io/badge/Convex-Backend-6C47FF?style=flat-square)
+![Sanity](https://img.shields.io/badge/Sanity-Editorial-F03E2F?style=flat-square&logo=sanity&logoColor=white)
 ![Vercel](https://img.shields.io/badge/Vercel-Deployed-black?style=flat-square&logo=vercel)
 
 [Live Site](https://portfolio-forever.vercel.app)
@@ -18,7 +19,14 @@
 
 ---
 
-Personal portfolio built with SvelteKit 5, Convex real-time backend, and a terminal-inspired design system. ASCII aesthetics, intentional typography, and obsessive attention to spacing.
+Personal portfolio running on an Astro-first architecture with Svelte islands, a Convex real-time backend, and Sanity for editorial content plus Presentation/preview flows. ASCII aesthetics, intentional typography, and obsessive attention to spacing.
+
+Current production host boundaries:
+- Astro is the only production host for the public shell and `/admin`.
+- Sanity Studio is embedded under `/admin/content/studio`.
+- Draft-mode preview, editorial handoff, and route-level Astro preview tests are wired for the Sanity-backed pages.
+- Full Sanity visual editing still requires `SANITY_API_READ_TOKEN` in the runtime environment.
+- Legacy Svelte route modules remain only where Astro reuses them as implementation islands or parity references.
 
 ## Routes
 
@@ -42,7 +50,7 @@ bun install
 bun run dev
 ```
 
-> **Note:** ClojureScript files are in a separate repo (`portfolio-clojure`) linked via symlinks. They compile automatically when you run the Svelte project.
+> **Note:** The broken `src/lib/clj` symlink has been replaced with local compatibility modules under `src/lib/clj/portfolio/**` so the Astro host can compile the legacy Svelte sections directly.
 
 ## Design System
 
@@ -58,12 +66,12 @@ bun run dev
 
 | Layer     | Technology                |
 |-----------|---------------------------|
-| Framework | SvelteKit 5 + TypeScript  |
+| Framework | Astro 6 + Svelte 5 islands + TypeScript |
 | Styling   | Vanilla CSS (design tokens) |
-| Backend   | Convex (real-time)        |
+| Backend   | Convex (real-time) + Sanity (editorial) |
 | Testing   | Playwright + Vitest       |
-| Build     | Vite 7                    |
-| Deploy    | Vercel (static adapter)   |
+| Build     | Astro + Vite 7            |
+| Deploy    | Vercel / Node adapter     |
 
 ## Testing
 
@@ -88,12 +96,9 @@ src/
 │   ├── sections/        # All page sections (Convex-wired)
 │   ├── stores/          # Svelte stores (site config, controls)
 │   └── utils/           # Overlap detector, helpers
-├── routes/
-│   ├── admin/           # Admin dashboard + [pageId] routes
-│   ├── blog/            # Notes
-│   ├── works/           # Live project showcases
-│   ├── cv/              # Structured timeline
-│   └── ...              # All other routes
+├── pages/               # Astro public + admin routes
+├── layouts/             # Astro host shells
+├── routes/              # Legacy Svelte route modules kept only as parity refs/islands
 convex/
 ├── schema.ts            # Data model (15+ tables)
 ├── works.ts             # Works CRUD

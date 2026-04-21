@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import { createDialog, melt } from '@melt-ui/svelte';
-	import { goto } from '$app/navigation';
+	import { goto } from '$lib/app-shims';
 	import { getConvexClient } from '$lib/convex';
 	import { api } from '$convex/_generated/api';
 	import { registry, type RegistryKey } from './registry';

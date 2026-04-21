@@ -1,0 +1,166 @@
+---
+import AdminPreviewDeck from "../../components/admin/AdminPreviewDeck.astro";
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import { previewTargets } from "../../lib/astro/site-content";
+import { getRecentPosts, getSanityWorkspaceConfig } from "../../lib/server/sanity";
+import { getSanityPreviewState } from "../../lib/server/sanity-preview";
+
+const previewState = getSanityPreviewState(Astro);
+const recentPosts = await getRecentPosts(3, previewState);
+const sanityConfig = getSanityWorkspaceConfig();
+---
+
+<AdminLayout title="Admin | Overview" active="overview">
+	<section class="overview-grid">
+		<article class="overview-card">
+			<p class="overview-card__eyebrow">Editorial</p>
+			<h2>Sanity stays the authored source.</h2>
+			<p>
+				Use the Studio for structured content, then return to this shell to inspect the same public routes that ship.
+			</p>
+			<a href="/admin/content">Open editorial lane</a>
+		</article>
+
+		<article class="overview-card">
+			<p class="overview-card__eyebrow">System</p>
+			<h2>Convex stays the live sidecar.</h2>
+			<p>
+				Runtime flags, page visibility, and live shell signals remain isolated here so editorial ownership stays clear.
+			</p>
+			<a href="/admin/system">Open system lane</a>
+		</article>
+
+		<article class="overview-card">
+			<p class="overview-card__eyebrow">Preview</p>
+			<h2>Preview must be route-true.</h2>
+			<p>
+				The admin shell now points at the actual Astro routes instead of an admin-only mock surface, which keeps design
+				and preview from drifting apart.
+			</p>
+			<a href="/?preview=1&document=heroContent">Open homepage preview</a>
+		</article>
+	</section>
+
+	<section class="overview-strip">
+		<div>
+			<p class="overview-card__eyebrow">Current configuration</p>
+			<h2>One shell, three responsibilities.</h2>
+			<p>
+				Studio path: <code>{sanityConfig.studioPath}</code>. Presentation path: <code>{sanityConfig.presentationPath}</code>.
+				The admin host remains Astro so the preview loop never leaves the same runtime family as the public site.
+			</p>
+		</div>
+		<div class="overview-strip__facts">
+			<span>preview surfaces: {previewTargets.length}</span>
+			<span>posts: {recentPosts.length}</span>
+			<span>{sanityConfig.configured ? "env live" : "profile defaults"}</span>
+			<a href="/" class="live-link">Visit live portfolio ↗</a>
+		</div>
+	</section>
+
+	<AdminPreviewDeck
+		items={previewTargets}
+		title="Canonical route previews"
+		description="Hero, works, process, CV, and blog all render through the same Astro public shell the user sees."
+	/>
+</AdminLayout>
+
+<style>
+	.overview-grid,
+	.overview-strip {
+		display: grid;
+		gap: var(--space-md);
+	}
+
+	.overview-grid {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		margin-bottom: var(--space-lg);
+	}
+
+	.overview-card,
+	.overview-strip {
+		padding: var(--space-md);
+		border: 1px solid var(--border-color);
+		background: color-mix(in srgb, var(--color-surface) 88%, var(--color-bg-alt));
+	}
+
+	.overview-card__eyebrow {
+		margin: 0;
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: var(--color-text-subtle);
+	}
+
+	.overview-card h2,
+	.overview-strip h2 {
+		margin: 0.2rem 0 0;
+		font-family: var(--font-display);
+		letter-spacing: var(--letter-spacing-tight);
+	}
+
+	.overview-card p,
+	.overview-strip p {
+		margin-bottom: 0;
+		line-height: 1.62;
+		color: var(--color-text-secondary);
+	}
+
+	.overview-card a {
+		width: fit-content;
+		font-family: var(--font-mono);
+		font-size: 0.74rem;
+		color: var(--color-text);
+		text-decoration: none;
+		padding-bottom: 0.16rem;
+		border-bottom: 1px solid color-mix(in srgb, var(--color-text) 18%, transparent);
+	}
+
+	.overview-strip {
+		grid-template-columns: minmax(0, 1fr) auto;
+		align-items: start;
+		margin-bottom: var(--space-lg);
+	}
+
+	.overview-strip__facts {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-2xs);
+	}
+
+	.overview-strip__facts span,
+	.live-link {
+		padding: 0.55rem 0.75rem;
+		border: 1px solid var(--border-color);
+		background: color-mix(in srgb, var(--color-surface) 90%, transparent);
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		color: var(--color-text);
+	}
+
+	.live-link {
+		text-decoration: none;
+		background: var(--color-accent);
+		color: white;
+		border-color: var(--color-accent);
+		font-weight: 600;
+		transition: all var(--duration-fast) var(--easing);
+	}
+
+	.live-link:hover {
+		filter: brightness(1.1);
+		transform: translateY(-1px);
+	}
+
+	@media (max-width: 960px) {
+		.overview-grid {
+			grid-template-columns: 1fr;
+		}
+
+		.overview-strip {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>

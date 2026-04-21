@@ -1,0 +1,146 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import ColorfulWorksTable from "../components/public/ColorfulWorksTable.astro";
+import LiveEmbeddedWorks from "../components/public/LiveEmbeddedWorks.astro";
+import SignalDonut from "../components/public/SignalDonut.svelte";
+import { getPublicRuntimeState } from "../lib/server/convex";
+import { getPublicWorks } from "../lib/server/public-works";
+
+const [runtime, workEntries] = await Promise.all([getPublicRuntimeState(), getPublicWorks()]);
+---
+
+<BaseLayout
+	title="Works | Stüssy Senik"
+	description="Selected works across tools, AR/XR, and coded interfaces."
+	activePath="/works"
+	runtime={runtime}
+>
+	<section class="works-recovery">
+		<header class="hero-screenshot-5">
+			<div class="hero-left">
+				<SignalDonut client:load />
+				<div class="hero-sublinks">
+					<a href="#works">[ view zig source ]</a>
+				</div>
+			</div>
+			
+			<div class="hero-right">
+				<h1 class="hero-wordmark">
+					STÜSSY<br />SENIK
+				</h1>
+				
+				<p class="hero-role-title">DevEx & Experience Design Engineer</p>
+				
+				<p class="hero-description">
+					Building at the intersection of<br />
+					science, design, cinema, computation<br />
+					and code.
+				</p>
+
+				<p class="hero-location-line">NYC / PRAGUE</p>
+			</div>
+		</header>
+
+		<section class="works-tableau" id="works">
+			<ColorfulWorksTable works={workEntries} title="WORKS" />
+		</section>
+
+		<LiveEmbeddedWorks
+			works={workEntries}
+			title="LIVE PROOF"
+			kicker="Actual running work, selectively surfaced where motion or interaction adds signal."
+		/>
+	</section>
+</BaseLayout>
+
+<style>
+	.works-recovery {
+		display: grid;
+		gap: 8rem;
+	}
+
+	.hero-screenshot-5 {
+		display: grid;
+		grid-template-columns: 1fr 1.5fr;
+		gap: 4rem;
+		align-items: center;
+		padding: 4rem 0;
+	}
+
+	.hero-left {
+		display: grid;
+		gap: 2rem;
+		justify-items: center;
+	}
+
+	.hero-sublinks {
+		font-family: var(--font-mono);
+		font-size: 0.85rem;
+		color: var(--color-text-subtle);
+	}
+
+	.hero-sublinks a {
+		color: inherit;
+		text-decoration: none;
+	}
+
+	.hero-wordmark {
+		font-family: var(--font-display);
+		font-size: clamp(4rem, 10vw, 8.5rem);
+		font-weight: 800;
+		line-height: 0.85;
+		letter-spacing: -0.05em;
+		margin: 0 0 2rem 0;
+		text-transform: uppercase;
+	}
+
+	.hero-role-title {
+		font-family: var(--font-mono);
+		font-size: 1.2rem;
+		margin: 0 0 1.5rem 0;
+		color: var(--color-text);
+		font-weight: 500;
+	}
+
+	.hero-description {
+		font-size: 1.25rem;
+		line-height: 1.4;
+		color: var(--color-text-secondary);
+		margin: 0 0 3rem 0;
+		max-width: 40ch;
+	}
+
+	.hero-location-line {
+		font-family: var(--font-mono);
+		font-size: 0.9rem;
+		letter-spacing: 0.15em;
+		color: var(--color-text-subtle);
+		margin: 0;
+	}
+
+	.works-tableau {
+		display: grid;
+		gap: 2rem;
+	}
+
+	@media (max-width: 1200px) {
+		.hero-screenshot-5 {
+			grid-template-columns: 1fr;
+			gap: 2rem;
+		}
+		
+		.hero-left {
+			order: 2;
+		}
+		
+		.hero-right {
+			order: 1;
+		}
+	}
+
+	@media (max-width: 640px) {
+		.hero-wordmark {
+			font-size: 3.5rem;
+		}
+	}
+</style>

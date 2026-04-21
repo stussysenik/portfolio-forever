@@ -1,0 +1,170 @@
+---
+import AdminPreviewDeck from "../../components/admin/AdminPreviewDeck.astro";
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import { buildPreviewHref } from "../../lib/astro/preview";
+import { previewTargets } from "../../lib/astro/site-content";
+import {
+	getEditorialFocusTarget,
+	getRecentPosts,
+	getSanityWorkspaceConfig,
+} from "../../lib/server/sanity";
+import { getSanityPreviewState } from "../../lib/server/sanity-preview";
+
+const previewState = getSanityPreviewState(Astro);
+const posts = await getRecentPosts(6, previewState);
+const sanityConfig = getSanityWorkspaceConfig();
+const selectedDocument = Astro.url.searchParams.get("document") ?? "";
+const requestedDocuments = Array.from(
+	new Set(previewTargets.map((target) => target.document).concat(selectedDocument ? [selectedDocument] : [])),
+);
+const editorialTargets = Object.fromEntries(
+	await Promise.all(requestedDocuments.map(async (document) => [document, await getEditorialFocusTarget(document)] as const)),
+);
+const selectedTarget = selectedDocument ? editorialTargets[selectedDocument] ?? null : null;
+const previewItems = previewTargets.map((target) => ({
+	...target,
+	studioHref: editorialTargets[target.document]?.studioHref ?? sanityConfig.studioPath,
+}));
+---
+
+<AdminLayout title="Admin | Editorial" active="content">
+	<section class="content-panel">
+		<div class="content-panel__intro">
+			<p class="content-panel__eyebrow">Sanity editorial lane</p>
+			<h2>Edit in Studio, review in Astro, keep the handoff tight.</h2>
+			<p>
+				The Studio remains the authored surface. This lane just makes the route-level handoff explicit so the preview
+				loop stays inside the same system that actually ships.
+			</p>
+			<div class="content-panel__actions" data-testid="admin-preview-links">
+				<a href={selectedTarget?.studioHref ?? sanityConfig.studioPath}>
+					{selectedTarget ? `Edit ${selectedTarget.label} in Studio` : "Open embedded Studio"}
+				</a>
+				<a href={sanityConfig.presentationPath}>Open Presentation Tool</a>
+				<a href={buildPreviewHref("/", "heroContent")}>Preview homepage</a>
+			</div>
+		</div>
+
+		{selectedTarget && (
+			<article class="content-panel__handoff" data-testid="editorial-handoff">
+				<p class="content-panel__eyebrow">Focused handoff</p>
+				<h3>{selectedTarget.label}</h3>
+				<p>
+					Document context is already resolved. Open the matching Studio document directly, then come back to the
+					route preview below to confirm the public shell still reads correctly.
+				</p>
+				<div class="content-panel__actions">
+					<a href={selectedTarget.studioHref}>
+						{selectedTarget.resolved ? `Open ${selectedTarget.label}` : "Open Studio with context"}
+					</a>
+					<a href={selectedTarget.editorialHref}>Keep this editorial lane bookmarked</a>
+				</div>
+			</article>
+		)}
+
+		<AdminPreviewDeck
+			items={previewItems}
+			activeDocument={selectedDocument}
+			title="Route-true editorial previews"
+			description="These iframes render the actual public routes so content review cannot diverge from the public shell."
+		/>
+
+		<div class="content-panel__list">
+			{posts.length ? (
+				posts.map((post) => (
+					<article class="content-card">
+						<div class="content-card__meta">
+							<span>{post.publishedAt ? new Date(post.publishedAt).toLocaleDateString("en-US") : "Draft date missing"}</span>
+						</div>
+						<h3>{post.title ?? "Untitled post"}</h3>
+						<p>{post.excerpt ?? "No excerpt stored for this post yet."}</p>
+						{post.slug && <span class="content-card__slug">/{post.slug}</span>}
+					</article>
+				))
+			) : (
+				<div class="content-card">
+					<h3>No published posts yet</h3>
+					<p>Create a `post`, `heroContent`, or `profile` document in Sanity to populate this surface.</p>
+				</div>
+			)}
+		</div>
+	</section>
+</AdminLayout>
+
+<style>
+	.content-panel,
+	.content-panel__intro {
+		display: grid;
+		gap: var(--space-md);
+	}
+
+	.content-panel__intro,
+	.content-panel__handoff,
+	.content-card {
+		padding: var(--space-md);
+		border: 1px solid var(--border-color);
+		background: color-mix(in srgb, var(--color-surface) 88%, var(--color-bg-alt));
+	}
+
+	.content-panel__eyebrow,
+	.content-card__meta,
+	.content-card__slug {
+		font-size: 0.72rem;
+		font-family: var(--font-mono);
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: var(--color-text-subtle);
+	}
+
+	.content-panel__intro h2,
+	.content-panel__handoff h3,
+	.content-card h3 {
+		margin: 0;
+		font-family: var(--font-display);
+		letter-spacing: var(--letter-spacing-tight);
+	}
+
+	.content-panel__intro p,
+	.content-panel__handoff p,
+	.content-card p {
+		margin-bottom: 0;
+		line-height: 1.62;
+		color: var(--color-text-secondary);
+	}
+
+	.content-panel__handoff {
+		background: color-mix(in srgb, var(--color-accent-subtle) 45%, var(--color-surface));
+	}
+
+	.content-panel__actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2xs) var(--space-sm);
+	}
+
+	.content-panel__actions a {
+		font-family: var(--font-mono);
+		font-size: 0.74rem;
+		color: var(--color-text);
+		text-decoration: none;
+		padding-bottom: 0.16rem;
+		border-bottom: 1px solid color-mix(in srgb, var(--color-text) 18%, transparent);
+	}
+
+	.content-panel__list {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: var(--space-md);
+	}
+
+	.content-card {
+		display: grid;
+		gap: var(--space-2xs);
+	}
+
+	@media (max-width: 780px) {
+		.content-panel__list {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>

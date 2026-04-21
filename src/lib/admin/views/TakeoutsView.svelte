@@ -4,20 +4,22 @@
 	import AdminIcon from '../AdminIcon.svelte';
 	import { IconDownload, IconFileText, IconDatabase } from '../admin-icons';
 	import { toast } from '$lib/stores/toast';
+	import { takeoutAll, takeoutTable } from '$lib/admin/takeouts';
 
-	import { takeout_all_BANG_, takeout_table_BANG_ } from '../../clj/portfolio/admin/takeouts.mjs';
-
-	const { client, api } = getContext<any>('admin');
 	const adminStore = getContext<AdminStore>('adminStore');
 	const { entriesByTable, siteConfig, pages } = adminStore;
 
 	function handleExportAll() {
-		takeout_all_BANG_($siteConfig, $pages, $entriesByTable);
+		takeoutAll({
+			siteConfig: [$siteConfig],
+			pages: $pages,
+			...$entriesByTable
+		});
 		toast.success('Takeout generated');
 	}
 
 	function handleExportTable(tableName: string) {
-		takeout_table_BANG_(tableName, $entriesByTable[tableName]);
+		takeoutTable(tableName, $entriesByTable[tableName]);
 		toast.success(`${tableName} exported`);
 	}
 </script>

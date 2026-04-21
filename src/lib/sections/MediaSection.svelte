@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { getConvexClient } from '$lib/convex';
-	import { setup_gallery_subscriptions, is_video, filter_items } from '$lib/clj/portfolio/sections/gallery.mjs';
+	import { setupGallerySubscriptions, isVideo, filterItems } from '$lib/sections/gallery-logic';
 
 	export let id = "media";
 
@@ -20,14 +20,14 @@
 
 	onMount(() => {
 		const client = getConvexClient();
-		return setup_gallery_subscriptions(client, {
+		return setupGallerySubscriptions(client, {
 			onItems: (data: any) => {
 				if (data) galleryItems = data;
 			}
 		});
 	});
 
-	$: filteredItems = filter_items(galleryItems, activeFilter);
+	$: filteredItems = filterItems(galleryItems, activeFilter);
 
 	function mediaSrc(item: any): string {
 		return item.fullUrl || item.thumbnailUrl || '';
@@ -88,7 +88,7 @@
 	{:else}
 		<div class="media-grid">
 			{#each filteredItems as item (item._id)}
-				{@const video = is_video(item)}
+				{@const video = isVideo(item)}
 				{@const src = mediaSrc(item)}
 				{@const poster = posterSrc(item)}
 				{@const cats = Array.isArray(item.category) ? item.category : item.category ? [item.category] : []}
@@ -152,7 +152,7 @@
 			<button class="lb-close" on:click={() => { selected = null; playingVideo = null; }} aria-label="Close">&times;</button>
 
 			<div class="lb-media">
-				{#if is_video(selected)}
+				{#if isVideo(selected)}
 					<video
 						src={mediaSrc(selected)}
 						poster={posterSrc(selected)}

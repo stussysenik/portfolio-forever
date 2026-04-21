@@ -12,12 +12,17 @@
 	import { getConvexClient } from '$lib/convex';
 	import { api } from '$convex/_generated/api';
 	import { siteMode, stagedOverrides } from "$lib/stores/siteMode";
-	// @ts-ignore
-	import { exports as dataUtils } from '$lib/clj/portfolio/data/overrides.mjs';
+	import { applyOverrides } from '$lib/data/overrides';
 	
-	// Import from Clojure Works module
-	// @ts-ignore
-	import { setup_works_subscriptions, override_vars, use_static_preview_QMARK_, use_video_preview_QMARK_, get_object_position, get_zoom_style } from '$lib/clj/portfolio/sections/works.mjs';
+	// Import from local Works module
+	import { 
+		setupWorksSubscriptions, 
+		overrideVars, 
+		useStaticPreview, 
+		useVideoPreview, 
+		getObjectPosition, 
+		getZoomStyle 
+	} from '$lib/sections/works-logic';
 
 	export let id = "colorful-works";
 	export let projects: any[] = [];
@@ -56,17 +61,11 @@
 	let sectionConfig: any = null;
 
 	// Apply overrides from staged changes
-	$: effectiveProjects = dataUtils?.applyOverrides 
-		? dataUtils.applyOverrides('worksEntries', projects, $stagedOverrides) 
-		: projects;
+	$: effectiveProjects = applyOverrides('worksEntries', projects, $stagedOverrides);
 	
-	$: effectiveThumbnailConfig = dataUtils?.applyOverrides 
-		? dataUtils.applyOverrides('thumbnails', thumbnailConfig, $stagedOverrides) 
-		: thumbnailConfig;
+	$: effectiveThumbnailConfig = applyOverrides('thumbnails', thumbnailConfig, $stagedOverrides);
 	
-	$: effectiveSectionConfig = dataUtils?.applyOverrides 
-		? dataUtils.applyOverrides('pages', sectionConfig, $stagedOverrides) 
-		: sectionConfig;
+	$: effectiveSectionConfig = applyOverrides('pages', sectionConfig, $stagedOverrides);
 	
 	$: derivedDisplayMode = effectiveThumbnailConfig?.displayMode ?? displayMode;
 	$: derivedGridCols = effectiveThumbnailConfig?.columns ?? gridCols;
@@ -112,16 +111,7 @@
 	}
 
 	function getOverrideVars(p: Project): string {
-		// Use Clojure function if available, otherwise fallback to TS
-		if (typeof override_vars === 'function') {
-			return override_vars(p);
-		}
-		const o = p.styleOverrides ?? {};
-		const parts: string[] = [];
-		if (o.accentColor) parts.push(`--works-stripe-color: ${o.accentColor}`);
-		if (o.httpColor) parts.push(`--works-http-color: ${o.httpColor}`);
-		if (o.secondaryHighlight) parts.push(`--works-secondary-highlight: ${o.secondaryHighlight}`);
-		return parts.join('; ');
+		return overrideVars(p);
 	}
 
 	// Static fallback data
@@ -152,33 +142,16 @@
 		if (!isPreview && !isAdmin) {
 			const client = getConvexClient();
 			
-			// Use Clojure subscription setup if available
-			if (typeof setup_works_subscriptions === 'function') {
-				const unsub = setup_works_subscriptions(client, {
-					onWorks: (data: any[]) => {
-						if (data && data.length > 0) {
-							internalProjects = data;
-						}
-					},
-					onThumbnails: (data: any) => { thumbnailConfig = data; },
-					onSection: (data: any) => { sectionConfig = data; }
-				});
-				return unsub;
-			}
-			// Fallback to direct subscriptions
-			const unsub1 = client.onUpdate(api.works.getVisibleWorks, {}, (data: any[]) => {
-				if (data && data.length > 0) {
-					internalProjects = data;
-				}
+			const unsub = setupWorksSubscriptions(client, {
+				onWorks: (data: any[]) => {
+					if (data && data.length > 0) {
+						internalProjects = data;
+					}
+				},
+				onThumbnails: (data: any) => { thumbnailConfig = data; },
+				onSection: (data: any) => { sectionConfig = data; }
 			});
-			const unsub2 = client.onUpdate(api.thumbnails.getConfig, { section: 'works' }, (data: any) => {
-				thumbnailConfig = data;
-			});
-			const unsub3 = client.onUpdate(api.sectionRegistry.getBySectionId, { sectionId: 'works' }, (data: any) => {
-				sectionConfig = data;
-			});
-
-			return () => { unsub1(); unsub2(); unsub3(); };
+			return unsub;
 		}
 	});
 </script>
@@ -215,7 +188,7 @@
 								</div>
 							{/if}
 							
-							{#if typeof use_video_preview_QMARK_ === 'function' && use_video_preview_QMARK_(project)}
+							{#if useVideoPreview(project)}
 								<a href={project.url} target="_blank" rel="noopener noreferrer" class="preview-link" aria-label="Visit {project.title}">
 									<!-- Video preview would go here -->
 									<div class="video-placeholder" style="background: {getGradient(i)}">
@@ -225,7 +198,7 @@
 								<a href={project.url} target="_blank" rel="noopener noreferrer" class="colorful-overlay" aria-label="Visit {project.title}">
 									<span class="overlay-cta">Visit →</span>
 								</a>
-							{:else if typeof use_static_preview_QMARK_ === 'function' && use_static_preview_QMARK_(project)}
+							{:else if useStaticPreview(project)}
 								<a href={project.url} target="_blank" rel="noopener noreferrer" class="preview-link" aria-label="Visit {project.title}">
 									<img 
 										src={project.preview} 
@@ -233,7 +206,7 @@
 										class="preview-image" 
 										loading="lazy" 
 										on:load={() => handleLoad(i)} 
-										style="object-position: {typeof get_object_position === 'function' ? get_object_position(project) : (project.focalX != null && project.focalY != null ? `${project.focalX}% ${project.focalY}%` : project.cam ?? project.objectPosition ?? 'center top')}; {typeof get_zoom_style === 'function' ? get_zoom_style(project) : ''}"
+										style="object-position: {getObjectPosition(project)}; {getZoomStyle(project)}"
 									/>
 								</a>
 							{:else}

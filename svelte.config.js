@@ -7,8 +7,7 @@ const config = {
 
 	kit: {
 		alias: {
-			$convex: './convex',
-			$clj: './clj'
+			$convex: './convex'
 		},
 		adapter: adapter({ strict: false, fallback: '200.html' }),
 		prerender: {

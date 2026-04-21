@@ -1,5 +1,26 @@
-// Re-exporting from Clojure Abstraction Layer with camelCase parity
-import * as clj from "$lib/clj/portfolio/utils/scroll_physics.mjs";
+/**
+ * Scroll physics utilities — parallax multipliers and scroll behaviors.
+ * Ported from clj/portfolio/utils/scroll_physics.cljs
+ */
 
-export const getParallaxMultiplier = clj.get_parallax_multiplier;
-export const getScrollBehavior = clj.get_scroll_behavior;
+export type PhysicsMode = "spring" | "frictionless" | "string";
+
+export const parallaxMultipliers: Record<PhysicsMode, number> = {
+	spring: 0.1,
+	frictionless: 0,
+	string: 0.25,
+};
+
+export const scrollBehaviors: Record<PhysicsMode, ScrollBehavior> = {
+	spring: "smooth",
+	frictionless: "auto",
+	string: "smooth",
+};
+
+export const getParallaxMultiplier = (mode: PhysicsMode) => {
+	return parallaxMultipliers[mode] ?? 0.1;
+};
+
+export const getScrollBehavior = (mode: PhysicsMode) => {
+	return scrollBehaviors[mode] ?? "smooth";
+};

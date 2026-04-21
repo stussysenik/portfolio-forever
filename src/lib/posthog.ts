@@ -1,5 +1,5 @@
 import posthog from 'posthog-js';
-import { browser } from '$app/environment';
+import { browser } from '$lib/app-shims';
 
 let initialized = false;
 

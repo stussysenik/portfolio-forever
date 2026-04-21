@@ -1,6 +1,4 @@
 {
   "installCommand": "bun install",
-  "buildCommand": "bun run build",
-  "outputDirectory": "build",
-  "framework": "svelte"
+  "buildCommand": "bun run build"
 }

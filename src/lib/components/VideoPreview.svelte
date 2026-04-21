@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 
-	export let src: string;
+	export let src: string | undefined = undefined;
 	export let poster: string = '';
 	export let playing: boolean = false;
 

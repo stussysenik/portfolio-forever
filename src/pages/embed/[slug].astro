@@ -1,0 +1,128 @@
+---
+import { getPublicWorkBySlug, getPublicWorks } from "../../lib/server/public-works";
+
+const requestedSlug = Astro.params.slug ?? "";
+const work = (await getPublicWorkBySlug(requestedSlug)) ?? (await getPublicWorks())[0];
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>{work.title}</title>
+	</head>
+	<body style={`--embed-accent: ${work.accent}; --embed-surface: ${work.surface};`}>
+		{
+			work.previewSurface?.type === "video" && work.previewSurface.src ? (
+				<video
+					src={work.previewSurface.src}
+					poster={work.previewSurface.poster}
+					muted
+					playsinline
+					loop
+					autoplay
+					class="embed-bg-video"
+				></video>
+			) : work.previewSurface?.type === "static" && work.previewSurface.src ? (
+				<img src={work.previewSurface.src} alt="" class="embed-bg-image" />
+			) : null
+		}
+		<main class="embed-shell">
+			<p class="embed-shell__eyebrow">{work.embed.eyebrow}</p>
+			<h1>{work.embed.headline}</h1>
+			<p class="embed-shell__caption">{work.embed.caption}</p>
+
+			<div class="embed-shell__metrics">
+				{work.embed.metrics.map((metric) => (
+					<div>
+						<span>{metric.label}</span>
+						<strong>{metric.value}</strong>
+					</div>
+				))}
+			</div>
+		</main>
+	</body>
+</html>
+
+<style>
+	:global(body) {
+		margin: 0;
+		min-height: 100vh;
+		background: #000;
+		color: #ffffff;
+		font-family: "Inter", system-ui, sans-serif;
+		overflow: hidden;
+		position: relative;
+	}
+
+	.embed-bg-video,
+	.embed-bg-image {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		opacity: 0.4;
+		z-index: 0;
+	}
+
+	.embed-shell {
+		position: relative;
+		z-index: 1;
+		display: grid;
+		gap: 0.9rem;
+		min-height: 100vh;
+		align-content: start;
+		padding: 2rem;
+		background: linear-gradient(135deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.2) 100%);
+	}
+
+	.embed-shell__eyebrow,
+	.embed-shell__metrics span {
+		margin: 0;
+		font-size: 0.72rem;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: rgba(255, 255, 255, 0.6);
+	}
+
+	.embed-shell h1 {
+		margin: 0;
+		font-size: clamp(2rem, 5vw, 3.2rem);
+		letter-spacing: -0.05em;
+		line-height: 0.98;
+		font-weight: 800;
+	}
+
+	.embed-shell__caption {
+		margin: 0;
+		font-size: 1.1rem;
+		line-height: 1.6;
+		color: rgba(255, 255, 255, 0.8);
+		max-width: 40ch;
+	}
+
+	.embed-shell__metrics {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 1rem;
+		margin-top: 1rem;
+	}
+
+	.embed-shell__metrics div {
+		padding: 1rem;
+		border-radius: 12px;
+		background: rgba(255, 255, 255, 0.1);
+		backdrop-filter: blur(10px);
+		border: 1px solid rgba(255, 255, 255, 0.1);
+	}
+
+	.embed-shell__metrics strong {
+		display: block;
+		margin-top: 0.3rem;
+		font-size: 1.1rem;
+		font-weight: 600;
+	}
+</style>

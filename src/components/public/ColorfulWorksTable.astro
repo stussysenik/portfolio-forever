@@ -1,0 +1,135 @@
+---
+import type { WorkEntry } from "../../lib/astro/site-content";
+
+interface Props {
+	works: WorkEntry[];
+	title?: string;
+	maxCount?: number | null;
+}
+
+const { works, title = "WORKS", maxCount = null } = Astro.props;
+const displayWorks = typeof maxCount === "number" ? works.slice(0, maxCount) : works;
+
+// Helper to get row color based on accent
+function getRowStyle(work: WorkEntry) {
+	const accent = work.accent?.toLowerCase();
+	// Use standard solid colors from screenshot if available, else use accent
+	const colorMap: Record<string, string> = {
+		orange: '#F97242',
+		cloud: '#EBEBEB',
+		ocean: '#BAF1F9',
+		gold: '#DAB230',
+		pink: '#FFC0CB',
+		'electric-green': '#39FF14',
+		red: '#691424'
+	};
+	
+	const bg = colorMap[accent] || work.accent || 'transparent';
+	const color = bg === 'transparent' ? 'inherit' : '#000000';
+	
+	return `background: ${bg}; color: ${color};`;
+}
+---
+
+<section class="works-ledger-container">
+	<header class="table-header">
+		<span class="table-marker">◆</span>
+		<h2 class="table-title">{title}</h2>
+		<span class="table-count">[{displayWorks.length}]</span>
+	</header>
+
+	<div class="works-ledger">
+		{displayWorks.map((work) => (
+			<a href={work.liveHref} target="_blank" rel="noopener noreferrer" class="work-row" style={getRowStyle(work)}>
+				<span class="work-date">{work.year}</span>
+				<span class="work-title">{work.title}</span>
+				<span class="work-visit">visit</span>
+			</a>
+		))}
+	</div>
+</section>
+
+<style>
+	.works-ledger-container {
+		width: 100%;
+	}
+
+	.table-header {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		padding-bottom: 0.75rem;
+		border-bottom: 1px solid var(--border-color);
+		margin-bottom: 1.5rem;
+	}
+
+	.table-marker {
+		color: #2563eb;
+		font-size: 0.8rem;
+	}
+
+	.table-title {
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+		font-weight: 700;
+		letter-spacing: 0.15em;
+		margin: 0;
+		text-transform: uppercase;
+		color: var(--color-text);
+	}
+
+	.table-count {
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+		color: var(--color-text-subtle);
+	}
+
+	.works-ledger {
+		display: grid;
+		gap: 2px;
+	}
+
+	.work-row {
+		display: grid;
+		grid-template-columns: 100px 1fr 60px;
+		align-items: center;
+		padding: 0.75rem 1.5rem;
+		text-decoration: none;
+		font-family: var(--font-mono);
+		transition: transform 0.1s ease;
+		min-height: 2.5rem;
+		border-radius: 2px;
+	}
+
+	.work-row:hover {
+		transform: translateX(4px);
+		filter: brightness(1.05);
+	}
+
+	.work-date {
+		font-size: 0.8rem;
+		opacity: 0.7;
+	}
+
+	.work-title {
+		font-size: 0.95rem;
+		font-weight: 500;
+	}
+
+	.work-visit {
+		font-size: 0.8rem;
+		text-align: right;
+		opacity: 0.7;
+	}
+
+	@media (max-width: 640px) {
+		.work-row {
+			grid-template-columns: 80px 1fr;
+			padding: 0.75rem 1rem;
+		}
+		
+		.work-visit {
+			display: none;
+		}
+	}
+</style>

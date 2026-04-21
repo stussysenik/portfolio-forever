@@ -1,0 +1,143 @@
+---
+import { buildPreviewHref } from "../../lib/astro/preview";
+
+type PreviewDeckItem = {
+	label: string;
+	document: string;
+	route: string;
+	description: string;
+	studioHref?: string;
+};
+
+interface Props {
+	items: PreviewDeckItem[];
+	title?: string;
+	description?: string;
+	activeDocument?: string;
+}
+
+const {
+	items,
+	title = "Public route previews",
+	description = "Actual Astro output under the admin shell.",
+	activeDocument = "",
+} = Astro.props;
+---
+
+<section class="admin-preview-deck">
+	<header class="admin-preview-deck__header">
+		<p class="admin-preview-deck__eyebrow">Preview deck</p>
+		<h2>{title}</h2>
+		<p>{description}</p>
+	</header>
+
+	<div class="admin-preview-deck__grid">
+		{items.map((item) => {
+			const previewHref = buildPreviewHref(item.route, item.document);
+			return (
+				<article class="admin-preview-card" data-active={item.document === activeDocument ? "true" : undefined}>
+					<div class="admin-preview-card__frame">
+						<iframe src={previewHref} title={`${item.label} preview`} loading="lazy"></iframe>
+					</div>
+
+					<div class="admin-preview-card__copy">
+						<p class="admin-preview-card__meta">{item.document}</p>
+						<h3>{item.label}</h3>
+						<p>{item.description}</p>
+						<div class="admin-preview-card__actions">
+							<a href={previewHref}>Open preview</a>
+							<a href={item.studioHref ?? `/admin/content?document=${item.document}`}>Open editorial</a>
+						</div>
+					</div>
+				</article>
+			);
+		})}
+	</div>
+</section>
+
+<style>
+	.admin-preview-deck,
+	.admin-preview-deck__header {
+		display: grid;
+		gap: var(--space-sm);
+	}
+
+	.admin-preview-deck__eyebrow,
+	.admin-preview-card__meta {
+		margin: 0;
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: var(--color-text-subtle);
+	}
+
+	.admin-preview-deck__header h2,
+	.admin-preview-card h3 {
+		margin: 0;
+		font-family: var(--font-display);
+		letter-spacing: var(--letter-spacing-tight);
+	}
+
+	.admin-preview-deck__header p,
+	.admin-preview-card__copy p {
+		margin: 0;
+		line-height: 1.62;
+		color: var(--color-text-secondary);
+	}
+
+	.admin-preview-deck__grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr));
+		gap: var(--space-md);
+	}
+
+	.admin-preview-card {
+		display: grid;
+		gap: var(--space-sm);
+		padding: var(--space-md);
+		border: 1px solid var(--border-color);
+		background: color-mix(in srgb, var(--color-surface) 88%, var(--color-bg-alt));
+	}
+
+	.admin-preview-card[data-active="true"] {
+		border-color: color-mix(in srgb, var(--color-accent) 45%, var(--border-color));
+		box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-accent) 16%, transparent);
+	}
+
+	.admin-preview-card__frame {
+		aspect-ratio: 16 / 10;
+		overflow: hidden;
+		border: 1px solid var(--border-color);
+		background: var(--color-surface);
+		box-shadow: var(--shadow-sm);
+	}
+
+	.admin-preview-card__frame iframe {
+		width: 100%;
+		height: 100%;
+		border: 0;
+		background: var(--color-surface);
+	}
+
+	.admin-preview-card__copy {
+		display: grid;
+		gap: var(--space-2xs);
+	}
+
+	.admin-preview-card__actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2xs) var(--space-sm);
+		padding-top: var(--space-2xs);
+	}
+
+	.admin-preview-card__actions a {
+		font-family: var(--font-mono);
+		font-size: 0.74rem;
+		color: var(--color-text);
+		text-decoration: none;
+		padding-bottom: 0.16rem;
+		border-bottom: 1px solid color-mix(in srgb, var(--color-text) 18%, transparent);
+	}
+</style>

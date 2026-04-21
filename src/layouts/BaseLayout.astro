@@ -1,0 +1,516 @@
+---
+import "../app.css";
+import DisableDraftMode from "../components/DisableDraftMode.tsx";
+import PublicNav from "../components/public/PublicNav.svelte";
+import PublicRuntimeSync from "../components/public/PublicRuntimeSync.svelte";
+import PublicWipBanner from "../components/public/PublicWipBanner.svelte";
+import MobileDock from "../components/public/MobileDock.svelte";
+import SanityVisualEditing from "../components/SanityVisualEditing.tsx";
+import { buildEditorialHref, getPreviewDocumentLabel } from "../lib/astro/preview";
+import { fallbackSiteConfig } from "../lib/astro/site-content";
+import { layoutConfig } from "../lib/data/layout-config";
+import ThemeSwitcher from "../lib/components/ThemeSwitcher.svelte";
+import FontSwitcher from "../lib/components/FontSwitcher.svelte";
+import { fallbackConnections, fallbackNavItems } from "../lib/astro/site-content";
+import type { PublicRuntimeState } from "../lib/server/convex";
+import { getSanityPreviewState } from "../lib/server/sanity-preview";
+
+interface NavItem {
+	pageId?: string;
+	label: string;
+	route: string;
+	navOrder?: number;
+	archived?: boolean;
+}
+
+interface Props {
+	title?: string;
+	description?: string;
+	navItems?: NavItem[];
+	activePath?: string;
+	previewLabel?: string;
+	previewDocument?: string;
+	robots?: string;
+	runtime?: PublicRuntimeState;
+}
+
+const {
+	title = "Stüssy Senik",
+	description = "Portfolio of Stüssy Senik: creative technologist, design engineer, and interactive systems builder.",
+	navItems = fallbackNavItems,
+	activePath = "/",
+	previewLabel = "Editorial preview",
+	previewDocument = "heroContent",
+	robots = "index, follow",
+	runtime,
+} = Astro.props;
+
+const previewHref = `/admin/content?document=${previewDocument}`;
+const previewEditHref = buildEditorialHref(previewDocument);
+const previewDocumentLabel = getPreviewDocumentLabel(previewDocument);
+const previewState = getSanityPreviewState(Astro);
+const runtimeNavItems = runtime?.navItems?.length ? runtime.navItems : navItems;
+const resolvedNavItems = runtimeNavItems.filter((item) => item.route && !item.route.startsWith("/admin"));
+const siteConfig = (runtime?.siteConfig ?? fallbackSiteConfig) as PublicRuntimeState["siteConfig"];
+const featureFlags = runtime?.featureFlags ?? [];
+const wipBannerEnabled =
+	featureFlags.find((flag) => flag.key === "wip-banner")?.enabled ?? layoutConfig.showWipBanner;
+const initialRuntime = {
+	navItems: resolvedNavItems,
+	siteConfig,
+	featureFlags,
+} satisfies PublicRuntimeState;
+const footerEdition = runtime?.siteConfig?.footerEdition ?? fallbackSiteConfig.footerEdition;
+const footerYear = runtime?.siteConfig?.footerYear ?? new Date().getFullYear();
+const siteMode = siteConfig.mode ?? "multi-page";
+const navMode = siteConfig.navMode ?? "sidebar";
+const showPreviewChrome = previewState.previewEnabled;
+const publicWipBannerEnabled = showPreviewChrome ? wipBannerEnabled : false;
+---
+
+<!doctype html>
+<html
+	lang="en"
+	data-theme="minimal"
+	data-font="public"
+	data-preview-mode={previewState.previewEnabled ? "on" : "off"}
+	data-draft-mode={previewState.draftModeEnabled ? "on" : "off"}
+	data-site-mode={siteMode}
+	data-nav-mode={navMode}
+>
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>{title}</title>
+		<meta name="description" content={description} />
+		<meta name="robots" content={robots} />
+	</head>
+	<body data-theme="minimal" data-font="public" data-site-mode={siteMode} data-nav-mode={navMode}>
+		<script is:inline>
+			const params = new URLSearchParams(window.location.search);
+			const previewFromUrl = params.get("preview") === "1";
+			if (previewFromUrl) {
+				document.documentElement.dataset.previewMode = "on";
+			}
+			const savedTheme = localStorage.getItem("theme");
+			const savedFont = localStorage.getItem("preferred-font");
+			const normalizedTheme =
+				savedTheme === "paper" ? "minimal" : savedTheme === "accessible" || savedTheme === "sumi" ? "bw" : savedTheme;
+			document.documentElement.dataset.theme = normalizedTheme || document.body.dataset.theme || "minimal";
+			document.body.dataset.theme = document.documentElement.dataset.theme;
+			document.documentElement.dataset.font = savedFont || document.body.dataset.font || "public";
+			document.body.dataset.font = document.documentElement.dataset.font;
+			document.documentElement.dataset.siteMode = document.body.dataset.siteMode || "multi-page";
+			document.documentElement.dataset.navMode = document.body.dataset.navMode || "sidebar";
+		</script>
+
+			<div class="astro-shell">
+				<PublicRuntimeSync client:load initialRuntime={initialRuntime} />
+			<aside class="astro-shell__sidebar" data-testid="site-header">
+				<div class="astro-shell__sidebar-top">
+					<a href="/" class="astro-shell__wordmark astro-shell__wordmark--sidebar">Stüssy Senik</a>
+				</div>
+
+				<div class="astro-shell__sidebar-groups">
+					<div class="astro-shell__group">
+						<p class="astro-shell__group-label">NAVIGATION</p>
+						<PublicNav client:load items={resolvedNavItems} activePath={activePath} />
+					</div>
+
+					<div class="astro-shell__group" style="margin-top: 1rem;">
+						<p class="astro-shell__group-label">CONNECTIONS</p>
+						<div class="astro-shell__connections astro-shell__connections--sidebar">
+							{fallbackConnections.map((item) => (
+								<a href={item.url} target={item.url.startsWith("mailto:") ? undefined : "_blank"} rel="noreferrer noopener">
+									{item.label} ↗
+								</a>
+							))}
+						</div>
+					</div>
+				</div>
+
+				<div class="astro-shell__sidebar-status">
+					<span class="astro-shell__availability">
+						<span class="astro-terminal__dot"></span>
+						available
+					</span>
+				</div>
+			</aside>
+
+			<MobileDock client:load navItems={resolvedNavItems} activePath={activePath} />
+
+			<main class="astro-shell__main">
+				{publicWipBannerEnabled && (
+					<PublicWipBanner client:load enabled={publicWipBannerEnabled} message={layoutConfig.wipBannerMessage} />
+				)}
+
+				{showPreviewChrome && (
+					<div class="astro-shell__preview" data-testid="preview-ribbon">
+						<div>
+							<p class="astro-shell__preview-label">Preview mode</p>
+							<strong>{previewLabel}</strong>
+						</div>
+						<p>Review the actual public route, then jump back into the editorial lane without switching systems.</p>
+						<div class="astro-shell__preview-actions">
+							<a href={previewHref}>Open `/admin/content`</a>
+							<a href={previewEditHref}>Edit {previewDocumentLabel}</a>
+						</div>
+					</div>
+				)}
+				<slot />
+			</main>
+
+			<footer class="astro-terminal">
+				<div class="astro-terminal__left">
+					<span class="astro-terminal__edition">{footerEdition} · {footerYear}</span>
+					<span class="astro-terminal__sep">·</span>
+					<span class="astro-terminal__path">{activePath}</span>
+					<span class="astro-terminal__sep astro-terminal__sep--mobile-hidden">·</span>
+					<span class="astro-terminal__status astro-terminal__status--mobile-hidden">
+						<span class="astro-terminal__dot"></span>
+						available
+					</span>
+				</div>
+
+				<div class="astro-terminal__controls">
+					<ThemeSwitcher client:load />
+					<FontSwitcher client:load />
+					<span class="astro-terminal__heart">♥</span>
+				</div>
+			</footer>
+		</div>
+
+		{previewState.visualEditingEnabled && (
+			<>
+				<SanityVisualEditing client:only="react" />
+				<DisableDraftMode client:only="react" />
+			</>
+		)}
+	</body>
+</html>
+
+<style>
+	:global(body) {
+		margin: 0;
+		background: color-mix(in srgb, var(--color-bg) 94%, #f0ece4 6%);
+		color: var(--color-text);
+	}
+
+	.astro-shell {
+		min-height: 100vh;
+	}
+
+	.astro-shell__sidebar {
+		position: fixed;
+		top: 0;
+		left: 0;
+		bottom: 0;
+		width: clamp(16rem, 18vw, 22rem);
+		padding: clamp(2rem, 4vh, 4rem) clamp(1.5rem, 3vw, 3rem);
+		background: var(--color-bg);
+		display: flex;
+		flex-direction: column;
+		gap: 3.5rem;
+		overflow-y: auto;
+		border-right: 1px solid var(--border-color);
+	}
+
+	.astro-shell__sidebar-top {
+		display: grid;
+		gap: 0.75rem;
+	}
+
+	.astro-shell__sidebar-groups {
+		display: grid;
+		gap: 2.5rem;
+	}
+
+	.astro-shell__main {
+		margin-left: clamp(16rem, 18vw, 22rem);
+		max-width: 100%;
+		padding: clamp(2rem, 5vh, 4rem) clamp(2rem, 6vw, 6rem) 12rem;
+	}
+
+	.astro-shell__eyebrow,
+	.astro-shell__route-chip span,
+	.astro-shell__command-hints {
+		font-family: var(--font-mono);
+		font-size: 0.7rem;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		color: var(--color-text-subtle);
+	}
+
+	.astro-shell__path-label {
+		color: var(--color-text-subtle);
+	}
+
+	.astro-shell__availability {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		color: var(--color-success);
+	}
+
+	.astro-shell__mobile-path,
+	.astro-shell__sidebar-summary {
+		margin: 0;
+		font-size: 0.86rem;
+		line-height: 1.55;
+		color: var(--color-text-secondary);
+	}
+
+	.astro-shell__route-chip {
+		display: grid;
+		gap: 0.2rem;
+		padding: 0.75rem 0.85rem;
+		border: 1px solid var(--border-color);
+		background: color-mix(in srgb, var(--color-surface) 78%, transparent);
+	}
+
+	.astro-shell__route-chip strong {
+		font-family: var(--font-mono);
+		font-size: 0.77rem;
+		font-weight: 500;
+		color: var(--color-text);
+	}
+
+	.astro-shell__command-hints {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.55rem;
+	}
+
+	:global(html[data-preview-mode="on"] .astro-shell__preview) {
+		display: grid;
+	}
+
+	:global(.draft-mode-exit) {
+		position: fixed;
+		right: 1rem;
+		bottom: 1rem;
+		z-index: 1200;
+		padding: 0.8rem 1rem;
+		border-radius: 999px;
+		background: var(--color-text);
+		color: var(--color-bg);
+		text-decoration: none;
+		box-shadow: var(--shadow-lg);
+	}
+
+	.astro-shell__preview p,
+	.astro-shell__preview strong,
+	.astro-shell__group-label {
+		margin: 0;
+	}
+
+	.astro-shell__preview-label {
+		font-size: 0.72rem;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: var(--color-text-subtle);
+	}
+
+	.astro-shell__preview {
+		display: none;
+		grid-template-columns: auto minmax(0, 1fr) auto;
+		gap: 1rem;
+		align-items: center;
+		padding: 1rem 1.05rem;
+		margin-bottom: 1rem;
+		border: 1px solid var(--border-color);
+		background: color-mix(in srgb, var(--color-surface) 92%, var(--color-accent-subtle));
+		color: var(--color-text);
+	}
+
+	.astro-shell__preview a {
+		color: inherit;
+		text-decoration: none;
+		padding: 0.72rem 0.9rem;
+		border: 1px solid var(--border-color);
+		background: color-mix(in srgb, var(--color-surface) 86%, transparent);
+	}
+
+	.astro-shell__preview-actions {
+		display: inline-flex;
+		flex-wrap: wrap;
+		gap: 0.75rem;
+		justify-content: flex-end;
+	}
+
+	.astro-shell__group {
+		display: grid;
+		gap: 0.5rem;
+	}
+
+	.astro-shell__wordmark {
+		font-family: var(--font-display);
+		color: inherit;
+		text-decoration: none;
+		font-weight: 800;
+		letter-spacing: -0.06em;
+		line-height: 0.9;
+	}
+
+	.astro-shell__wordmark--sidebar {
+		font-size: 2.5rem;
+		display: block;
+		margin-bottom: 0.5rem;
+	}
+
+	.astro-shell__group-label {
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+		letter-spacing: 0.22em;
+		text-transform: uppercase;
+		color: var(--color-text-subtle);
+		margin-bottom: 1.25rem;
+		opacity: 0.8;
+	}
+
+	.astro-shell__connections--sidebar {
+		display: grid;
+		gap: 0.9rem;
+	}
+
+	.astro-shell__connections--sidebar a {
+		font-family: var(--font-mono);
+		font-size: 0.9rem;
+		text-transform: uppercase;
+		letter-spacing: 0.14em;
+		color: var(--color-text-subtle);
+		text-decoration: none;
+		transition: color var(--duration-fast) var(--easing);
+	}
+
+	.astro-shell__connections--sidebar a:hover {
+		color: var(--color-text);
+	}
+
+	.astro-shell__sidebar-status {
+		margin-top: auto;
+		display: flex;
+		align-items: center;
+		gap: 0.8rem;
+		font-family: var(--font-mono);
+		font-size: 0.85rem;
+	}
+
+	.astro-shell__availability {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.65rem;
+		color: var(--color-success);
+		text-transform: lowercase;
+		font-weight: 500;
+	}
+
+	.astro-terminal__dot {
+		width: 8px;
+		height: 8px;
+		border-radius: 50%;
+		background: var(--color-success);
+		box-shadow: 0 0 10px var(--color-success);
+	}
+
+	.astro-terminal {
+		position: fixed;
+		right: clamp(1rem, 4vw, 3rem);
+		left: calc(clamp(16rem, 18vw, 22rem) + clamp(1rem, 4vw, 3rem));
+		bottom: 2rem;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: 1rem;
+		padding: 0.95rem 1.4rem;
+		border: 1px solid var(--border-color);
+		background: var(--color-surface);
+		font-family: var(--font-mono);
+		font-size: 0.74rem;
+		z-index: 40;
+		backdrop-filter: blur(12px);
+		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+	}
+
+	.astro-terminal__left,
+	.astro-terminal__controls {
+		display: flex;
+		align-items: center;
+		gap: 0.55rem;
+		min-width: 0;
+	}
+
+	.astro-terminal__edition,
+	.astro-terminal__path {
+		white-space: nowrap;
+	}
+
+	.astro-terminal__edition {
+		color: var(--color-text-subtle);
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.astro-terminal__path {
+		color: var(--color-text-secondary);
+	}
+
+	.astro-terminal__sep {
+		color: var(--color-text-subtle);
+	}
+
+	.astro-terminal__status {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		color: var(--color-success);
+	}
+
+	.astro-terminal__dot {
+		width: 0.45rem;
+		height: 0.45rem;
+		border-radius: 999px;
+		background: currentColor;
+	}
+
+	.astro-terminal__heart {
+		font-size: 0.9rem;
+		color: #ef4444;
+		margin-left: 0.5rem;
+		user-select: none;
+		animation: heart-pulse 2.5s infinite var(--easing);
+	}
+
+	@keyframes heart-pulse {
+		0%, 100% { transform: scale(1); opacity: 0.8; }
+		50% { transform: scale(1.15); opacity: 1; }
+	}
+
+	.astro-terminal__hint {
+		color: var(--color-text-subtle);
+		padding-left: 0.2rem;
+	}
+
+	@media (max-width: 900px) {
+		.astro-shell__sidebar {
+			display: none;
+		}
+
+		.astro-shell__main {
+			margin-left: 0;
+			padding: 1rem 1rem 10rem;
+		}
+
+		.astro-shell__preview {
+			grid-template-columns: 1fr;
+		}
+
+		.astro-shell__preview-actions {
+			justify-content: flex-start;
+		}
+
+		.astro-terminal {
+			display: none;
+		}
+	}
+</style>

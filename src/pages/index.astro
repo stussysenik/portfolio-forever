@@ -1,0 +1,26 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import OnePageView from "../lib/components/OnePageView.svelte";
+import { getPublicRuntimeState } from "../lib/server/convex";
+import { getRecentPosts } from "../lib/server/sanity";
+import { getSanityPreviewState } from "../lib/server/sanity-preview";
+
+const previewState = getSanityPreviewState(Astro);
+const [runtime, blogPosts] = await Promise.all([
+	getPublicRuntimeState(),
+	getRecentPosts(4, previewState),
+]);
+---
+
+<BaseLayout
+	title="Stüssy Senik | Design Engineer"
+	description="Building at the intersection of engineering, creative production, and design."
+	activePath="/"
+	runtime={runtime}
+>
+	<OnePageView client:load {blogPosts} />
+</BaseLayout>
+
+<style>
+	/* Styles handled by OnePageView and BaseLayout */
+</style>

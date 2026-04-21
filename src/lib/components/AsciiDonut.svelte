@@ -1,11 +1,11 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { create_buffers, compute_frame } from "$lib/clj/portfolio/components/donut.mjs";
-  import { make_draggable } from "$lib/clj/portfolio/ui/drag.mjs";
+  import { createBuffers, computeFrame, bufferSize, width } from "$lib/components/donut";
+  import { makeDraggable } from "$lib/utils/drag";
 
-  let asciiOutput = $state("LOADING DONUT...");
+  let asciiOutput = "LOADING DONUT...";
   
-  const buffers = create_buffers();
+  const buffers = createBuffers();
 
   onMount(() => {
     let frameId: number;
@@ -15,7 +15,10 @@
     function render() {
       A += 0.04;
       B += 0.02;
-      asciiOutput = compute_frame(buffers, A, B);
+      
+      // Compute the ASCII frame string
+      asciiOutput = computeFrame(buffers, A, B);
+      
       frameId = requestAnimationFrame(render);
     }
     
@@ -25,7 +28,7 @@
   });
 </script>
 
-<div class="donut-wrapper" use:make_draggable>
+<div class="donut-wrapper" use:makeDraggable>
   <div class="donut-container">
     <pre class="donut-ascii">{asciiOutput}</pre>
   </div>

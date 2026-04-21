@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { getConvexClient } from '$lib/convex';
-  import { api } from '$convex/_generated/api';
+  import { setupGallerySubscriptions, filterItems } from '$lib/sections/gallery-logic';
 
   export let id = "gallery";
 
@@ -21,12 +21,11 @@
 
   onMount(() => {
     const client = getConvexClient();
-    const unsub = client.onUpdate((api as any).gallery.getVisibleGallery, {}, (data: any) => {
-      if (data) {
-        galleryItems = data;
+    return setupGallerySubscriptions(client, {
+      onItems: (data: any) => {
+        if (data) galleryItems = data;
       }
     });
-    return () => unsub();
   });
 
   function getPlaceholderColor(item: any): string {
@@ -34,12 +33,7 @@
     return categoryColors[cat] || 'var(--color-text-subtle)';
   }
 
-  $: filteredItems = activeFilter === 'all'
-    ? galleryItems
-    : galleryItems.filter((item: any) => {
-        const cats = Array.isArray(item.category) ? item.category : [item.category];
-        return cats.includes(activeFilter);
-      });
+  $: filteredItems = filterItems(galleryItems, activeFilter);
 
   function setFilter(category: string) {
     activeFilter = category;

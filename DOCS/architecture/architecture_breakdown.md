@@ -9,7 +9,7 @@ tags: [system-engineering, breakdown]
 
 ## 1. High-Level System Context
 
-The **Portfolio Forever** system is a static-first, progressive web application designed to serve as a personal digital garden, portfolio, and experimental OS playground. It leverages **SvelteKit** for universal rendering and **Sanity.io** for structured content management.
+The **Portfolio Forever** system is a static-first, progressive web application designed to serve as a personal digital garden, portfolio, and experimental OS playground. It now uses **Astro** as the sole production host, with **Svelte islands** for interactive surfaces and **Sanity.io** for structured content management.
 
 ```mermaid
 C4Context
@@ -18,7 +18,7 @@ C4Context
       Person(user, "Visitor", "A user browsing the portfolio, reading notes, or experimenting with the OS.")
       
       System_Boundary(portfolio_boundary, "Portfolio Forever") {
-        System(webapp, "Web Application", "SvelteKit App. Deliveres UI, manages client-side state (OS Mode), and renders content.")
+        System(webapp, "Web Application", "Astro host with Svelte islands. Renders public/admin shells and mounts interactive client surfaces.")
       }
 
       System_Ext(sanity, "Sanity.io Link", "Headless CMS. Stores structured content for Notes, Works, and Profile data.")
@@ -36,15 +36,15 @@ The application focuses on a clear separation of concerns between **Static Data*
 ```mermaid
 graph TD
     subgraph "Frontend (Browser)"
-        UI[Svelte Components]
-        Store[Svelte Stores $page]
+        UI[Astro HTML + Svelte Islands]
+        Store[Nano Stores / Svelte stores]
         OS[OS Window Manager]
     end
 
-    subgraph "Backend (SvelteKit Server)"
-        Load[Server Load Functions (+page.server.ts)]
-        SanityClient[Sanity Client Config]
-        Cache[Build-time Prerendering]
+    subgraph "Backend (Astro Server)"
+        Load[Astro server utilities]
+        SanityClient[Sanity Client + Preview Config]
+        ConvexClient[Convex HTTP Runtime Reads]
     end
 
     subgraph "Data Sources"
@@ -64,7 +64,7 @@ graph TD
 ## 3. Key Subsystems
 
 ### 3.1 Layout & Navigation Orchestration
-The root layout (`src/routes/+layout.svelte`) acts as the central coordinator for the application shell.
+The Astro shell (`src/layouts/BaseLayout.astro`) acts as the central coordinator for the public application shell.
 
 - **Command Palette**: Listens for global keydown events (`/` or `?`) to trigger.
 - **WIP Banner**: Conditionally rendered based on `layout-config`.
@@ -86,7 +86,7 @@ An experimental route that breaks out of the standard web document flow into a w
 | Directory | Purpose | Key Role |
 |-----------|---------|----------|
 | `src/lib/components` | Reusable UI | Atoms & Molecules (AsciiDonut, Video) |
-| `src/lib/sanity` | CMS Logic | Client, Queries, Types |
-| `src/routes/os` | Feature Route | Window Manager Logic |
-| `src/routes/notes` | Dynamic Route | Server-side fetched content |
-| `src/routes` | System Root | +layout.svelte (Shell), +page.svelte (Home) |
+| `src/lib/server` | Content/runtime reads | Sanity + Convex server adapters |
+| `src/pages` | Astro routes | Public routes + `/admin` host |
+| `src/routes` | Legacy parity layer | Reused Svelte route modules only where Astro mounts them |
+| `src/lib/sections` | Interactive route sections | Hydrated Svelte implementations |

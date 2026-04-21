@@ -1,8 +1,8 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { goto } from '$app/navigation';
   import { getConvexClient } from '$lib/convex';
-  import { setup_os_subscriptions } from '$lib/clj/portfolio/sections/os.mjs';
+  import { setupOsSubscriptions } from '$lib/sections/os-logic';
+  import { navigateTo } from '$lib/utils/navigation';
 
   export let id = "os";
   export let embedded = false;
@@ -34,10 +34,10 @@
   let draggingId: number | null = null;
   let dragOffset = { x: 0, y: 0 };
 
-  // ── Subscribe to Convex via Clojure ────────────────────────────────
+  // ── Subscribe to Convex via local logic ────────────────────────────────
   onMount(() => {
     const client = getConvexClient();
-    return setup_os_subscriptions(client, {
+    return setupOsSubscriptions(client, {
       onConfig: (data: any) => {
         if (data) {
           // Replace icons with Convex data, sorted by order
@@ -71,7 +71,7 @@
 
   function handleIconClick(icon: any) {
     if (icon.action === 'exit') {
-        goto('/');
+        navigateTo('/');
         return;
     }
 
@@ -209,7 +209,7 @@
   {/each}
 
   <div class="taskbar">
-    <button class="start-btn" on:click={() => goto('/')}>EXIT</button>
+    <button class="start-btn" on:click={() => navigateTo('/')}>EXIT</button>
     <div class="running-apps">
       {#each windows as win}
         <button class="taskbar-item" class:active={activeWindowId === win.id} on:click={() => focusWindow(win.id)}>

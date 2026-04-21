@@ -4,8 +4,8 @@
 	import BentoGrid from '$lib/admin/BentoGrid.svelte';
 	import BentoCell from '$lib/admin/BentoCell.svelte';
 	import AdminIcon from '$lib/admin/AdminIcon.svelte';
-	import { IconLayers, IconFileText, IconSettings, IconActivity, IconRotateCw } from '$lib/admin/admin-icons';	// @ts-ignore
-	import { exports as agentInterface } from '$lib/clj/portfolio/admin/agent_interface.mjs';
+	import { IconLayers, IconFileText, IconSettings, IconActivity, IconRotateCw } from '$lib/admin/admin-icons';
+	import { syncAllTabs } from '$lib/admin/agent-interface';
 
 	const adminStore = getContext<AdminStore>('adminStore');
 	const { pages, siteConfig, featureFlags, entriesByTable } = adminStore;
@@ -29,7 +29,7 @@
 			<h1>Portfolio OS Admin</h1>
 			<p>System Status: <span class="status-online">Online</span></p>
 		</div>
-		<button class="sync-btn" on:click={() => agentInterface.syncAllTabs()} title="Sync all tabs">
+		<button class="sync-btn" on:click={() => syncAllTabs()} title="Sync all tabs">
 			<AdminIcon icon={IconRotateCw} size="lg" />
 			<span>Sync All Tabs</span>
 		</button>

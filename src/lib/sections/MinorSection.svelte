@@ -2,7 +2,7 @@
   // Minor things - little lists of life's moments
   import { onMount } from 'svelte';
   import { getConvexClient } from '$lib/convex';
-  import { setup_minor_subscriptions } from '$lib/clj/portfolio/sections/minor.mjs';
+  import { setupMinorSubscriptions } from '$lib/sections/minor-logic';
 
   export let id = "minor";
 
@@ -18,7 +18,7 @@
 
   onMount(() => {
     const client = getConvexClient();
-    return setup_minor_subscriptions(client, {
+    return setupMinorSubscriptions(client, {
       onMinor: (data: any) => {
         if (data) {
           // Group flat rows by category

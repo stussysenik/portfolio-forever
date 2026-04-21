@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
-  import { browser } from '$app/environment';
+  import { browser, replaceState } from '$lib/app-shims';
 
   export let showAfter = 300;
 
@@ -52,7 +52,7 @@
     if (elevating || !browser) return;
 
     if (prefersReducedMotion) {
-      window.scrollTo(0, 0);
+      window.scrollTo({ top: 0, behavior: 'auto' });
       currentFloor = 0;
       return;
     }
@@ -176,6 +176,20 @@
         </span>
       </span>
     </button>
+
+    {#if !elevating}
+      <a 
+        href="/" 
+        class="lobby-link" 
+        on:click|preventDefault={() => { 
+          window.scrollTo({top: 0, behavior: 'smooth'}); 
+          replaceState('/', {}); 
+        }}
+      >
+        GO TO LOBBY
+      </a>
+    {/if}
+
     <button
       type="button"
       class="sound-btn"
@@ -191,8 +205,8 @@
 <style>
   .elevator {
     position: fixed;
-    bottom: calc(var(--space-md) + 56px);
-    right: var(--space-lg);
+    bottom: calc(var(--space-md) + 64px);
+    right: clamp(var(--space-md), 5vw, var(--space-xl));
     
     display: flex;
     align-items: center;
@@ -208,14 +222,13 @@
     cursor: pointer;
     z-index: 100;
     
-    /* Ensure it doesn't hopelessly block text reading */
-    backdrop-filter: blur(8px);
+    backdrop-filter: blur(12px);
     box-shadow: 0 4px 20px rgba(0,0,0,0.15);
     
     opacity: 0;
     transform: translateY(8px);
     animation: arrive 0.25s var(--easing-out) forwards;
-    transition: border-color var(--duration-fast) var(--easing);
+    transition: all var(--duration-fast) var(--easing);
   }
 
   .elevator-action {
@@ -242,8 +255,29 @@
     border-color: var(--color-text-muted);
   }
 
+  .lobby-link {
+    font-size: 0.62rem;
+    color: var(--color-accent);
+    text-decoration: none;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    padding: 2px 6px;
+    border: 1px solid var(--border-color);
+    border-radius: 2px;
+    background: color-mix(in srgb, var(--color-accent) 5%, transparent);
+    transition: all var(--duration-fast) var(--easing);
+    white-space: nowrap;
+  }
+
+  .lobby-link:hover {
+    background: var(--color-accent);
+    color: white;
+    border-color: var(--color-accent);
+  }
+
   .elevator-action:focus-visible,
-  .sound-btn:focus-visible {
+  .sound-btn:focus-visible,
+  .lobby-link:focus-visible {
     outline: 2px solid var(--color-accent);
     outline-offset: 2px;
   }

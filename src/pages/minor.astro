@@ -1,0 +1,16 @@
+---
+import MinorSection from "../lib/sections/MinorSection.svelte";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { getPublicRuntimeState } from "../lib/server/convex";
+
+const runtime = await getPublicRuntimeState();
+---
+
+<BaseLayout
+	title="Minor | Stüssy Senik"
+	description="Minor lists, little inventories, and the things that do not need to be monumental."
+	activePath="/minor"
+	runtime={runtime}
+>
+	<MinorSection client:load />
+</BaseLayout>

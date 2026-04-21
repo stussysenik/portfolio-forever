@@ -1,15 +1,44 @@
 <script lang="ts">
-  import { get_phases, compute_geometry, rect_width, rect_height, rect_x, phase_spacing, center_x, cycle_x } from '$lib/clj/portfolio/sections/process.mjs';
   import { processSteps } from '$lib/data/content';
   import Hiccup from '$lib/components/Hiccup.svelte';
 
   export let id = "process";
 
-  /** Use phases from the Clojure backend port */
-  let phases = get_phases();
+  // Constants ported from clj/portfolio/sections/process.cljs
+  const rectWidth = 180;
+  const rectHeight = 60;
+  const rectX = 80;
+  const phaseSpacing = 100;
+  const firstY = 20;
+  const centerX = rectX + rectWidth / 2;
+  const cycleMargin = 60;
+  const cycleX = 40;
 
-  // Derived SVG dimensions from Clojure logic
-  $: geo = compute_geometry(phases.length);
+  function getPhases() {
+    return processSteps.map((step, idx) => ({
+      label: step.title,
+      description: step.description,
+      order: idx
+    }));
+  }
+
+  function computeGeometry(phasesCount: number) {
+    const lastPhaseY = firstY + (phasesCount - 1) * phaseSpacing;
+    const viewBoxHeight = lastPhaseY + rectHeight + cycleMargin;
+    return {
+      lastPhaseY,
+      viewBoxHeight,
+      centerX,
+      firstMidY: firstY + rectHeight / 2,
+      cycleBottom: lastPhaseY + rectHeight + (cycleMargin - 20)
+    };
+  }
+
+  /** Use phases from the local port */
+  let phases = getPhases();
+
+  // Derived SVG dimensions from ported logic
+  $: geo = computeGeometry(phases.length);
   $: ariaLabel = `Process: ${phases.map((p: any) => p.label).join(', ')}`;
 
   // Construct Hiccup for non-interactive parts
@@ -72,11 +101,11 @@
 
         {#each phases as phase, i}
           <!-- Phase rectangle -->
-          {@const y = 20 + i * phase_spacing}
-          <rect x={rect_x} {y} width={rect_width} height={rect_height} />
+          {@const y = 20 + i * phaseSpacing}
+          <rect x={rectX} {y} width={rectWidth} height={rectHeight} />
           <text
-            x={center_x}
-            y={y + rect_height / 2 + 8}
+            x={centerX}
+            y={y + rectHeight / 2 + 8}
             fill="currentColor"
             stroke="none"
             text-anchor="middle"
@@ -88,10 +117,10 @@
           <!-- Arrow to next phase (not after the last one) -->
           {#if i < phases.length - 1}
             <line
-              x1={center_x}
-              y1={y + rect_height}
-              x2={center_x}
-              y2={y + phase_spacing}
+              x1={centerX}
+              y1={y + rectHeight}
+              x2={centerX}
+              y2={y + phaseSpacing}
               marker-end="url(#arrowhead)"
             />
           {/if}
@@ -99,9 +128,9 @@
 
         <!-- Cycle-back path: bottom of last phase -> down -> left -> up -> into left side of first phase -->
         {#if phases.length > 1}
-          <line x1={center_x} y1={geo.lastPhaseY + rect_height} x2={center_x} y2={geo.cycleBottom} />
+          <line x1={centerX} y1={geo.lastPhaseY + rectHeight} x2={centerX} y2={geo.cycleBottom} />
           <path
-            d="M {center_x} {geo.cycleBottom} L {cycle_x} {geo.cycleBottom} L {cycle_x} {geo.firstMidY} L {rect_x - 10} {geo.firstMidY}"
+            d="M {centerX} {geo.cycleBottom} L {cycleX} {geo.cycleBottom} L {cycleX} {geo.firstMidY} L {rectX - 10} {geo.firstMidY}"
             marker-end="url(#arrowhead)"
           />
         {/if}

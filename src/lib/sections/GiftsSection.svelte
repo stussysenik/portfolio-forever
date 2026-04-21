@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { getConvexClient } from '$lib/convex';
-	import { setup_gifts_subscriptions } from '$lib/clj/portfolio/sections/gifts.mjs';
+	import { setupGiftsSubscriptions } from '$lib/sections/gifts-logic';
 	import { giftsConfig as staticConfig } from '$lib/data/content';
 
 	export let id = "gifts";
@@ -15,7 +15,7 @@
 
 	onMount(() => {
 		const client = getConvexClient();
-		return setup_gifts_subscriptions(client, {
+		return setupGiftsSubscriptions(client, {
 			onConfig: (data: any) => {
 				if (data) config = data;
 			}

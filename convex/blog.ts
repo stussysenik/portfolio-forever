@@ -73,6 +73,7 @@ export const updatePost = mutation({
 		tags: v.optional(v.array(v.string())),
 		publishedAt: v.optional(v.string()),
 		coverImage: v.optional(v.string()),
+		order: v.optional(v.number()),
 		visible: v.optional(v.boolean()),
 	},
 	handler: async (ctx, { id, ...fields }) => {

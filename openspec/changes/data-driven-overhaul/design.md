@@ -2,6 +2,8 @@
 
 ## Architecture Overview
 
+> Migration note: this design predates the Astro host inversion. The later `astro-full-migration-foundation` change reverses the earlier "remove Sanity" assumption and restores Sanity as the editorial content boundary.
+
 This change touches four layers: **Presentation** (Svelte sections), **Admin** (admin editors + controls), **State** (Convex subscriptions), and **Data** (Convex tables + mutations).
 
 ```

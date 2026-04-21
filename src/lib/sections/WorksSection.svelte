@@ -1,6 +1,6 @@
 <script lang="ts">
         import { onMount } from "svelte";
-        import { profile } from "$lib/data/content";
+        import { profile, works as staticProjects } from "$lib/data/content";
         import { getConvexClient } from '$lib/convex';
         import { api } from '$convex/_generated/api';
         import { isScreenPass } from '$lib/stores/controls';
@@ -9,21 +9,24 @@
         import VideoPreview from '$lib/components/VideoPreview.svelte';
         import ColorfulWorksTable from '$lib/components/ColorfulWorksTable.svelte';
 
-        // Import from Clojure Abstraction Layer
+        import { siteMode, stagedOverrides, previewMode } from "$lib/stores/siteMode";
+        import { applyOverrides } from '$lib/data/overrides';
+
+        // Import from local logic ports
         import { 
-                setup_works_subscriptions, 
-                override_vars, 
-                use_static_preview_QMARK_ as use_static_preview, 
-                use_video_preview_QMARK_ as use_video_preview, 
-                get_object_position, 
-                get_zoom_style,
-                get_works_hiccup
-        } from '$lib/clj/portfolio/sections/works.mjs';
+                setupWorksSubscriptions, 
+                overrideVars, 
+                useStaticPreview, 
+                useVideoPreview, 
+                getObjectPosition, 
+                getZoomStyle 
+        } from '$lib/sections/works-logic';
 
         export let id = "works";
         export let forceViewMode: "grid" | "case-study" | "minimal-list" | "colorful-table" | null = null;
 
         interface Project {
+                slug?: string;
                 title: string;
                 url: string;
                 linkLabel?: string;
@@ -37,39 +40,38 @@
                 focalX?: number;
                 focalY?: number;
                 zoom?: number;
+                styleOverrides?: {
+                        accentColor?: string;
+                        httpColor?: string;
+                        secondaryHighlight?: string;
+                };
         }
-
-        let hoveredIndex: number = -1;
-        let isTouchDevice = false;
-
-        // Static fallback
-        const staticProjects: Project[] = [
-                { title: "BYOA — Build Your Own Algorithm", url: "https://mymind-clone-production.up.railway.app/", category: "personal software", preview: "/previews/byoa-build-your-own-algorithm.png", previewMode: 'static' },
-                { title: "iPod emulator", url: "https://ipod-music.vercel.app", category: "tool", viewport: 2.0, cam: "center 30%" },
-
-                { title: "spinning wheel AR filter", url: "https://spinning-wheel-filter.vercel.app", category: "AR/XR", viewport: 2.5, cam: "center center" },
-                { title: "uyr-problem", url: "https://uyr-problem.vercel.app", category: "tool", viewport: 2.5, cam: "top center" },
-                { title: "infinite checklist", url: "https://infinite-checklist.vercel.app", category: "tool", viewport: 2.5, cam: "top center" },
-                { title: "typewriter", url: "https://clean-writer.vercel.app", category: "tool", viewport: 2.5, cam: "top left" },
-                { title: "creative block", url: "https://creative-block.vercel.app", category: "art", viewport: 2.5, cam: "center center" },
-                { title: "AR b-boy filter", url: "https://bboy-filter.vercel.app", category: "AR/XR", viewport: 2.5, cam: "center center" },
-                { title: "PH-213 physics", url: "https://ph213.vercel.app", category: "science", viewport: 2.5, cam: "top center" },
-                { title: "DVD corner", url: "https://dvd-video-animation.vercel.app", category: "art", viewport: 2.5, cam: "center center" },
-                { title: "WAVELENGTH RADIO", url: "https://wavelength-radio.vercel.app", category: "music", viewport: 2.0, cam: "center center" },
-        ];
-
-        import { siteMode, stagedOverrides, previewMode } from "$lib/stores/siteMode";
-        // @ts-ignore
-        import { exports as dataUtils } from '$lib/clj/portfolio/data/overrides.mjs';
 
         let projects: Project[] = staticProjects;
         let loaded: Record<number, boolean> = {};
         let thumbnailConfig: any = null;
         let sectionConfig: any = null;
+        let hoveredIndex: number = -1;
+        let isTouchDevice = false;
+        let visibleCards: Record<number, boolean> = {};
 
-        $: effectiveProjects = dataUtils.applyOverrides('worksEntries', projects, $stagedOverrides);
-        $: effectiveThumbnailConfig = dataUtils.applyOverrides('thumbnails', thumbnailConfig, $stagedOverrides);
-        $: effectiveSectionConfig = dataUtils.applyOverrides('pages', sectionConfig, $stagedOverrides);
+        function inview(node: HTMLElement, index: number) {
+                const observer = new IntersectionObserver((entries) => {
+                        entries.forEach(entry => {
+                                visibleCards[index] = entry.isIntersecting;
+                        });
+                }, { threshold: 0.1 });
+                observer.observe(node);
+                return {
+                        destroy() {
+                                observer.unobserve(node);
+                        }
+                };
+        }
+
+        $: effectiveProjects = applyOverrides('worksEntries', projects, $stagedOverrides);
+        $: effectiveThumbnailConfig = applyOverrides('thumbnails', thumbnailConfig, $stagedOverrides);
+        $: effectiveSectionConfig = applyOverrides('pages', sectionConfig, $stagedOverrides);
 
         $: displayMode = effectiveThumbnailConfig?.displayMode ?? 'grid';
         $: gridCols = effectiveThumbnailConfig?.columns ?? 2;
@@ -86,13 +88,18 @@
                 isTouchDevice = window.matchMedia('(hover: none)').matches;
 
                 const client = getConvexClient();
-                const unsub = setup_works_subscriptions(client, {
-                        onWorks: (data: any) => {
+                const unsub = setupWorksSubscriptions(client, {
+                        onWorks: (data: any[]) => {
                                 if (data && data.length > 0) {
-                                        projects = data.map((p: any) => ({
-                                                ...p,
-                                                url: p.url ?? p.link ?? p.links?.[0]?.url ?? '#'
-                                        }));
+                                        projects = data.map((p: any) => {
+                                                const url = p.url ?? p.link ?? p.links?.[0]?.url ?? '#';
+                                                const slug = p.slug || p.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+                                                return {
+                                                        ...p,
+                                                        url,
+                                                        slug
+                                                };
+                                        });
                                 }
                         },
                         onThumbnails: (data: any) => {
@@ -134,7 +141,7 @@
                                         use:inview={i}
                                         on:mouseenter={() => hoveredIndex = i}
                                         on:mouseleave={() => hoveredIndex = -1}
-                                        style={override_vars(project)}
+                                        style={overrideVars(project)}
                                 >
                                         {#if showPreview}
                                         <div class="project-embed" class:loaded={loaded[i]}>
@@ -143,27 +150,9 @@
                                                                 <div class="skeleton-shimmer"></div>
                                                         </div>
                                                 {/if}
-                                                {#if use_video_preview(project)}
-                                                        <a href={project.url} target="_blank" rel="noopener noreferrer" class="preview-link" aria-label="Visit {project.title}">
-                                                                <VideoPreview
-                                                                        src={project.videoPreview}
-                                                                        poster={project.preview || ''}
-                                                                        playing={visibleCards[i] || false}
-                                                                />
-                                                        </a>
-                                                        <a href={project.url} target="_blank" rel="noopener noreferrer" class="project-overlay" aria-label="Visit {project.title}">
-                                                                <span class="overlay-cta">Visit →</span>
-                                                        </a>
-                                                {:else if use_static_preview(project)}
-                                                        <a href={project.url} target="_blank" rel="noopener noreferrer" class="preview-link" aria-label="Visit {project.title}">
-                                                                <img src={project.preview} alt="Screenshot of {project.title}" class="preview-image" loading="lazy" on:load={() => handleLoad(i)} style="object-position: {get_object_position(project)}; {get_zoom_style(project)}" />
-                                                        </a>
-                                                        <a href={project.url} target="_blank" rel="noopener noreferrer" class="project-overlay" aria-label="Visit {project.title}">
-                                                                <span class="overlay-cta">Visit →</span>
-                                                        </a>
-                                                {:else}
+                                                {#if project.slug || project.title}
                                                         <iframe
-                                                                src={project.url}
+                                                                src={`/embed/${project.slug || project.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}`}
                                                                 title="Live preview of {project.title}"
                                                                 loading="lazy"
                                                                 sandbox="allow-scripts allow-same-origin"
@@ -174,6 +163,18 @@
                                                         ></iframe>
                                                         <a href={project.url} target="_blank" rel="noopener noreferrer" class="project-overlay" aria-label="Visit {project.title}">
                                                                 <span class="overlay-cta">Visit →</span>
+                                                        </a>
+                                                {:else if useVideoPreview(project)}
+                                                        <a href={project.url} target="_blank" rel="noopener noreferrer" class="preview-link" aria-label="Visit {project.title}">
+                                                                <VideoPreview
+                                                                        src={project.videoPreview}
+                                                                        poster={project.preview || ''}
+                                                                        playing={visibleCards[i] || false}
+                                                                />
+                                                        </a>
+                                                {:else if useStaticPreview(project)}
+                                                        <a href={project.url} target="_blank" rel="noopener noreferrer" class="preview-link" aria-label="Visit {project.title}">
+                                                                <img src={project.preview} alt="Screenshot of {project.title}" class="preview-image" loading="lazy" on:load={() => handleLoad(i)} style="object-position: {getObjectPosition(project)}; {getZoomStyle(project)}" />
                                                         </a>
                                                 {/if}
                                         </div>

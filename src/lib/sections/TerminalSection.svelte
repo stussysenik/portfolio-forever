@@ -1,14 +1,14 @@
 <script lang="ts">
   import { onMount, onDestroy, tick } from 'svelte';
-  import { goto } from '$app/navigation';
   import { profile } from '$lib/data/content';
   import { getConvexClient } from '$lib/convex';
   import { api } from '$convex/_generated/api';
+  import { navigateTo } from '$lib/utils/navigation';
   
   import {
-    create_command_registry as createCommandRegistry,
-    create_shell_state as createShellState
-  } from '$lib/clj/portfolio/terminal/commands.mjs';
+    createCommandRegistry,
+    createShellState
+  } from '$lib/terminal/commands';
 
   export let id = "terminal";
   export let embedded = false;
@@ -82,7 +82,7 @@
         }
         if (line.content.startsWith('__NAV__')) {
           const route = line.content.replace('__NAV__', '');
-          goto(route);
+          navigateTo(route);
           continue;
         }
         if (line.content.startsWith('__THEME__')) {

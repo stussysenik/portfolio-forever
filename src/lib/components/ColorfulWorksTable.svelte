@@ -57,6 +57,8 @@
                 }
         }
 
+        onMount(loadConvexData);
+
         $: effectiveWorks = works.length > 0 ? works : (staticWorks as any).map((w: any) => ({
                 ...w,
                 url: w.links?.[0]?.url ?? w.url ?? '#'

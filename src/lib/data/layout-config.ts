@@ -7,9 +7,9 @@
 export const layoutConfig = {
         /**
          * Toggle WIP banner visibility
-         * Set to false to hide the maintenance banner
+         * Set to true to hide the maintenance banner
          */
-        showWipBanner: false,
+        showWipBanner: true,
 
         /**
          * WIP banner position
@@ -22,7 +22,7 @@ export const layoutConfig = {
         /**
          * WIP banner message
          */
-        wipBannerMessage: 'WIP — WEBSITE IS UNDER MAINTENANCE',
+        wipBannerMessage: 'WIP — WEBSITE IS UNDER MAINTENANCE · MON · APR 20 · 21:19:22 PRAGUE',
 };
 
 /**

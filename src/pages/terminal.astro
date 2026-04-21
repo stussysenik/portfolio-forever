@@ -1,0 +1,16 @@
+---
+import TerminalSection from "../lib/sections/TerminalSection.svelte";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { getPublicRuntimeState } from "../lib/server/convex";
+
+const runtime = await getPublicRuntimeState();
+---
+
+<BaseLayout
+	title="Terminal | Stüssy Senik"
+	description="Command-surface route for navigating the portfolio through the terminal lens."
+	activePath="/terminal"
+	runtime={runtime}
+>
+	<TerminalSection client:load embedded={true} />
+</BaseLayout>

@@ -1,0 +1,16 @@
+---
+import OsSection from "../lib/sections/OsSection.svelte";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { getPublicRuntimeState } from "../lib/server/convex";
+
+const runtime = await getPublicRuntimeState();
+---
+
+<BaseLayout
+	title="OS Mode | Stüssy Senik"
+	description="A desktop-mode route with draggable windows, icons, and a toy operating system surface."
+	activePath="/os"
+	runtime={runtime}
+>
+	<OsSection client:load embedded={true} />
+</BaseLayout>

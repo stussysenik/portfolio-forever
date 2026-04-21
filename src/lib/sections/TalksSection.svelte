@@ -2,13 +2,13 @@
 	import { onMount } from 'svelte';
 	import { getHighlight } from "$lib/data/content";
 	import { getConvexClient } from '$lib/convex';
-	import { setup_talks_subscriptions, sort_talks } from '$lib/clj/portfolio/sections/talks.mjs';
+	import { setupTalksSubscriptions, sortTalks } from '$lib/sections/talks-logic';
 
 	export let id = "talks";
 
 	let allEntries: any[] = [];
 	
-	$: sortedEntries = sort_talks(allEntries);
+	$: sortedEntries = sortTalks(allEntries);
 	$: talks = sortedEntries.filter((e: any) => e.entryType === 'talk');
 	$: interviews = sortedEntries.filter((e: any) => e.entryType === 'interview');
 
@@ -22,7 +22,7 @@
 
 	onMount(() => {
 		const client = getConvexClient();
-		return setup_talks_subscriptions(client, {
+		return setupTalksSubscriptions(client, {
 			onTalks: (data: any) => {
 				if (data) allEntries = data;
 			}

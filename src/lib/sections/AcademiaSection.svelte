@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { getConvexClient } from '$lib/convex';
-  import { setup_academia_subscriptions } from '$lib/clj/portfolio/sections/academia.mjs';
+  import { setupAcademiaSubscriptions } from '$lib/sections/academia-logic';
   import MuxVideo from '$lib/components/MuxVideo.svelte';
   import GenericListBlock from '$lib/components/blocks/GenericListBlock.svelte';
   import { academicEntries as staticEntries } from '$lib/data/content';
@@ -16,7 +16,7 @@
 
   onMount(() => {
     const client = getConvexClient();
-    return setup_academia_subscriptions(client, {
+    return setupAcademiaSubscriptions(client, {
       onAcademia: (data: any) => {
         if (data) entries = data;
         loading = false;

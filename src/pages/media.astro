@@ -1,0 +1,16 @@
+---
+import MediaSection from "../lib/sections/MediaSection.svelte";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { getPublicRuntimeState } from "../lib/server/convex";
+
+const runtime = await getPublicRuntimeState();
+---
+
+<BaseLayout
+	title="Media | Stüssy Senik"
+	description="Photo and video archive across design, technology, art, and film work."
+	activePath="/media"
+	runtime={runtime}
+>
+	<MediaSection client:load />
+</BaseLayout>

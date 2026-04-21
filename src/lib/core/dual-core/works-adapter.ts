@@ -1,50 +1,21 @@
 /**
  * Works Adapter - Senior Technical Pattern
  * 
- * Dual-Core Architecture: Clojure + Svelte
+ * Svelte Native Implementation
  * 
- * This adapter provides a unified interface for both Clojure and Svelte Works implementations,
- * allowing seamless switching between implementations while maintaining the same API.
+ * This adapter provides a unified interface for Works logic,
+ * maintaining a consistent API while handling real-time data from Convex.
  * 
  * Pattern: Facade + Adapter + Strategy
- * - Facade: Simple unified interface
- * - Adapter: Converts between Clojure and Svelte data formats
- * - Strategy: Allows runtime switching between implementations
- * 
- * Usage:
- *   const worksAdapter = new WorksAdapter();
- *   await worksAdapter.init();
- *   const projects = worksAdapter.getProjects();
- * 
- *   // Use with Svelte component
- *   <WorksSection projects={worksAdapter.getProjects()} />
- *   
- *   // Use with Clojure component (via squint)
- *   <ColorfulWorks projects={worksAdapter.getProjects()} />
  */
 
 import { getConvexClient } from '$lib/convex';
 import { api } from '$convex/_generated/api';
-import { browser } from '$app/environment';
-
-// @ts-ignore - Clojure compiled modules
-declare const clj_works: {
-	setup_works_subscriptions: Function;
-	override_vars: Function;
-	use_static_preview_QMARK_: Function;
-	use_video_preview_QMARK_: Function;
-	get_object_position: Function;
-	get_zoom_style: Function;
-};
-
-// @ts-ignore - Clojure data utilities
-declare const dataUtils: {
-	applyOverrides: Function;
-};
+import { browser } from '$lib/app-shims';
+import { setupWorksSubscriptions, overrideVars, useStaticPreview, useVideoPreview, getObjectPosition, getZoomStyle } from '$lib/sections/works-logic';
 
 /**
  * Type definitions for project data
- * Must be compatible with both Clojure and TypeScript
  */
 export interface StyleOverrides {
 	accentColor?: string;
@@ -68,9 +39,6 @@ export interface Project {
 	focalY?: number;
 	zoom?: number;
 	styleOverrides?: StyleOverrides;
-	// Clojure-specific metadata for immutability tracking
-	_clj_metadata?: any;
-	_clj_hash?: number;
 }
 
 /**
@@ -94,7 +62,6 @@ export interface WorksCallbacks {
 
 /**
  * Implementation Strategy interface
- * Allows plugging in different implementations (Svelte native, Clojure compiled)
  */
 export interface WorksStrategy {
 	init(client: any): Promise<void> | void;
@@ -122,29 +89,28 @@ class SvelteStrategy implements WorksStrategy {
 	init(client: any): void {
 		if (!browser) return;
 		
-		const unsub1 = client.onUpdate(api.works.getVisibleWorks, {}, (data: any[]) => {
-			if (data && data.length > 0) {
-				this.projects = this.normalizeProjects(data);
+		const unsub = setupWorksSubscriptions(client, {
+			onWorks: (data: any[]) => {
+				if (data && data.length > 0) {
+					this.projects = this.normalizeProjects(data);
+				}
+			},
+			onThumbnails: (data: any) => {
+				this.thumbnailConfig = data;
+				this.updateConfig();
+			},
+			onSection: (data: any) => {
+				this.sectionConfig = data;
+				this.updateConfig();
 			}
 		});
 		
-		const unsub2 = client.onUpdate(api.thumbnails.getConfig, { section: 'works' }, (data: any) => {
-			this.thumbnailConfig = data;
-			this.updateConfig();
-		});
-		
-		const unsub3 = client.onUpdate(api.sectionRegistry.getBySectionId, { sectionId: 'works' }, (data: any) => {
-			this.sectionConfig = data;
-			this.updateConfig();
-		});
-		
-		this.unsubs = [unsub1, unsub2, unsub3];
+		this.unsubs = [unsub];
 	}
 	
 	private normalizeProjects(data: any[]): Project[] {
 		return data.map(p => ({
 			...p,
-			// Ensure all fields exist
 			styleOverrides: p.styleOverrides || {},
 			previewMode: p.previewMode || (p.preview ? 'static' : 'live')
 		}));
@@ -157,125 +123,6 @@ class SvelteStrategy implements WorksStrategy {
 			showPreview: this.thumbnailConfig?.showPreview,
 			useColorful: this.sectionConfig?.useColorful
 		};
-	}
-	
-	getProjects(): Project[] {
-		return [...this.projects]; // Return copy for immutability
-	}
-	
-	getConfig(): WorksConfig {
-		return { ...this.config };
-	}
-	
-	subscribe(callbacks: WorksCallbacks): () => void {
-		// For reactive updates
-		const interval = setInterval(() => {
-			if (callbacks.onProjects) callbacks.onProjects(this.getProjects());
-			if (callbacks.onConfig) callbacks.onConfig(this.getConfig());
-		}, 100);
-		
-		return () => clearInterval(interval);
-	}
-	
-	getOverrideVars(project: Project): string {
-		const o = project.styleOverrides ?? {};
-		const parts: string[] = [];
-		if (o.accentColor) parts.push(`--works-stripe-color: ${o.accentColor}`);
-		if (o.httpColor) parts.push(`--works-http-color: ${o.httpColor}`);
-		if (o.secondaryHighlight) parts.push(`--works-secondary-highlight: ${o.secondaryHighlight}`);
-		return parts.join('; ');
-	}
-	
-	useStaticPreview(project: Project): boolean {
-		return project.previewMode === 'static' && !!project.preview;
-	}
-	
-	useVideoPreview(project: Project): boolean {
-		return project.previewMode === 'video' && !!project.videoPreview;
-	}
-	
-	getObjectPosition(project: Project): string {
-		if (project.focalX != null && project.focalY != null) {
-			return `${project.focalX}% ${project.focalY}%`;
-		}
-		return project.cam ?? project.objectPosition ?? 'center top';
-	}
-	
-	getZoomStyle(project: Project): string {
-		const zoom = project.zoom ?? 1.0;
-		if (zoom <= 1.0) return '';
-		const originX = project.focalX ?? 50;
-		const originY = project.focalY ?? 50;
-		return `transform: scale(${zoom}); transform-origin: ${originX}% ${originY}%;`;
-	}
-	
-	destroy(): void {
-		this.unsubs.forEach(unsub => unsub && unsub());
-		this.unsubs = [];
-	}
-}
-
-/**
- * Clojure Strategy - Uses ClojureScript compiled implementations
- * Provides the same interface but delegates to Clojure functions
- */
-class ClojureStrategy implements WorksStrategy {
-	private projects: Project[] = [];
-	private config: WorksConfig = {};
-	private unsubs: (() => void)[] = [];
-	private initialized = false;
-	
-	async init(client: any): Promise<void> {
-		if (!browser) return;
-		
-		// Dynamically import Clojure modules
-		try {
-			// @ts-ignore
-			const worksModule = await import('$lib/clj/portfolio/sections/works.mjs');
-			// @ts-ignore
-			const dataModule = await import('$lib/clj/portfolio/data/overrides.mjs');
-			
-			// Store references for use in methods
-			// @ts-ignore
-			window._clj_works = worksModule;
-			// @ts-ignore
-			window._clj_data_utils = dataModule;
-			
-			this.initialized = true;
-			
-			// Set up subscriptions using Clojure functions
-			// @ts-ignore
-			const cljSetup = worksModule.setup_works_subscriptions || worksModule.exports?.setup_works_subscriptions;
-			// @ts-ignore
-			const dataUtilsFn = dataModule.exports?.applyOverrides || dataModule.applyOverrides;
-			
-			if (typeof cljSetup === 'function') {
-				const unsub = cljSetup(client, {
-					onWorks: (data: any[]) => {
-						this.projects = this.normalizeProjects(data);
-					},
-					onThumbnails: (data: any) => {
-						// Would need to handle this
-					},
-					onSection: (data: any) => {
-						// Would need to handle this
-					}
-				});
-				this.unsubs.push(unsub);
-			}
-			
-		} catch (error) {
-			console.warn('Clojure modules not available, falling back to Svelte:', error);
-			// Fall through to Svelte implementation
-		}
-	}
-	
-	private normalizeProjects(data: any[]): Project[] {
-		return data.map(p => ({
-			...p,
-			styleOverrides: p.styleOverrides || {},
-			previewMode: p.previewMode || (p.preview ? 'static' : 'live')
-		}));
 	}
 	
 	getProjects(): Project[] {
@@ -296,61 +143,23 @@ class ClojureStrategy implements WorksStrategy {
 	}
 	
 	getOverrideVars(project: Project): string {
-		// @ts-ignore
-		if (window._clj_works?.override_vars) {
-			// @ts-ignore
-			return window._clj_works.override_vars(project);
-		}
-		// Fallback
-		const o = project.styleOverrides ?? {};
-		const parts: string[] = [];
-		if (o.accentColor) parts.push(`--works-stripe-color: ${o.accentColor}`);
-		if (o.httpColor) parts.push(`--works-http-color: ${o.httpColor}`);
-		if (o.secondaryHighlight) parts.push(`--works-secondary-highlight: ${o.secondaryHighlight}`);
-		return parts.join('; ');
+		return overrideVars(project);
 	}
 	
 	useStaticPreview(project: Project): boolean {
-		// @ts-ignore
-		if (window._clj_works?.use_static_preview_QMARK_) {
-			// @ts-ignore
-			return window._clj_works.use_static_preview_QMARK_(project);
-		}
-		return project.previewMode === 'static' && !!project.preview;
+		return useStaticPreview(project) && !!project.preview;
 	}
 	
 	useVideoPreview(project: Project): boolean {
-		// @ts-ignore
-		if (window._clj_works?.use_video_preview_QMARK_) {
-			// @ts-ignore
-			return window._clj_works.use_video_preview_QMARK_(project);
-		}
-		return project.previewMode === 'video' && !!project.videoPreview;
+		return useVideoPreview(project) && !!project.videoPreview;
 	}
 	
 	getObjectPosition(project: Project): string {
-		// @ts-ignore
-		if (window._clj_works?.get_object_position) {
-			// @ts-ignore
-			return window._clj_works.get_object_position(project);
-		}
-		if (project.focalX != null && project.focalY != null) {
-			return `${project.focalX}% ${project.focalY}%`;
-		}
-		return project.cam ?? project.objectPosition ?? 'center top';
+		return getObjectPosition(project);
 	}
 	
 	getZoomStyle(project: Project): string {
-		// @ts-ignore
-		if (window._clj_works?.get_zoom_style) {
-			// @ts-ignore
-			return window._clj_works.get_zoom_style(project);
-		}
-		const zoom = project.zoom ?? 1.0;
-		if (zoom <= 1.0) return '';
-		const originX = project.focalX ?? 50;
-		const originY = project.focalY ?? 50;
-		return `transform: scale(${zoom}); transform-origin: ${originX}% ${originY}%;`;
+		return getZoomStyle(project);
 	}
 	
 	destroy(): void {
@@ -361,113 +170,34 @@ class ClojureStrategy implements WorksStrategy {
 
 /**
  * Main Adapter Class
- * Uses Strategy pattern to switch between implementations
  */
 export class WorksAdapter {
 	private strategy: WorksStrategy;
-	private currentStrategy: 'svelte' | 'clojure' | 'auto';
 	private initialized = false;
 	
-	/**
-	 * Create a new Works Adapter
-	 * @param preferredStrategy - 'svelte', 'clojure', or 'auto' (tries clojure first, falls back to svelte)
-	 */
-	constructor(preferredStrategy: 'svelte' | 'clojure' | 'auto' = 'auto') {
-		this.currentStrategy = preferredStrategy;
-		
-		// Auto-detect best strategy
-		if (preferredStrategy === 'auto') {
-			// Try Clojure first if available
-			try {
-				// @ts-ignore
-				if (typeof window !== 'undefined' && window._clj_works) {
-					this.strategy = new ClojureStrategy();
-					this.currentStrategy = 'clojure';
-				} else {
-					this.strategy = new SvelteStrategy();
-					this.currentStrategy = 'svelte';
-				}
-			} catch {
-				this.strategy = new SvelteStrategy();
-				this.currentStrategy = 'svelte';
-			}
-		} else if (preferredStrategy === 'clojure') {
-			this.strategy = new ClojureStrategy();
-		} else {
-			this.strategy = new SvelteStrategy();
-		}
+	constructor() {
+		this.strategy = new SvelteStrategy();
 	}
 	
-	/**
-	 * Initialize the adapter with Convex client
-	 */
-async init(): Promise<void> {
+	async init(): Promise<void> {
 		if (this.initialized) return;
-		
 		const client = getConvexClient();
-		
-		if (this.currentStrategy === 'clojure') {
-			await (this.strategy as ClojureStrategy).init(client);
-		} else {
-			(this.strategy as SvelteStrategy).init(client);
-		}
-		
+		this.strategy.init(client);
 		this.initialized = true;
 	}
 	
-	/**
-	 * Get current projects
-	 */
 	getProjects(): Project[] {
 		return this.strategy.getProjects();
 	}
 	
-	/**
-	 * Get current configuration
-	 */
 	getConfig(): WorksConfig {
 		return this.strategy.getConfig();
 	}
 	
-	/**
-	 * Get the current strategy name
-	 */
-	getStrategy(): 'svelte' | 'clojure' | 'auto' {
-		return this.currentStrategy;
-	}
-	
-	/**
-	 * Switch strategy at runtime
-	 */
-	async switchStrategy(strategy: 'svelte' | 'clojure'): Promise<void> {
-		// Destroy current
-		this.strategy.destroy();
-		
-		// Create new
-		if (strategy === 'clojure') {
-			this.strategy = new ClojureStrategy();
-			this.currentStrategy = 'clojure';
-		} else {
-			this.strategy = new SvelteStrategy();
-			this.currentStrategy = 'svelte';
-		}
-		
-		// Re-initialize
-		this.initialized = false;
-		await this.init();
-	}
-	
-	/**
-	 * Subscribe to changes
-	 */
 	onChange(callbacks: WorksCallbacks): () => void {
 		return this.strategy.subscribe(callbacks);
 	}
 	
-	/**
-	 * Get utility methods for use in components
-	 * Returns an object with all the helper functions
-	 */
 	getHelpers() {
 		return {
 			overrideVars: (project: Project) => this.strategy.getOverrideVars(project),
@@ -478,9 +208,6 @@ async init(): Promise<void> {
 		};
 	}
 	
-	/**
-	 * Cleanup
-	 */
 	destroy(): void {
 		this.strategy.destroy();
 		this.initialized = false;
@@ -494,7 +221,7 @@ let singletonInstance: WorksAdapter | null = null;
 
 export function getWorksAdapter(): WorksAdapter {
 	if (!singletonInstance) {
-		singletonInstance = new WorksAdapter('auto');
+		singletonInstance = new WorksAdapter();
 	}
 	return singletonInstance;
 }
@@ -506,9 +233,6 @@ export function resetWorksAdapter(): void {
 	}
 }
 
-/**
- * Static fallback data for when Convex is not available
- */
 export const STATIC_PROJECTS: Project[] = [
 	{ title: "BYOA — Build Your Own Algorithm", url: "https://mymind-clone-production.up.railway.app/", category: "personal software", preview: "/previews/byoa-build-your-own-algorithm.png", styleOverrides: { accentColor: '#ff6b6b' } },
 	{ title: "iPod emulator", url: "https://ipod-music.vercel.app", category: "tool", viewport: 2.0, cam: "center 30%", styleOverrides: { accentColor: '#4ecdc4' } },

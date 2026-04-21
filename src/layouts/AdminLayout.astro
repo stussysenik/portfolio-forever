@@ -1,0 +1,185 @@
+---
+import "../app.css";
+
+interface Props {
+	title?: string;
+	active?: "overview" | "content" | "system";
+}
+
+const { title = "Admin", active = "overview" } = Astro.props;
+
+const tabs = [
+	{ id: "overview", href: "/admin", label: "Overview" },
+	{ id: "content", href: "/admin/content", label: "Editorial" },
+	{ id: "system", href: "/admin/system", label: "System" },
+];
+---
+
+<!doctype html>
+<html lang="en" data-theme="minimal" data-font="public">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>{title}</title>
+	</head>
+	<body data-admin-host="true" data-theme="minimal" data-font="public">
+		<script is:inline>
+			const savedTheme = localStorage.getItem("theme");
+			const savedFont = localStorage.getItem("preferred-font");
+			const normalizedTheme =
+				savedTheme === "paper" ? "minimal" : savedTheme === "accessible" || savedTheme === "sumi" ? "bw" : savedTheme;
+			document.documentElement.dataset.theme = normalizedTheme || "minimal";
+			document.documentElement.dataset.font = savedFont || "public";
+			document.body.dataset.theme = document.documentElement.dataset.theme;
+			document.body.dataset.font = document.documentElement.dataset.font;
+		</script>
+
+		<div class="admin-host">
+			<header class="admin-host__header">
+				<div class="admin-host__identity">
+					<p class="admin-host__eyebrow">Astro admin shell</p>
+					<a href="/" class="admin-host__back">Return to public shell</a>
+					<h1>Admin is the operating console, not a separate product.</h1>
+					<p>
+						Editorial work stays in Sanity, runtime control stays in Convex, and preview should always point at the
+						actual public route.
+					</p>
+				</div>
+
+				<div class="admin-host__nav-column">
+					<nav class="admin-host__tabs" aria-label="Admin sections">
+						{tabs.map((tab) => (
+							<a href={tab.href} aria-current={tab.id === active ? "page" : undefined}>
+								{tab.label}
+							</a>
+						))}
+					</nav>
+
+					<div class="admin-host__status">
+						<span>shared theme / font</span>
+						<strong>Public tokens active</strong>
+					</div>
+				</div>
+			</header>
+
+			<main class="admin-host__main">
+				<slot />
+			</main>
+
+			<footer class="admin-host__footer">
+				<span>Truth boundary: Astro public shell · Sanity editorial preview · Convex runtime sidecar</span>
+			</footer>
+		</div>
+	</body>
+</html>
+
+<style>
+	:global(body[data-admin-host="true"]) {
+		margin: 0 !important;
+		padding: 0 !important;
+		max-width: none !important;
+		background: color-mix(in srgb, var(--color-bg) 92%, var(--color-bg-alt));
+		color: var(--color-text);
+	}
+
+	.admin-host {
+		min-height: 100vh;
+		padding: var(--space-md);
+	}
+
+	.admin-host__header,
+	.admin-host__identity,
+	.admin-host__nav-column {
+		display: grid;
+		gap: var(--space-sm);
+	}
+
+	.admin-host__header {
+		grid-template-columns: minmax(0, 1.1fr) minmax(18rem, 0.75fr);
+		gap: var(--space-lg);
+		padding-bottom: var(--space-lg);
+		border-bottom: 1px solid var(--border-color);
+	}
+
+	.admin-host__eyebrow,
+	.admin-host__back,
+	.admin-host__status span {
+		margin: 0;
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: var(--color-text-subtle);
+		text-decoration: none;
+	}
+
+	.admin-host__header h1 {
+		margin: 0;
+		font-family: var(--font-display);
+		font-size: clamp(2rem, 4vw, 3.5rem);
+		line-height: 0.94;
+		letter-spacing: var(--letter-spacing-tighter);
+		max-width: 14ch;
+	}
+
+	.admin-host__header p,
+	.admin-host__footer {
+		margin: 0;
+		max-width: 62ch;
+		line-height: 1.68;
+		color: var(--color-text-secondary);
+	}
+
+	.admin-host__tabs {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2xs);
+	}
+
+	.admin-host__tabs a,
+	.admin-host__status {
+		padding: 0.8rem 0.95rem;
+		border: 1px solid var(--border-color);
+		background: color-mix(in srgb, var(--color-surface) 88%, var(--color-bg-alt));
+		color: var(--color-text);
+		text-decoration: none;
+	}
+
+	.admin-host__tabs a[aria-current="page"] {
+		border-color: color-mix(in srgb, var(--color-accent) 42%, var(--border-color));
+		box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-accent) 14%, transparent);
+	}
+
+	.admin-host__status {
+		display: grid;
+		gap: 0.25rem;
+	}
+
+	.admin-host__status strong {
+		font-size: 1rem;
+		letter-spacing: var(--letter-spacing-tight);
+	}
+
+	.admin-host__main {
+		padding: var(--space-lg) 0;
+	}
+
+	.admin-host__footer {
+		padding-top: var(--space-md);
+		border-top: 1px solid var(--border-color);
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+	}
+
+	:global(body .astro-dev-toolbar) {
+		display: none;
+	}
+
+	@media (max-width: 920px) {
+		.admin-host__header {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>

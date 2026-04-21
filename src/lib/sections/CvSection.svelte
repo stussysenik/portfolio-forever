@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { isScreenPass } from '$lib/stores/controls';
-	import { get_cv_hiccup } from '$lib/clj/portfolio/sections/cv.mjs';
+	import { getCvHiccup } from '$lib/sections/cv-hiccup';
 	import Hiccup from '$lib/components/Hiccup.svelte';
 
 	export let id = "cv";
 
-	$: cvHiccup = get_cv_hiccup($isScreenPass);
+	$: cvHiccup = getCvHiccup($isScreenPass);
 </script>
 
 <svelte:head>
@@ -36,7 +36,7 @@
 
 	:global(.cv-name) {
 		font-size: var(--font-size-2xl);
-		font-weight: 700;
+		font-weight: var(--font-weight-bold);
 		letter-spacing: var(--letter-spacing-tight);
 		margin-bottom: var(--space-2xs);
 	}
@@ -44,7 +44,7 @@
 	:global(.cv-title) {
 		font-size: var(--font-size-lg);
 		color: var(--color-text-secondary);
-		font-weight: 500;
+		font-weight: var(--font-weight-medium);
 		margin-bottom: var(--space-sm);
 	}
 
@@ -75,7 +75,7 @@
 
 	:global(.cv-section-title) {
 		font-size: var(--font-size-xs);
-		font-weight: 600;
+		font-weight: var(--font-weight-semibold);
 		text-transform: uppercase;
 		letter-spacing: var(--letter-spacing-wider);
 		color: var(--color-text);
@@ -98,7 +98,7 @@
 
 	:global(.cv-entry-title) {
 		font-size: var(--font-size-base);
-		font-weight: 600;
+		font-weight: var(--font-weight-semibold);
 	}
 
 	:global(.cv-entry-title a) {

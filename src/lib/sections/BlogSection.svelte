@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { getConvexClient } from '$lib/convex';
-  import { setup_blog_subscriptions, sort_posts, get_all_tags, filter_posts_by_tag } from '$lib/clj/portfolio/sections/blog.mjs';
+  import { setupBlogSubscriptions, sortPosts, getAllTags, filterPostsByTag } from '$lib/sections/blog-logic';
   import { blogPosts as staticPosts } from '$lib/data/content';
 
   export let id = "blog";
@@ -10,9 +10,9 @@
   let activeTag: string | null = null;
   let activeView: 'list' | 'grid' = 'list';
 
-  $: sortedNotes = sort_posts(posts);
-  $: allTags = get_all_tags(posts);
-  $: filteredNotes = filter_posts_by_tag(sortedNotes, activeTag);
+  $: sortedNotes = sortPosts(posts);
+  $: allTags = getAllTags(posts);
+  $: filteredNotes = filterPostsByTag(sortedNotes, activeTag);
 
   function toggleTag(tag: string) {
     activeTag = activeTag === tag ? null : tag;
@@ -30,7 +30,7 @@
 
   onMount(() => {
     const client = getConvexClient();
-    return setup_blog_subscriptions(client, {
+    return setupBlogSubscriptions(client, {
       onPosts: (data: any) => {
         if (data) posts = data;
       }

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
-	import { format_relative_time as formatRelativeTime } from '$lib/clj/portfolio/admin/constants.mjs';
+	import { formatRelativeTime } from '$lib/admin/constants';
 
 	export let entries: Array<{ oldValue: any; newValue: any; timestamp: number }> = [];
 	export let open: boolean = false;

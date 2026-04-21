@@ -3,6 +3,8 @@
 ## Overview
 Make the entire portfolio data-driven and editable from /admin — remove hardcoded sections, fix broken blog, add ASCII art toggles, generalize typography controls, and render CV from Convex data.
 
+> Note: `astro-full-migration-foundation` supersedes Phase 2's "Remove Sanity" direction. Sanity is now reintroduced as the editorial archive while Convex stays responsible for live composition and runtime state.
+
 ## Problem Statement
 The portfolio has several gaps preventing full admin-driven content management:
 1. **Hardcoded content** — Hero case studies ("Attendu", "Claude Code Elixir") are hardcoded in HeroSection.svelte, not editable from admin

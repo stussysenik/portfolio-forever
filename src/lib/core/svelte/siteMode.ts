@@ -1,6 +1,5 @@
 import { writable, derived, get } from "svelte/store";
-import { goto } from "$app/navigation";
-import { browser } from "$app/environment";
+import { goto, browser } from "$lib/app-shims";
 
 export type SiteMode = "one-page" | "multi-page" | "reader" | "disabled";
 
@@ -53,7 +52,8 @@ if (browser) {
 export const previewMode = writable<boolean>(false);
 if (browser) {
 	const params = new URLSearchParams(window.location.search);
-	if (params.get('preview') === 'true') {
+	const p = params.get('preview');
+	if (p === 'true' || p === '1') {
 		previewMode.set(true);
 	}
 }

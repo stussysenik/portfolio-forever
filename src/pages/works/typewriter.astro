@@ -1,0 +1,264 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getPublicRuntimeState } from "../../lib/server/convex";
+import { getPublicWorkBySlug } from "../../lib/server/public-works";
+
+const [runtime, work] = await Promise.all([getPublicRuntimeState(), getPublicWorkBySlug("typewriter")]);
+
+if (!work) {
+	return Astro.redirect("/works");
+}
+---
+
+<BaseLayout
+	title={`${work.title} | Stüssy Senik`}
+	description={work.summary}
+	activePath="/works/typewriter"
+	previewLabel="Typewriter route and case study framing"
+	previewDocument="caseStudy"
+	runtime={runtime}
+>
+	<section class="typewriter-route">
+		<header class="typewriter-route__hero">
+			<div class="typewriter-route__intro">
+				<p class="typewriter-route__eyebrow">{work.client}</p>
+				<h1>{work.title}</h1>
+				<p class="typewriter-route__summary">{work.summary}</p>
+			</div>
+
+			<div class="typewriter-route__facts">
+				<div>
+					<span>year</span>
+					<strong>{work.year}</strong>
+				</div>
+				<div>
+					<span>status</span>
+					<strong>{work.status}</strong>
+				</div>
+				<div>
+					<span>mode</span>
+					<strong>external tool</strong>
+				</div>
+				<div>
+					<span>boundary</span>
+					<strong>Astro case study</strong>
+				</div>
+			</div>
+		</header>
+
+		<div class="typewriter-route__body">
+			<section class="typewriter-route__proof">
+				<div class="typewriter-route__frame">
+					{work.videoPreview ? (
+						<video
+							src={work.videoPreview}
+							poster={work.preview}
+							controls
+							muted
+							playsinline
+							preload="metadata"
+						/>
+					) : work.preview ? (
+						<img src={work.preview} alt={`${work.title} preview`} loading="eager" />
+					) : (
+						<div class="typewriter-route__placeholder">
+							<p>Preview asset missing.</p>
+						</div>
+					)}
+				</div>
+
+				<div class="typewriter-route__actions">
+					<a href={work.externalHref ?? work.liveHref} target="_blank" rel="noreferrer noopener">
+						Open the live tool
+					</a>
+					<a href="/works">Back to works</a>
+				</div>
+			</section>
+
+			<aside class="typewriter-route__notes">
+				<article>
+					<p class="typewriter-route__eyebrow">Why this route exists</p>
+					<h2>Document the work without widening the runtime boundary.</h2>
+					<p>
+						The portfolio keeps an internal route for this piece so the works system can stay truthful, but the
+						actual writing tool remains its own deployed product. Public portfolio routes stay Astro-first; React is
+						not the implementation default for shipped site pages.
+					</p>
+				</article>
+
+				<article>
+					<p class="typewriter-route__eyebrow">Interaction contract</p>
+					<p>
+						The proof surface shows the tool in motion, the ledger keeps the work index legible, and the external
+						link opens the real environment when someone wants the full constraint-based writing experience.
+					</p>
+				</article>
+
+				<article>
+					<p class="typewriter-route__eyebrow">Stack</p>
+					<ul>
+						{work.stack.map((item) => (
+							<li>{item}</li>
+						))}
+					</ul>
+				</article>
+			</aside>
+		</div>
+	</section>
+</BaseLayout>
+
+<style>
+	.typewriter-route,
+	.typewriter-route__hero,
+	.typewriter-route__intro,
+	.typewriter-route__notes {
+		display: grid;
+		gap: var(--space-sm);
+	}
+
+	.typewriter-route {
+		gap: var(--space-xl);
+	}
+
+	.typewriter-route__hero {
+		grid-template-columns: minmax(0, 1.15fr) minmax(18rem, 0.85fr);
+		gap: var(--space-lg);
+		padding-bottom: var(--space-lg);
+		border-bottom: 1px solid var(--border-color);
+	}
+
+	.typewriter-route__eyebrow,
+	.typewriter-route__facts span {
+		margin: 0;
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: var(--color-text-subtle);
+	}
+
+	.typewriter-route__hero h1,
+	.typewriter-route__notes h2 {
+		margin: 0;
+		font-family: var(--font-display);
+		letter-spacing: var(--letter-spacing-tighter);
+	}
+
+	.typewriter-route__hero h1 {
+		font-size: clamp(2.8rem, 6vw, 5.5rem);
+		line-height: 0.92;
+		max-width: 12ch;
+	}
+
+	.typewriter-route__summary,
+	.typewriter-route__notes p {
+		margin: 0;
+		max-width: 62ch;
+		line-height: 1.68;
+		color: var(--color-text-secondary);
+	}
+
+	.typewriter-route__facts {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: var(--space-sm);
+		align-content: start;
+	}
+
+	.typewriter-route__facts div,
+	.typewriter-route__notes article {
+		display: grid;
+		gap: 0.35rem;
+		padding: var(--space-md);
+		border: 1px solid var(--border-color);
+		background: color-mix(in srgb, var(--color-surface) 88%, var(--color-bg-alt));
+	}
+
+	.typewriter-route__facts strong {
+		font-size: clamp(1.3rem, 2vw, 1.8rem);
+		letter-spacing: var(--letter-spacing-tight);
+	}
+
+	.typewriter-route__body {
+		display: grid;
+		grid-template-columns: minmax(0, 1.18fr) minmax(18rem, 0.82fr);
+		gap: var(--space-lg);
+		align-items: start;
+	}
+
+	.typewriter-route__proof,
+	.typewriter-route__actions {
+		display: grid;
+		gap: var(--space-sm);
+	}
+
+	.typewriter-route__frame {
+		overflow: hidden;
+		border: 1px solid var(--border-color);
+		background: color-mix(in srgb, var(--color-surface) 84%, var(--color-bg-alt));
+		box-shadow: var(--shadow-sm);
+	}
+
+	.typewriter-route__frame video,
+	.typewriter-route__frame img {
+		display: block;
+		width: 100%;
+		height: auto;
+	}
+
+	.typewriter-route__placeholder {
+		display: grid;
+		place-items: center;
+		min-height: 22rem;
+		color: var(--color-text-subtle);
+	}
+
+	.typewriter-route__actions {
+		grid-template-columns: repeat(2, max-content);
+		gap: var(--space-2xs) var(--space-sm);
+	}
+
+	.typewriter-route__actions a,
+	.typewriter-route__notes li {
+		font-family: var(--font-mono);
+		font-size: 0.76rem;
+	}
+
+	.typewriter-route__actions a {
+		color: var(--color-text);
+		text-decoration: none;
+		padding-bottom: 0.18rem;
+		border-bottom: 1px solid color-mix(in srgb, var(--color-text) 18%, transparent);
+	}
+
+	.typewriter-route__notes {
+		position: sticky;
+		top: 1.5rem;
+	}
+
+	.typewriter-route__notes ul {
+		margin: 0;
+		padding-left: 1rem;
+		display: grid;
+		gap: 0.35rem;
+		color: var(--color-text-secondary);
+	}
+
+	@media (max-width: 960px) {
+		.typewriter-route__hero,
+		.typewriter-route__body {
+			grid-template-columns: 1fr;
+		}
+
+		.typewriter-route__notes {
+			position: static;
+		}
+	}
+
+	@media (max-width: 620px) {
+		.typewriter-route__facts,
+		.typewriter-route__actions {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>

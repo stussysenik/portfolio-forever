@@ -1,0 +1,16 @@
+---
+import AcademiaSection from "../lib/sections/AcademiaSection.svelte";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { getPublicRuntimeState } from "../lib/server/convex";
+
+const runtime = await getPublicRuntimeState();
+---
+
+<BaseLayout
+	title="re:mix | Research"
+	description="Rebuilding landmark papers and extending them through code, motion, and visual systems."
+	activePath="/re-mix"
+	runtime={runtime}
+>
+	<AcademiaSection client:load />
+</BaseLayout>

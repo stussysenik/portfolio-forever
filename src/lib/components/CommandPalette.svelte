@@ -1,6 +1,6 @@
 <script lang="ts">
         import { onMount, onDestroy } from "svelte";
-        import { goto } from "$app/navigation";
+        import { goto } from "$lib/app-shims";
         import { readerOverride } from "$lib/stores/siteMode";
         import { getConvexClient } from "$lib/convex";
         import { api } from "../../../convex/_generated/api";

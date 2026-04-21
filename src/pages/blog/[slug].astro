@@ -1,0 +1,154 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getPublicRuntimeState } from "../../lib/server/convex";
+import { getPostBySlug } from "../../lib/server/sanity";
+import { getSanityPreviewState } from "../../lib/server/sanity-preview";
+
+const { slug } = Astro.params;
+const previewState = getSanityPreviewState(Astro);
+const [runtime, post] = await Promise.all([getPublicRuntimeState(), getPostBySlug(slug!, previewState)]);
+
+if (!post) {
+	return Astro.redirect("/404");
+}
+---
+
+<BaseLayout
+	title={`${post.title} | Stüssy Senik`}
+	description={post.excerpt}
+	activePath="/blog"
+	previewLabel={`Note: ${post.title}`}
+	previewDocument="post"
+	runtime={runtime}
+>
+	<article class="post-page">
+		<header class="post-header">
+			<a href="/blog" class="back-link">← BACK TO NOTES</a>
+			<p class="post-date">{post.publishedDate}</p>
+			<h1>{post.title}</h1>
+			{post.excerpt && <p class="post-excerpt">{post.excerpt}</p>}
+		</header>
+
+		<div class="post-body" set:html={post.html} />
+
+		<footer class="post-footer">
+			<div class="post-share">
+				<p>SHARE SIGNAL</p>
+				<a href={`https://twitter.com/intent/tweet?text=${post.title}&url=${Astro.url}`} target="_blank">X / TWITTER</a>
+				<a href={`https://www.linkedin.com/sharing/share-offsite/?url=${Astro.url}`} target="_blank">LINKEDIN</a>
+			</div>
+		</footer>
+	</article>
+</BaseLayout>
+
+<style>
+	.post-page {
+		max-width: 48rem;
+		margin: 0 auto;
+		display: grid;
+		gap: 4rem;
+		padding-top: 2rem;
+	}
+
+	.post-header {
+		display: grid;
+		gap: 1.5rem;
+		border-bottom: 1px solid var(--border-color);
+		padding-bottom: 3rem;
+	}
+
+	.back-link {
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+		letter-spacing: 0.15em;
+		color: var(--color-text-subtle);
+		text-decoration: none;
+		margin-bottom: 1rem;
+	}
+
+	.back-link:hover {
+		color: #2563eb;
+	}
+
+	.post-date {
+		font-family: var(--font-mono);
+		font-size: 0.85rem;
+		color: var(--color-text-subtle);
+	}
+
+	.post-header h1 {
+		font-family: var(--font-display);
+		font-size: clamp(2.5rem, 6vw, 4.5rem);
+		line-height: 1;
+		letter-spacing: -0.04em;
+		margin: 0;
+	}
+
+	.post-excerpt {
+		font-size: 1.4rem;
+		line-height: 1.4;
+		color: var(--color-text-secondary);
+		margin: 0;
+	}
+
+	.post-body {
+		font-size: 1.2rem;
+		line-height: 1.7;
+		color: var(--color-text);
+		display: grid;
+		gap: 1.5rem;
+	}
+
+	.post-body :global(p) {
+		margin: 0;
+	}
+
+	.post-body :global(h2) {
+		font-family: var(--font-display);
+		font-size: 2rem;
+		margin-top: 2rem;
+	}
+
+	.post-body :global(h3) {
+		font-family: var(--font-display);
+		font-size: 1.5rem;
+		margin-top: 1.5rem;
+	}
+
+	.post-body :global(ul), .post-body :global(ol) {
+		padding-left: 1.5rem;
+		display: grid;
+		gap: 0.75rem;
+	}
+
+	.post-footer {
+		padding-top: 3rem;
+		border-top: 1px solid var(--border-color);
+	}
+
+	.post-share {
+		display: flex;
+		gap: 2rem;
+		align-items: center;
+	}
+
+	.post-share p {
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+		letter-spacing: 0.2em;
+		color: var(--color-text-subtle);
+		margin: 0;
+	}
+
+	.post-share a {
+		font-family: var(--font-mono);
+		font-size: 0.85rem;
+		color: #2563eb;
+		text-decoration: none;
+	}
+
+	.post-share a:hover {
+		text-decoration: underline;
+		text-underline-offset: 4px;
+	}
+</style>

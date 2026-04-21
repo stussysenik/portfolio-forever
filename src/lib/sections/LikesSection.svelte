@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { getConvexClient } from '$lib/convex';
-	import { setup_likes_subscriptions } from '$lib/clj/portfolio/sections/likes.mjs';
+	import { setupLikesSubscriptions } from '$lib/sections/likes-logic';
 	import GenericListBlock from '$lib/components/blocks/GenericListBlock.svelte';
 	import { likes as staticLikes } from '$lib/data/content';
 
@@ -11,7 +11,7 @@
 
 	onMount(() => {
 		const client = getConvexClient();
-		return setup_likes_subscriptions(client, {
+		return setupLikesSubscriptions(client, {
 			onLikes: (data: any) => {
 				if (data) categories = data;
 			}

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount, onDestroy, tick } from "svelte";
-  import { replaceState } from "$app/navigation";
+  import { replaceState } from "$lib/app-shims";
   import { sections } from "$lib/sections/index";
   import { isReaderMode, siteConfig } from "$lib/stores/siteMode";
   import { depthController, physicsEngine } from "$lib/stores/controls";
@@ -10,6 +10,7 @@
   import { api } from "$convex/_generated/api";
   import { resolveComponentKey, sectionTypeRegistry } from "$lib/sections/registry";
 
+  import Minimap from "$lib/components/Minimap.svelte";
   import HeroSection from "$lib/sections/HeroSection.svelte";
   import WorksSection from "$lib/sections/WorksSection.svelte";
   import ColorfulWorksTable from "$lib/components/ColorfulWorksTable.svelte";
@@ -46,6 +47,7 @@
   $: sectionOrder = (() => {
       const order = [...(rawSectionOrder || [])];
       
+      // Ensure specific important sections are present if not already in order
       const worksIdx = order.indexOf('works');
       if (!order.includes('colored_works')) {
           if (worksIdx !== -1) {
@@ -55,8 +57,11 @@
           }
       }
 
-      if (!order.includes('cv')) order.push('cv');
-      if (!order.includes('process')) order.push('process');
+      const essentialSections = ['cv', 'process', 'media', 'academia', 'labs', 'likes', 'minor', 'gifts', 'talks', 'blog', 'terminal', 'os'];
+      essentialSections.forEach(id => {
+          if (!order.includes(id)) order.push(id);
+      });
+      
       return order;
   })();
   $: parallaxSpeed = $siteConfig?.parallaxSpeed ?? 0.5;
@@ -120,8 +125,16 @@
   let scrollY = 0;
   let parallaxEnabled = false;
 
-  // Lazy loading: track which sections are near viewport
-  let visibleSections = new Set<string>(["hero"]); // Hero always rendered
+  // Track which sections are rendered. Initialize with all sections to show them by default.
+  let visibleSections = new Set<string>();
+  
+  $: if (sectionOrder) {
+    for (const id of sectionOrder) {
+      visibleSections.add(id);
+    }
+    visibleSections = visibleSections;
+  }
+
   // Viewport tracking for parallax (only apply transforms to visible sections)
   let inViewport = new Set<string>(["hero"]);
   let sectionOffsets: Record<string, number> = {};
@@ -288,6 +301,12 @@
   style:--color-accent={homePage?.themeOverrides?.accentColor ?? null}
 >
   <div class="safety-rectangle"></div>
+  
+  <Minimap 
+    sections={filteredSections} 
+    {activeSection} 
+    {sectionLabels}
+  />
   
   <!-- Sections -->
   {#each filteredSections as id (id)}

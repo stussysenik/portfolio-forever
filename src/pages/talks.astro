@@ -1,0 +1,16 @@
+---
+import TalksSection from "../lib/sections/TalksSection.svelte";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { getPublicRuntimeState } from "../lib/server/convex";
+
+const runtime = await getPublicRuntimeState();
+---
+
+<BaseLayout
+	title="Talks & Interviews | Stüssy Senik"
+	description="Talks, presentations, and interviews across design, technology, and media."
+	activePath="/talks"
+	runtime={runtime}
+>
+	<TalksSection client:load />
+</BaseLayout>

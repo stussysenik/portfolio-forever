@@ -1,21 +1,18 @@
 <script lang="ts">
   import { onMount } from 'svelte';
 
-  type Font = 'inter' | 'rubik' | 'helvetica' | 'crimson' | 'times' | 'ibm-plex' | 'jetbrains' | 'fira' | 'space';
+  type Font = 'public' | 'schibsted' | 'source-serif' | 'hybrid' | 'azeret' | 'helvetica' | 'spray' | 'inter';
 
-  const fonts: { id: Font; name: string; category: string; family: string }[] = [
-    { id: 'inter',      name: 'Inter',           category: 'Sans-serif', family: "'Inter', sans-serif" },
-    { id: 'rubik',      name: 'Rubik',           category: 'Geometric',  family: "'Rubik', sans-serif" },
-    { id: 'helvetica',  name: 'Helvetica',       category: 'System',     family: "'Helvetica Neue', 'Helvetica', 'Arial', sans-serif" },
-    { id: 'crimson',    name: 'Crimson Pro',     category: 'Serif',      family: "'Crimson Pro', Georgia, serif" },
-    { id: 'times',      name: 'Times New Roman', category: 'Classic',    family: "'Times New Roman', 'Times', serif" },
-    { id: 'ibm-plex',   name: 'IBM Plex Mono',   category: 'Mono',       family: "'IBM Plex Mono', monospace" },
-    { id: 'jetbrains',  name: 'JetBrains Mono',  category: 'Monospace',  family: "'JetBrains Mono', monospace" },
-    { id: 'fira',       name: 'Fira Code',       category: 'Monospace',  family: "'Fira Code', monospace" },
-    { id: 'space',      name: 'Space Grotesk',   category: 'Display',    family: "'Space Grotesk', sans-serif" },
+  const fonts: { id: Font; name: string; category: string; family: string; sample: string }[] = [
+    { id: 'inter',        name: 'Inter Global',  category: 'Modern Sans',        family: "'Inter', sans-serif", sample: 'Tight and neutral' },
+    { id: 'spray',        name: 'Street Paint',  category: 'Rubik Spray',        family: "'Rubik Spray Paint', system-ui", sample: 'IMAGINE RE-THINK SHIP' },
+    { id: 'public',       name: 'Public System', category: 'Familjen + Hanken', family: "'Familjen Grotesk', sans-serif", sample: 'Quiet proof' },
+    { id: 'hybrid',       name: 'Editorial Mix', category: 'Literata display',   family: "'Literata', serif", sample: 'Proof with weight' },
+    { id: 'source-serif', name: 'Full Serif',    category: 'Literata full text', family: "'Literata', serif", sample: 'Notes become essays' },
+    { id: 'azeret',       name: 'Mono Ledger',   category: 'Azeret system',      family: "'Azeret Mono', monospace", sample: 'Route / status / signal' },
   ];
 
-  let currentFont: Font = 'inter';
+  let currentFont: Font = 'public';
   let isOpen = false;
   let switcherEl: HTMLElement;
 
@@ -114,7 +111,7 @@
             </div>
             <span class="cell-category">{font.category}</span>
             <div class="cell-preview" style="font-family: {font.family};">
-              Aa Bb Cc
+              {font.sample}
             </div>
           </button>
         {/each}
@@ -159,7 +156,7 @@
     position: absolute;
     bottom: calc(100% + var(--space-xs));
     right: 0;
-    width: 480px;
+    width: 420px;
     background: var(--color-surface);
     border: var(--border-width) solid var(--border-color);
     border-radius: var(--radius-md);
@@ -199,14 +196,14 @@
 
   .font-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 6px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
   }
 
   .font-cell {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 4px;
     padding: var(--space-sm);
     background: var(--color-bg-alt);
     border: 1.5px solid transparent;
@@ -259,22 +256,20 @@
   }
 
   .cell-preview {
-    font-size: 16px;
+    font-size: 15px;
     color: var(--color-text);
     padding: var(--space-xs) 0;
     line-height: 1.2;
-    white-space: nowrap;
   }
 
-  /* Responsive: stack to 2-col on narrow dropdowns near screen edge */
-  @media (max-width: 520px) {
+  @media (max-width: 640px) {
     .font-dropdown {
-      width: calc(100vw - 2 * var(--space-sm));
-      right: calc(-1 * var(--space-sm));
+      width: min(22rem, calc(100vw - 2rem));
+      right: -0.25rem;
     }
 
     .font-grid {
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: 1fr;
     }
   }
 

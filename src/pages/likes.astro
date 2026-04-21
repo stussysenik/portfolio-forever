@@ -1,0 +1,16 @@
+---
+import LikesSection from "../lib/sections/LikesSection.svelte";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { getPublicRuntimeState } from "../lib/server/convex";
+
+const runtime = await getPublicRuntimeState();
+---
+
+<BaseLayout
+	title="Likes | Stüssy Senik"
+	description="Curated lists of influences, references, and things worth keeping around."
+	activePath="/likes"
+	runtime={runtime}
+>
+	<LikesSection client:load />
+</BaseLayout>

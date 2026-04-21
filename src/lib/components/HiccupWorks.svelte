@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import { getConvexClient } from "$lib/convex";
   import Hiccup from "./Hiccup.svelte";
-  import { setup_works_subscriptions, get_works_hiccup } from "$lib/clj/portfolio/sections/works.mjs";
+  import { setupWorksSubscriptions, getWorksHiccup } from "$lib/sections/works-logic";
   import { works as staticWorks } from "$lib/data/content";
 
   let projects: any[] = staticWorks;
@@ -11,14 +11,14 @@
 
   onMount(() => {
     const client = getConvexClient();
-    return setup_works_subscriptions(client, {
+    return setupWorksSubscriptions(client, {
       onWorks: (data: any) => { if (data && data.length > 0) projects = data; },
       onThumbnails: (data: any) => { thumbnailConfig = data; },
       onSection: (data: any) => { sectionConfig = data; }
     });
   });
 
-  $: hiccupData = get_works_hiccup(
+  $: hiccupData = getWorksHiccup(
     projects,
     thumbnailConfig?.displayMode ?? 'grid',
     thumbnailConfig?.columns ?? 2,

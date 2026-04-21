@@ -1,0 +1,17 @@
+---
+import LabsSection from "../lib/sections/LabsSection.svelte";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { getPublicRuntimeState } from "../lib/server/convex";
+
+const runtime = await getPublicRuntimeState();
+---
+
+<BaseLayout
+	title="Labs | Experimental Projects"
+	description="Sandboxed WebGPU, WASM, and low-level graphics experiments."
+	activePath="/labs"
+	robots="noindex, nofollow"
+	runtime={runtime}
+>
+	<LabsSection client:load />
+</BaseLayout>

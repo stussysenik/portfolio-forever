@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { getConvexClient } from '$lib/convex';
-  import { setup_labs_subscriptions } from '$lib/clj/portfolio/sections/labs.mjs';
+  import { setupLabsSubscriptions } from '$lib/sections/labs-logic';
 
   export let id = "labs";
 
@@ -10,7 +10,7 @@
 
   onMount(() => {
     const client = getConvexClient();
-    return setup_labs_subscriptions(client, {
+    return setupLabsSubscriptions(client, {
       onLabs: (data: any) => {
         if (data) labs = data;
         loading = false;

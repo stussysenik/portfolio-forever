@@ -1,0 +1,16 @@
+---
+import GallerySection from "../lib/sections/GallerySection.svelte";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { getPublicRuntimeState } from "../lib/server/convex";
+
+const runtime = await getPublicRuntimeState();
+---
+
+<BaseLayout
+	title="Gallery | Stüssy Senik"
+	description="Visual archive of design, technology, art, and film fragments."
+	activePath="/gallery"
+	runtime={runtime}
+>
+	<GallerySection client:load />
+</BaseLayout>
