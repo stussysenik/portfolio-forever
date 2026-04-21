@@ -1,0 +1,34 @@
+{
+	"extends": "astro/tsconfigs/strict",
+	"compilerOptions": {
+		"allowJs": true,
+		"esModuleInterop": true,
+		"moduleResolution": "bundler",
+		"resolveJsonModule": true,
+		"skipLibCheck": true,
+		"types": ["astro/client", "@sanity/astro/module", "node"],
+		"baseUrl": ".",
+		"paths": {
+			"$lib/*": ["src/lib/*"],
+			"$convex/*": ["convex/*"],
+			"$core/*": ["src/lib/core/*"]
+		}
+	},
+	"include": [
+		"src/env.d.ts",
+		"astro.config.mjs",
+		"sanity.config.ts",
+		"src/pages/**/*.astro",
+		"src/layouts/**/*.astro",
+		"src/lib/astro/**/*.ts",
+		"src/lib/astro/**/*.svelte",
+		"src/lib/server/**/*.ts",
+		"src/lib/convex.ts",
+		"src/lib/stores/shellState.ts",
+		"tests/astro/**/*.ts",
+		"playwright.config.ts",
+		"vitest.config.ts",
+		"jest.config.ts",
+		"cypress.config.ts"
+	]
+}
