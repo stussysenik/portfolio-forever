@@ -17,6 +17,8 @@
 		type ThemeMode,
 		type PhysicsMode
 	} from "../../lib/stores/controls";
+	import { oklchAccentColor, spacingAtom } from "../../lib/stores/theme";
+	
 	import type {
 		PublicFeatureFlag,
 		PublicNavItem,
@@ -29,6 +31,11 @@
 	let unsubscribeNav: (() => void) | undefined;
 	let unsubscribeSiteConfig: (() => void) | undefined;
 	let unsubscribeFeatureFlags: (() => void) | undefined;
+
+	$: if (typeof document !== "undefined") {
+		document.documentElement.style.setProperty("--color-accent", $oklchAccentColor);
+		document.documentElement.style.setProperty("--spacing-multiplier", String($spacingAtom));
+	}
 
 	function handleSetDepth(e: Event) {
 		const detail = (e as CustomEvent).detail as DepthLevel;

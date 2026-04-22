@@ -27,6 +27,9 @@ const sanityStudioUrl =
 export default defineConfig({
 	output: "server",
 	adapter: vercel(),
+	devToolbar: {
+		enabled: false,
+	},
 	integrations: [
 		react(),
 		svelte(),
@@ -43,6 +46,9 @@ export default defineConfig({
 	],
 	vite: {
 		envPrefix: ["VITE_", "PUBLIC_", "NEXT_PUBLIC_"],
+		server: {
+			cors: true,
+		},
 		define: {
 			__APP_VERSION__: JSON.stringify(env.VITE_APP_VERSION ?? packageJson.version ?? "0.0.1"),
 			__BUILD_TRACK__: JSON.stringify(env.VITE_BUILD_TRACK ?? process.env.NODE_ENV ?? "astro"),

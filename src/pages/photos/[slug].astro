@@ -1,0 +1,39 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import MediaGrid from "../../lib/components/media/MediaGrid.svelte";
+import SectionShell from "../../lib/components/layout/SectionShell.svelte";
+import { getPublicRuntimeState } from "../../lib/server/convex";
+import { createConvexHttpClient } from "../../lib/convex";
+import { api } from "../../../convex/_generated/api";
+
+const { slug } = Astro.params;
+
+if (!slug) {
+	return Astro.redirect("/photos");
+}
+
+const client = createConvexHttpClient();
+const [runtime, collection] = await Promise.all([
+	getPublicRuntimeState(),
+	client.query(api.photoCollections.getBySlug, { slug })
+]);
+
+if (!collection) {
+	return Astro.redirect("/photos");
+}
+---
+
+<BaseLayout
+	title={`${collection.title} | Photos | Stüssy Senik`}
+	description={collection.description}
+	activePath="/photos"
+	runtime={runtime}
+>
+	<SectionShell title={collection.title} subtitle={collection.description}>
+		<MediaGrid 
+			client:load 
+			items={collection.assets} 
+			layout={collection.layout || 'masonry'} 
+		/>
+	</SectionShell>
+</BaseLayout>

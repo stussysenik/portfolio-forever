@@ -426,4 +426,114 @@ export default defineSchema({
 		lastSynced: v.number(),
 	}).index("by_repoName", ["repoName"])
 		.index("by_order", ["order"]),
+
+	mediaAssets: defineTable({
+		type: v.union(
+			v.literal("photo"),
+			v.literal("video"),
+			v.literal("gif"),
+			v.literal("lottie"),
+			v.literal("embed"),
+		),
+		title: v.string(),
+		url: v.optional(v.string()),
+		srcset: v.optional(v.object({
+			avif: v.optional(v.array(v.object({ width: v.number(), url: v.string() }))),
+			webp: v.optional(v.array(v.object({ width: v.number(), url: v.string() }))),
+			jpeg: v.optional(v.array(v.object({ width: v.number(), url: v.string() }))),
+		})),
+		blurPlaceholder: v.optional(v.string()),
+		colorProfile: v.optional(v.union(
+			v.literal("srgb"),
+			v.literal("display-p3"),
+			v.literal("adobe-rgb"),
+			v.literal("prophoto-rgb"),
+		)),
+		exif: v.optional(v.object({
+			exposureTime: v.optional(v.string()),
+			aperture: v.optional(v.string()),
+			iso: v.optional(v.number()),
+			focalLength: v.optional(v.string()),
+			camera: v.optional(v.string()),
+			lens: v.optional(v.string()),
+		})),
+		muxPlaybackId: v.optional(v.string()),
+		duration: v.optional(v.number()),
+		chapters: v.optional(v.array(v.object({
+			time: v.number(),
+			label: v.string(),
+		}))),
+		deviceFrame: v.optional(v.union(
+			v.literal("ios"),
+			v.literal("terminal"),
+			v.literal("browser"),
+			v.literal("none"),
+		)),
+		posterUrl: v.optional(v.string()),
+		loop: v.optional(v.boolean()),
+		width: v.optional(v.number()),
+		height: v.optional(v.number()),
+		aspectRatio: v.optional(v.string()),
+		fileSizeBytes: v.optional(v.number()),
+		tags: v.optional(v.array(v.string())),
+		order: v.number(),
+		visible: v.boolean(),
+	}).index("by_type", ["type"])
+		.index("by_order", ["order"])
+		.index("by_visible", ["visible", "order"]),
+
+	projectShowcases: defineTable({
+		slug: v.string(),
+		title: v.string(),
+		tagline: v.optional(v.string()),
+		description: v.string(),
+		githubUrl: v.optional(v.string()),
+		liveUrl: v.optional(v.string()),
+		languages: v.array(v.string()),
+		categories: v.array(v.string()),
+		year: v.optional(v.number()),
+		captureType: v.union(
+			v.literal("terminal-recording"),
+			v.literal("ios-simulator"),
+			v.literal("web-embed"),
+			v.literal("screen-recording"),
+			v.literal("photo-gallery"),
+			v.literal("mixed"),
+		),
+		media: v.array(v.object({
+			assetId: v.id("mediaAssets"),
+			label: v.string(),
+			featured: v.optional(v.boolean()),
+		})),
+		tier: v.union(v.literal(1), v.literal(2), v.literal(3)),
+		layout: v.optional(v.union(
+			v.literal("editorial"),
+			v.literal("grid"),
+			v.literal("filmstrip"),
+			v.literal("longform"),
+		)),
+		visible: v.boolean(),
+		order: v.number(),
+	}).index("by_tier", ["tier"])
+		.index("by_order", ["order"])
+		.index("by_slug", ["slug"])
+		.index("by_visible", ["visible", "order"]),
+
+	photoCollections: defineTable({
+		slug: v.string(),
+		title: v.string(),
+		description: v.optional(v.string()),
+		coverAssetId: v.optional(v.id("mediaAssets")),
+		assetIds: v.array(v.id("mediaAssets")),
+		layout: v.optional(v.union(
+			v.literal("masonry"),
+			v.literal("grid"),
+			v.literal("filmstrip"),
+			v.literal("editorial"),
+		)),
+		visible: v.boolean(),
+		order: v.number(),
+	}).index("by_order", ["order"])
+		.index("by_slug", ["slug"])
+		.index("by_visible", ["visible", "order"]),
 });

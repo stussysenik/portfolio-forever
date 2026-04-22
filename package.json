@@ -34,6 +34,8 @@
                 "sync:sveltekit": "svelte-kit sync || echo ''",
                 "capture-previews": "bun scripts/capture-previews.ts",
                 "record-previews": "bun scripts/record-previews.ts",
+                "session:init": "bun scripts/session.ts init",
+                "session:log": "bun scripts/session.ts log",
                 "storybook": "storybook dev -p 6006",
                 "build-storybook": "storybook build",
                 "clj:compile": "find src/lib/clj -name '*.cljs' -exec npx squint compile {} --output-dir src/lib/clj --paths src/lib/clj \\;",
@@ -50,7 +52,6 @@
                 "@playwright/test": "^1.59.1",
                 "@sentry/sveltekit": "^10.49.0",
                 "@storybook/addon-a11y": "^10.3.5",
-                "@storybook/addon-essentials": "^8.6.14",
                 "@storybook/svelte-vite": "^10.3.5",
                 "@sveltejs/adapter-auto": "^7.0.1",
                 "@sveltejs/adapter-static": "^3.0.10",
@@ -112,8 +113,10 @@
                 "react-markdown": "^10.1.0",
                 "remark-gfm": "^4.0.1",
                 "sanity": "^5.21.0",
+                "sharp": "^0.34.5",
                 "shiki": "^4.0.2",
                 "styled-components": "^6.4.0",
+                "ts-pattern": "^5.9.0",
                 "vercel": "^51.7.0",
                 "zod": "^4.3.6"
         }

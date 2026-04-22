@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+  import { viewportMediaStore } from '$lib/stores/viewport-media';
 
 	export let playbackId: string;
 	export let title: string = '';
@@ -11,11 +12,18 @@
 
 	let container: HTMLElement;
 	let loaded = false;
+  let isPlaying = false;
+
+  const { activeVideoId } = viewportMediaStore;
+
+  $: isPlaying = $activeVideoId === playbackId;
 
 	onMount(async () => {
 		// Dynamic import to avoid SSR issues with custom elements
 		await import('@mux/mux-player');
 		loaded = true;
+
+    return viewportMediaStore.register(container, playbackId, 'video');
 	});
 </script>
 
@@ -26,7 +34,7 @@
 			playback-id={playbackId}
 			metadata-video-title={title}
 			accent-color={accentColor}
-			autoplay={autoplay ? 'any' : undefined}
+			autoplay={isPlaying ? 'any' : undefined}
 			muted={muted || undefined}
 			loop={loop || undefined}
 			poster={poster || undefined}

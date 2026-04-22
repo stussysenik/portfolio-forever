@@ -6,81 +6,47 @@ When working on Convex code, **always read `convex/_generated/ai/guidelines.md` 
 Convex agent skills for common tasks can be installed by running `npx convex ai-files install`.
 <!-- convex-ai-end -->
 
-<!-- clojure-layer-start -->
-## Clojure Abstraction Layer
+# Repo Agent Instructions
 
-This project has a **co-existing Clojure layer** that wraps around the Svelte 5 + Convex application, providing Lisp expressiveness while producing the same JS output.
+This file is the `CLAUDE.md` equivalent of the canonical project guidance in `/Users/s3nik/Desktop/portfolio-forever/GEMINI.md`.
 
-### Architecture
+## 0. Default Method Pack: Addy Osmani Skills
+- When the environment supports local skills, prefer the Addy Osmani skill pack at `/Users/s3nik/.config/opencode/skills/addyosmani-agent-skills/skills`.
+- Use the smallest relevant skill for the task instead of forcing the entire pack.
+- Common defaults:
+  - planning -> `planning-and-task-breakdown`
+  - implementation -> `incremental-implementation`
+  - tests -> `test-driven-development`
+  - review -> `code-review-and-quality`
+  - frontend -> `frontend-ui-engineering`
+  - API/contract work -> `api-and-interface-design`
+  - release/CI -> `ci-cd-and-automation`
 
-```
-┌──────────────────────────────────────────────┐
-│           Svelte 5 Components (.svelte)       │
-├──────────────────────────────────────────────┤
-│     Clojure Abstraction Layer (Squint CLJS)   │
-│  ┌─────────┐ ┌──────────┐ ┌──────────────┐   │
-│  │  data    │ │  utils   │ │   stores     │   │
-│  │content  │ │contrast  │ │  controls    │   │
-│  │cv       │ │scroll-ph │ │  site-mode   │   │
-│  │labs     │ │depth-filt│ │  toast       │   │
-│  │layout   │ │social-lk │ │  staged-flags│   │
-│  └─────────┘ └──────────┘ └──────────────┘   │
-│  ┌────────────┐ ┌────────────────┐            │
-│  │  terminal  │ │  command-os    │            │
-│  │  commands  │ │  cache/parser  │            │
-│  │  filesystem│ │  registry      │            │
-│  │  github    │ │  schema        │            │
-│  └────────────┘ └────────────────┘            │
-│  ┌──────────┐ ┌───────────┐ ┌──────────┐     │
-│  │ sections │ │   admin   │ │  convex   │     │
-│  │registry  │ │ constants │ │  client   │     │
-│  │  index   │ │           │ │           │     │
-│  └──────────┘ └───────────┘ └──────────┘     │
-├──────────────────────────────────────────────┤
-│          Convex Backend (JS API)              │
-└──────────────────────────────────────────────┘
-```
+## 1. Default Design Reference
+- For UI, frontend, design-system, motion, spacing, typography, color, or admin-shell work, read `DESIGN.md` before changing code.
+- In this repo, `DESIGN.md` is the repo-root gateway to the canonical design system document at `DOCS/design/DESIGN.md`.
+- Treat that design document as the default visual and interaction contract unless the user explicitly asks to break from it.
 
-### Source Structure
+## Core Axiom
+- This repo follows the Artisan-MTS mandate.
+- Code is a sacred liability. Minimize LOC and keep batches atomic.
+- Prefer thinking over acting: research first, then make the smallest surgical change.
+- No drive-by refactors. Match the existing style exactly.
+- For directive-style tasks, start with a concise plan that maps research, red, green, and validation.
 
-- **Clojure sources**: `clj/src/portfolio/**/*.cljs` — Squint CLJS files
-- **Compiled JS output**: `clj/out/portfolio/**/*.js` — ESM modules consumed by Svelte
-- **Build config**: `squint.edn` — Squint compilation config (source/output paths, exports)
-- **Vite plugin**: `vite-plugin-squint.ts` — Compiles .cljs on change, provides HMR
+## Execution Modes
+- Builder mode: short research -> red -> green loops for incremental work.
+- Principal mode: deep research -> `openspec/` definition -> atomic execution for larger architectural changes.
+- For principal-mode work, finalize the relevant `openspec/` change before editing `src/`.
 
-### How It Works
+## Protocol
+- Research should do most of the work. Build a real mental model before editing.
+- If search fails, broaden the query or pivot sources instead of assuming the information does not exist.
+- Prove the problem first when practical.
+- Validate with the real build, checks, repro, or tests before handoff.
 
-1. Write Clojure (`.cljs`) in `clj/src/portfolio/`
-2. Squint compiles to readable ESM JS in `clj/out/`
-3. Svelte components import from `clj/out/` as normal JS modules
-4. Vite plugin provides hot recompilation on `.cljs` changes
+## Tech And Architecture
+- Host stack: Astro 6, Svelte 5, React 19, Convex, Sanity.
+- Styling: pure CSS + OKLCH.
+- Keep logging and session traces aligned with the existing `tmp/sessions` workflow when the task uses it.
 
-### Key Principles
-
-- **Minimal JS footprint**: Squint produces lean ESM that tree-shakes well
-- **Svelte store interop**: Store wrappers consume/produce Svelte writable/derived stores
-- **Convex interop**: `portfolio.convex.client` wraps the same ConvexClient that Svelte uses
-- **Immutable data by default**: Clojure's persistent data structures compile to efficient JS
-- **Both layers alive**: The original `.ts` files remain; Clojure wraps alongside them
-
-### Importing From Svelte
-
-```svelte
-<script>
-// Import from the compiled Clojure output
-import { skills, sortEntries, getHighlight } from '../../clj/out/portfolio/data/content';
-import { getContrastColor } from '../../clj/out/portfolio/utils/contrast';
-import { filterByDepth } from '../../clj/out/portfolio/utils/depth_filter';
-</script>
-```
-
-### Compiling
-
-```bash
-# One-time compile
-npx squint compile --config squint.edn
-
-# Dev mode: Vite plugin watches and recompiles automatically
-bun run dev
-```
-<!-- clojure-layer-end -->

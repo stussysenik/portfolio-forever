@@ -1,0 +1,29 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import MediaGrid from "../lib/components/media/MediaGrid.svelte";
+import SectionShell from "../lib/components/layout/SectionShell.svelte";
+import { getPublicRuntimeState } from "../lib/server/convex";
+import { createConvexHttpClient } from "../lib/convex";
+import { api } from "../../convex/_generated/api";
+
+const client = createConvexHttpClient();
+const [runtime, videos] = await Promise.all([
+	getPublicRuntimeState(),
+	client.query(api.mediaAssets.getByType, { type: "video" })
+]);
+---
+
+<BaseLayout
+	title="Videos | Stüssy Senik"
+	description="Video showcases, process walkthroughs, and motion experiments."
+	activePath="/videos"
+	runtime={runtime}
+>
+	<SectionShell title="VIDEOS" subtitle="Process walkthroughs & motion experiments">
+		<MediaGrid 
+			client:load 
+			items={videos} 
+			layout="grid" 
+		/>
+	</SectionShell>
+</BaseLayout>

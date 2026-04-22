@@ -4,6 +4,7 @@
 	import { setupLikesSubscriptions } from '$lib/sections/likes-logic';
 	import GenericListBlock from '$lib/components/blocks/GenericListBlock.svelte';
 	import { likes as staticLikes } from '$lib/data/content';
+  import SectionShell from '$lib/components/layout/SectionShell.svelte';
 
 	export let id = "likes";
 
@@ -24,19 +25,13 @@
 </svelte:head>
 
 <div class="likes-wrapper" {id}>
-	<section class="section">
-		<header class="section-header">
-			<span class="section-marker">◆</span>
-			<h1 class="section-title">THINGS I LIKE</h1>
-			<span class="section-meta">curated list</span>
-		</header>
-
-		<div class="likes-grid">
-			{#each categories as category}
-				<GenericListBlock title={category.title} items={category.items} />
-			{/each}
-		</div>
-	</section>
+  <SectionShell title="Things I Like" subtitle="A curated list of books, music, and other things I enjoy.">
+    <div class="likes-grid">
+      {#each categories as category}
+        <GenericListBlock title={category.title} items={category.items} />
+      {/each}
+    </div>
+  </SectionShell>
 
 	<div class="gifts-callout">
 		<a href="/gifts">Send books, postcards, or art supplies →</a>
@@ -47,40 +42,6 @@
 	.likes-wrapper {
 		display: flex;
 		flex-direction: column;
-	}
-
-	.section {
-		margin-bottom: var(--space-xl);
-	}
-
-	.section-header {
-		display: flex;
-		align-items: baseline;
-		gap: var(--space-sm);
-		margin-bottom: var(--space-lg);
-		padding-bottom: var(--space-sm);
-		border-bottom: var(--border-width) solid var(--border-color);
-	}
-
-	.section-marker {
-		color: var(--color-accent);
-		font-size: var(--font-size-sm);
-	}
-
-	.section-title {
-		font-family: var(--font-sans);
-		font-size: var(--font-size-lg);
-		font-weight: 600;
-		letter-spacing: var(--letter-spacing-wider);
-		color: var(--color-text);
-		margin: 0;
-	}
-
-	.section-meta {
-		font-family: var(--font-mono);
-		font-size: var(--font-size-2xs);
-		color: var(--color-text-subtle);
-		margin-left: auto;
 	}
 
 	.likes-grid {

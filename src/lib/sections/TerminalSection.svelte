@@ -402,7 +402,6 @@
                     src={line.url}
                     title={line.title}
                     sandbox="allow-scripts allow-same-origin"
-                    loading="lazy"
                   ></iframe>
                 </div>
               </div>

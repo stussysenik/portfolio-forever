@@ -2,7 +2,7 @@ import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { stripUndefined } from "./helpers";
 
-export const getOsConfig = query({
+export const getConfig = query({
   args: {},
   handler: async (ctx) => {
     const configs = await ctx.db.query("osConfig").collect();

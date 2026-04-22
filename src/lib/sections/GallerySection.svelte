@@ -2,8 +2,15 @@
   import { onMount } from 'svelte';
   import { getConvexClient } from '$lib/convex';
   import { setupGallerySubscriptions, filterItems } from '$lib/sections/gallery-logic';
+  import MediaGrid from '$lib/components/media/MediaGrid.svelte';
+  import SectionShell from '$lib/components/layout/SectionShell.svelte';
+  import type { LayoutType } from '$lib/components/layout/LayoutSwitcher.svelte';
 
   export let id = "gallery";
+
+  // Layout state
+  let currentLayout: LayoutType = 'grid';
+  const availableLayouts: LayoutType[] = ['grid', 'masonry', 'filmstrip'];
 
   // Filter state
   let activeFilter: string = 'all';
@@ -51,40 +58,29 @@
 <svelte:window on:keydown={(e) => e.key === 'Escape' && (selected = null)} />
 
 <div {id}>
-  <header class="page-header">
-    <h1 class="page-title">&#9671; GALLERY</h1>
-    <span class="page-count">[{filteredItems.length}]</span>
-  </header>
+  <SectionShell 
+    title="Gallery" 
+    subtitle="Visual archive of design, technology, art, and film fragments."
+    {availableLayouts}
+    activeLayout={currentLayout}
+    on:layoutChange={(e) => currentLayout = e.detail}
+  >
+    <!-- Filter -->
+    <nav class="filter-row">
+      {#each categories as cat}
+        <button
+          class="filter-btn"
+          class:active={activeFilter === cat}
+          on:click={() => setFilter(cat)}
+        >
+          {cat}
+        </button>
+      {/each}
+    </nav>
 
-  <!-- Filter -->
-  <nav class="filter-row">
-    {#each categories as cat}
-      <button
-        class="filter-btn"
-        class:active={activeFilter === cat}
-        on:click={() => setFilter(cat)}
-      >
-        {cat}
-      </button>
-    {/each}
-  </nav>
-
-  <!-- Grid -->
-  <div class="mosaic">
-    {#each filteredItems as item (item.id)}
-      <button
-        class="tile"
-        style="--bg: {getPlaceholderColor(item)}"
-        on:click={() => selected = item}
-      >
-        <span class="tile-char">{item.title.charAt(0)}</span>
-        <div class="tile-overlay">
-          <span class="tile-title">{item.title}</span>
-          <span class="tile-year">{item.year}</span>
-        </div>
-      </button>
-    {/each}
-  </div>
+    <!-- Grid -->
+    <MediaGrid items={filteredItems} layout={currentLayout} />
+  </SectionShell>
 </div>
 
 <!-- Detail Panel -->
@@ -116,29 +112,6 @@
 {/if}
 
 <style>
-  .page-header {
-    display: flex;
-    align-items: baseline;
-    gap: var(--space-md);
-    margin-bottom: var(--space-lg);
-    padding-bottom: var(--space-sm);
-    border-bottom: var(--border-width-thick) solid var(--color-text);
-  }
-
-  .page-title {
-    font-family: var(--font-sans);
-    font-size: var(--font-size-xl);
-    font-weight: 600;
-    letter-spacing: var(--letter-spacing-tight);
-    margin: 0;
-  }
-
-  .page-count {
-    font-family: var(--font-mono);
-    font-size: var(--font-size-xs);
-    color: var(--color-text-subtle);
-  }
-
   /* Filter */
   .filter-row {
     display: flex;
@@ -168,85 +141,6 @@
     background: var(--color-text);
     border-color: var(--color-text);
     color: var(--color-bg);
-  }
-
-  /* Mosaic Grid */
-  .mosaic {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
-    gap: 3px;
-  }
-
-  @media (min-width: 480px) {
-    .mosaic {
-      grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-      gap: 4px;
-    }
-  }
-
-  @media (min-width: 768px) {
-    .mosaic {
-      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    }
-  }
-
-  .tile {
-    aspect-ratio: 1;
-    background: var(--bg);
-    border: none;
-    border-radius: 2px;
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform var(--duration-fast) var(--easing);
-  }
-
-  .tile:hover {
-    transform: scale(1.05);
-    z-index: 5;
-  }
-
-  .tile-char {
-    font-family: var(--font-sans);
-    font-size: var(--font-size-xl);
-    font-weight: 700;
-    color: white;
-    opacity: 0.3;
-    text-transform: uppercase;
-  }
-
-  .tile-overlay {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    padding: var(--space-xs);
-    background: linear-gradient(to top, hsla(0,0%,0%,0.8), transparent 70%);
-    opacity: 0;
-    transition: opacity var(--duration-fast) var(--easing);
-  }
-
-  .tile:hover .tile-overlay {
-    opacity: 1;
-  }
-
-  .tile-title {
-    font-size: var(--font-size-2xs);
-    font-weight: 500;
-    color: white;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .tile-year {
-    font-family: var(--font-mono);
-    font-size: var(--font-size-2xs, 0.75rem);
-    color: hsla(0,0%,100%,0.6);
   }
 
   /* Detail Panel */

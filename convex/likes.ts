@@ -2,7 +2,7 @@ import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { stripUndefined } from "./helpers";
 
-export const getVisibleLikes = query({
+export const getAllCategories = query({
   args: {},
   handler: async (ctx) => {
     return (await ctx.db.query("likesCategories").withIndex("by_order").collect())

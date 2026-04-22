@@ -1,0 +1,80 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import MediaAdminApp from "../../lib/admin/MediaAdminApp.svelte";
+import AdminPreviewDeck from "../../components/admin/AdminPreviewDeck.astro";
+import { previewTargets } from "../../lib/astro/site-content";
+
+const mediaPreviewTargets = previewTargets.filter((target) =>
+	["/photos", "/videos", "/works"].includes(target.route),
+);
+---
+
+<AdminLayout title="Admin | Media" active="media">
+	<section class="media-grid">
+		<section class="media-copy">
+			<p class="media-copy__eyebrow">Asset lane</p>
+			<h2>High-fidelity media requires high-fidelity management.</h2>
+			<p>
+				This lane handles raw asset uploads, Sharp pipeline orchestration, and the composition of 
+				editorial photo collections and project showcases.
+			</p>
+		</section>
+	</section>
+
+	<div class="media-runtime">
+		<MediaAdminApp client:only="svelte" />
+	</div>
+
+	<AdminPreviewDeck
+		items={mediaPreviewTargets}
+		title="Media-rich routes"
+		description="Verify how assets render across photography collections, video indices, and work details."
+	/>
+</AdminLayout>
+
+<style>
+	.media-grid {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: var(--space-md);
+		margin-bottom: var(--space-lg);
+	}
+
+	.media-copy {
+		display: grid;
+		gap: var(--space-sm);
+		padding: var(--space-md);
+		border: 1px solid var(--border-color);
+		background: color-mix(in srgb, var(--color-surface) 88%, var(--color-bg-alt));
+	}
+
+	.media-copy__eyebrow {
+		margin: 0;
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: var(--color-text-subtle);
+	}
+
+	.media-copy h2 {
+		margin: 0;
+		font-family: var(--font-display);
+		font-size: clamp(1.8rem, 3vw, 2.8rem);
+		line-height: 0.96;
+		letter-spacing: var(--letter-spacing-tight);
+	}
+
+	.media-copy p {
+		margin: 0;
+		line-height: 1.62;
+		color: var(--color-text-secondary);
+	}
+
+	.media-runtime {
+		margin-bottom: var(--space-lg);
+		border: 1px solid var(--border-color);
+		background: color-mix(in srgb, var(--color-surface) 90%, var(--color-bg-alt));
+		overflow: hidden;
+	}
+</style>

@@ -5,6 +5,7 @@
 	import { getConvexClient } from "../convex";
 	import { layoutConfig } from "../data/layout-config";
 	import { shellState, toggleShellState } from "../stores/shellState";
+	import { accentHueAtom, spacingAtom } from "../stores/theme";
 
 	type PageRecord = {
 		_id?: string;
@@ -393,6 +394,45 @@
 						</button>
 					</div>
 				{/each}
+			</div>
+
+			<div class="system-card__header" style="margin-top: 1rem;">
+				<div>
+					<p class="system-app__eyebrow">Visual Theme</p>
+					<h4>Global styling</h4>
+				</div>
+			</div>
+
+			<div class="system-list">
+				<div class="system-flag">
+					<div>
+						<strong>Accent Hue</strong>
+						<span>{$accentHueAtom}° OKLCH</span>
+					</div>
+					<input 
+						type="range" 
+						min="0" 
+						max="360" 
+						class="slider"
+						value={$accentHueAtom}
+						on:input={(e) => accentHueAtom.set(Number(e.currentTarget.value))}
+					/>
+				</div>
+				<div class="system-flag">
+					<div>
+						<strong>Spacing scale</strong>
+						<span>{$spacingAtom}x</span>
+					</div>
+					<input 
+						type="range" 
+						min="0.5" 
+						max="2.0" 
+						step="0.1"
+						class="slider"
+						value={$spacingAtom}
+						on:input={(e) => spacingAtom.set(Number(e.currentTarget.value))}
+					/>
+				</div>
 			</div>
 		</section>
 

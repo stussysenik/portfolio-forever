@@ -1,0 +1,32 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import ProjectShowcaseDetail from "../../lib/components/media/ProjectShowcaseDetail.svelte";
+import { getPublicRuntimeState } from "../../lib/server/convex";
+import { createConvexHttpClient } from "../../lib/convex";
+import { api } from "../../../convex/_generated/api";
+
+const { slug } = Astro.params;
+
+if (!slug) {
+	return Astro.redirect("/works");
+}
+
+const client = createConvexHttpClient();
+const [runtime, showcase] = await Promise.all([
+	getPublicRuntimeState(),
+	client.query(api.projectShowcases.getBySlug, { slug })
+]);
+
+if (!showcase) {
+	return Astro.redirect("/works");
+}
+---
+
+<BaseLayout
+	title={`${showcase.title} | Works | Stüssy Senik`}
+	description={showcase.tagline || showcase.description}
+	activePath="/works"
+	runtime={runtime}
+>
+	<ProjectShowcaseDetail client:load showcase={showcase} />
+</BaseLayout>

@@ -3,7 +3,7 @@ import "../app.css";
 
 interface Props {
 	title?: string;
-	active?: "overview" | "content" | "system";
+	active?: "overview" | "content" | "media" | "system";
 }
 
 const { title = "Admin", active = "overview" } = Astro.props;
@@ -11,6 +11,7 @@ const { title = "Admin", active = "overview" } = Astro.props;
 const tabs = [
 	{ id: "overview", href: "/admin", label: "Overview" },
 	{ id: "content", href: "/admin/content", label: "Editorial" },
+	{ id: "media", href: "/admin/media", label: "Media" },
 	{ id: "system", href: "/admin/system", label: "System" },
 ];
 ---
