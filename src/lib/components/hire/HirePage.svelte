@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onMount } from "svelte";
 	import { targetRoles, proofMatrix, hiringMission, proofPillars } from "$lib/data/hiring-target";
 
 	const batches = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
@@ -15,6 +16,15 @@
 		10: "Mistral AI",
 	};
 
+	let mounted = false;
+
+	onMount(() => {
+		// Small delay ensures browser has painted before animating
+		requestAnimationFrame(() => {
+			mounted = true;
+		});
+	});
+
 	function rolesForBatch(batch: number) {
 		return targetRoles.filter((r) => r.batch === batch);
 	}
@@ -30,54 +40,54 @@
 		};
 		return labels[path] ?? path;
 	}
+
+	function staggerDelay(index: number, base = 50) {
+		return `${index * base}ms`;
+	}
 </script>
 
-<div class="hire-page">
-	<!-- HERO — Inverse Law: One name, one line, one status -->
+<div class="hire-page" data-mounted={mounted}>
+	<!-- HERO — Asymmetric, massive scale, breathing room -->
 	<header class="hire-hero">
-		<div class="hire-hero__kicker">
+		<div class="hire-hero__kicker" style="transition-delay: {staggerDelay(0)}">
 			<span class="hire-hero__line"></span>
 			<span class="hire-hero__label">Hiring proof — April 2026</span>
 		</div>
-		<h1 class="hire-hero__name">Stüssy Senik</h1>
-		<p class="hire-hero__thesis">
+
+		<h1 class="hire-hero__name" style="transition-delay: {staggerDelay(1)}">
+			<span class="hire-hero__word">Stüssy</span>
+			<span class="hire-hero__word">Senik</span>
+		</h1>
+
+		<p class="hire-hero__thesis" style="transition-delay: {staggerDelay(2)}">
 			Design engineer building AI-native products, expert tools, and trust-heavy interfaces.
 		</p>
-		<div class="hire-hero__meta">
+
+		<div class="hire-hero__meta" style="transition-delay: {staggerDelay(3)}">
 			<span class="hire-hero__status">
 				<span class="hire-hero__dot"></span>
 				Available now
 			</span>
 			<span class="hire-hero__location">NYC / PRAGUE</span>
+			<span class="hire-hero__signal">30+ roles · 10 companies · 1 proof</span>
 		</div>
 	</header>
 
-	<!-- THE MANIFEST — Why this page exists -->
+	<!-- THE MANIFEST — Editorial, not metrics -->
 	<section class="hire-manifest" aria-labelledby="manifest-heading">
-		<h2 id="manifest-heading" class="hire-manifest__title">The Mission</h2>
-		<p class="hire-manifest__body">{hiringMission}</p>
-		<div class="hire-manifest__stats">
-			<div class="hire-stat">
-				<span class="hire-stat__number">30+</span>
-				<span class="hire-stat__label">Target roles</span>
-			</div>
-			<div class="hire-stat">
-				<span class="hire-stat__number">10</span>
-				<span class="hire-stat__label">Companies</span>
-			</div>
-			<div class="hire-stat">
-				<span class="hire-stat__number">1</span>
-				<span class="hire-stat__label">Proof surface</span>
-			</div>
-		</div>
+		<h2 id="manifest-heading" class="hire-manifest__title" style="transition-delay: {staggerDelay(4)}">The Mission</h2>
+		<p class="hire-manifest__body" style="transition-delay: {staggerDelay(5)}">{hiringMission}</p>
 	</section>
 
-	<!-- PILLARS — Core proof points -->
+	<!-- PILLARS — Broken grid, varied scale -->
 	<section class="hire-pillars" aria-labelledby="pillars-heading">
 		<h2 id="pillars-heading" class="sr-only">Proof pillars</h2>
 		<div class="hire-pillars__grid">
 			{#each proofPillars as pillar, i}
-				<article class="hire-pillar">
+				<article
+					class="hire-pillar"
+					style="transition-delay: {staggerDelay(i + 6, 80)}"
+				>
 					<span class="hire-pillar__index">0{i + 1}</span>
 					<h3 class="hire-pillar__title">{pillar.title}</h3>
 					<p class="hire-pillar__detail">{pillar.detail}</p>
@@ -86,22 +96,27 @@
 		</div>
 	</section>
 
-	<!-- ROLE TARGETS — The actual jobs -->
+	<!-- ROLE TARGETS — The actual jobs, with staggered entrance -->
 	<section class="hire-roles" aria-labelledby="roles-heading">
-		<h2 id="roles-heading" class="hire-section__title">Target Roles</h2>
-		<p class="hire-section__subtitle">
-			Every role below links to the live posting. Every posting maps to evidence in this portfolio.
-		</p>
+		<div class="hire-roles__header" style="transition-delay: {staggerDelay(10)}">
+			<h2 id="roles-heading" class="hire-section__title">Target Roles</h2>
+			<p class="hire-section__subtitle">
+				Every role links to the live posting. Every posting maps to evidence in this portfolio.
+			</p>
+		</div>
 
 		<div class="hire-roles__grid">
 			{#each batches as batch}
 				{@const roles = rolesForBatch(batch)}
 				{#if roles.length > 0}
-					<div class="hire-batch">
+					<div class="hire-batch" style="transition-delay: {staggerDelay(batch + 10, 60)}">
 						<h3 class="hire-batch__name">{batchNames[batch]}</h3>
 						<div class="hire-batch__roles">
-							{#each roles as role}
-								<article class="hire-role">
+							{#each roles as role, ri}
+								<article
+									class="hire-role"
+									style="transition-delay: {staggerDelay(ri + batch * 3, 40)}"
+								>
 									<a
 										href={role.url}
 										target="_blank"
@@ -115,12 +130,11 @@
 										<span class="hire-role__location">{role.location}</span>
 									</div>
 									<div class="hire-role__keywords">
-										{#each role.keywords as kw}
+										{#each role.keywords.slice(0, 4) as kw}
 											<span class="hire-role__kw">{kw}</span>
 										{/each}
 									</div>
 									<div class="hire-role__proof">
-										<span class="hire-role__proof-label">Proof:</span>
 										{#each role.proofPaths as path}
 											<a href={path} class="hire-role__proof-link">{getProofLabel(path)}</a>
 										{/each}
@@ -134,14 +148,19 @@
 		</div>
 	</section>
 
-	<!-- PROOF MATRIX — Skills → Evidence -->
+	<!-- PROOF MATRIX — Skills mapped to evidence -->
 	<section class="hire-matrix" aria-labelledby="matrix-heading">
-		<h2 id="matrix-heading" class="hire-section__title">Proof Matrix</h2>
-		<p class="hire-section__subtitle">Skills mapped to shipped evidence, not claimed competence.</p>
+		<div class="hire-matrix__header" style="transition-delay: {staggerDelay(20)}">
+			<h2 id="matrix-heading" class="hire-section__title">Proof Matrix</h2>
+			<p class="hire-section__subtitle">Skills mapped to shipped evidence, not claimed competence.</p>
+		</div>
 
 		<div class="hire-matrix__list">
-			{#each proofMatrix as row}
-				<article class="hire-matrix__row">
+			{#each proofMatrix as row, i}
+				<article
+					class="hire-matrix__row"
+					style="transition-delay: {staggerDelay(i + 22, 50)}"
+				>
 					<div class="hire-matrix__skill">{row.skill}</div>
 					<div class="hire-matrix__evidence">
 						{#each row.evidence as item}
@@ -149,8 +168,8 @@
 						{/each}
 					</div>
 					<div class="hire-matrix__roles">
-						{#each row.roles as role}
-							<span class="hire-matrix__role">{role}</span>
+						{#each row.roles as r}
+							<span class="hire-matrix__role">{r}</span>
 						{/each}
 					</div>
 				</article>
@@ -158,8 +177,8 @@
 		</div>
 	</section>
 
-	<!-- THE ASK — Direct CTA -->
-	<section class="hire-ask" aria-labelledby="ask-heading">
+	<!-- THE ASK — Direct CTA with press feedback -->
+	<section class="hire-ask" aria-labelledby="ask-heading" style="transition-delay: {staggerDelay(28)}">
 		<h2 id="ask-heading" class="hire-ask__title">The Ask</h2>
 		<p class="hire-ask__body">
 			If you're hiring for any of the roles above, the evidence is here. The code is here. The proof is here.
@@ -179,7 +198,7 @@
 	</section>
 
 	<!-- FOOTER NOTE -->
-	<footer class="hire-footer">
+	<footer class="hire-footer" style="transition-delay: {staggerDelay(30)}">
 		<p class="hire-footer__text">
 			Built with Astro 6, Svelte 5, Convex, and Sanity. 150+ commits. 35M+ tokens of context engineering.
 			No templates. No shortcuts. Only proof.
@@ -188,10 +207,10 @@
 </div>
 
 <style>
-	/* === INVERSE-LAW DESIGN SYSTEM === */
-	/* Rick Rubin: Strip everything non-essential */
-	/* PG LANG: Bold, confident, artistic restraint */
-	/* Light Phone: Calm, minimal, no noise */
+	/* ============================================
+	   HIRE PAGE — Vision Check Rebuild
+	   impeccable + Emil Kowalski + Jakub Krehel + Rauno
+	   ============================================ */
 
 	.sr-only {
 		position: absolute;
@@ -205,75 +224,128 @@
 		border-width: 0;
 	}
 
-	.hire-page {
-		--hire-accent: var(--color-text, #111);
-		--hire-muted: var(--color-text-secondary, #666);
-		--hire-subtle: var(--color-text-subtle, #999);
-		--hire-surface: var(--color-surface, #f8f8f8);
-		--hire-border: var(--border-color, #e5e5e5);
-		--hire-gap-xl: clamp(3rem, 8vw, 6rem);
-		--hire-gap-lg: clamp(2rem, 5vw, 4rem);
-		--hire-gap-md: clamp(1.25rem, 3vw, 2rem);
-		--hire-gap-sm: clamp(0.75rem, 2vw, 1.25rem);
+	/* ---- Entrance Animation System ---- */
+	/* Jakub's recipe: opacity + translateY(8px) + blur(4px) */
+	/* Stagger: 40-80ms between items (Emil) */
 
-		display: grid;
-		gap: var(--hire-gap-xl);
-		padding-bottom: clamp(4rem, 10vw, 8rem);
+	.hire-page > header > *,
+	.hire-page > section > *,
+	.hire-page > footer,
+	.hire-hero__name .hire-hero__word,
+	.hire-pillar,
+	.hire-batch,
+	.hire-role,
+	.hire-matrix__row {
+		opacity: 0;
+		transform: translateY(12px);
+		filter: blur(3px);
+		transition:
+			opacity 500ms cubic-bezier(0.23, 1, 0.32, 1),
+			transform 500ms cubic-bezier(0.23, 1, 0.32, 1),
+			filter 500ms cubic-bezier(0.23, 1, 0.32, 1);
 	}
 
-	/* --- HERO --- */
+	.hire-page[data-mounted="true"] > header > *,
+	.hire-page[data-mounted="true"] > section > *,
+	.hire-page[data-mounted="true"] > footer,
+	.hire-page[data-mounted="true"] .hire-hero__word,
+	.hire-page[data-mounted="true"] .hire-pillar,
+	.hire-page[data-mounted="true"] .hire-batch,
+	.hire-page[data-mounted="true"] .hire-role,
+	.hire-page[data-mounted="true"] .hire-matrix__row {
+		opacity: 1;
+		transform: translateY(0);
+		filter: blur(0);
+	}
+
+	/* Respect reduced motion */
+	@media (prefers-reduced-motion: reduce) {
+		.hire-page > header > *,
+		.hire-page > section > *,
+		.hire-page > footer,
+		.hire-hero__name .hire-hero__word,
+		.hire-pillar,
+		.hire-batch,
+		.hire-role,
+		.hire-matrix__row {
+			transition: opacity 150ms ease;
+			transform: none;
+			filter: none;
+		}
+	}
+
+	/* ---- Page Shell ---- */
+	.hire-page {
+		--hp-gap-xl: clamp(4rem, 10vw, 7rem);
+		--hp-gap-lg: clamp(2.5rem, 6vw, 4rem);
+		--hp-gap-md: clamp(1.5rem, 3vw, 2.5rem);
+		--hp-gap-sm: clamp(0.75rem, 2vw, 1.25rem);
+
+		display: grid;
+		gap: var(--hp-gap-xl);
+		padding-bottom: clamp(5rem, 12vw, 10rem);
+	}
+
+	/* ---- HERO ---- */
+	/* Massive scale contrast. Name dominates. Everything else is tiny. */
 	.hire-hero {
 		display: grid;
-		gap: var(--hire-gap-md);
+		gap: var(--hp-gap-md);
 		padding-top: clamp(2rem, 5vh, 4rem);
-		border-bottom: 1px solid var(--hire-border);
-		padding-bottom: var(--hire-gap-xl);
+		padding-bottom: var(--hp-gap-xl);
+		border-bottom: 1px solid var(--border-color);
 	}
 
 	.hire-hero__kicker {
 		display: inline-flex;
 		align-items: center;
-		gap: var(--hire-gap-sm);
+		gap: var(--hp-gap-sm);
 		font-family: var(--font-mono);
 		font-size: var(--font-size-2xs);
 		letter-spacing: 0.18em;
 		text-transform: uppercase;
-		color: var(--hire-subtle);
+		color: var(--color-text-subtle);
 	}
 
 	.hire-hero__line {
-		width: 3rem;
+		width: 2.5rem;
 		height: 1px;
-		background: var(--hire-subtle);
+		background: currentColor;
 	}
 
 	.hire-hero__name {
 		margin: 0;
 		font-family: var(--font-display);
-		font-size: clamp(3.5rem, 10vw, 8rem);
+		font-size: clamp(4rem, 12vw, 10rem);
 		font-weight: 800;
-		line-height: 0.9;
-		letter-spacing: -0.05em;
+		line-height: 0.88;
+		letter-spacing: -0.055em;
 		text-transform: uppercase;
-		color: var(--hire-accent);
-		max-width: 12ch;
+		color: var(--color-text);
+		display: flex;
+		flex-direction: column;
+	}
+
+	.hire-hero__word {
+		display: block;
 	}
 
 	.hire-hero__thesis {
 		margin: 0;
-		font-size: clamp(1.1rem, 1rem + 0.6vw, 1.6rem);
-		line-height: 1.35;
-		color: var(--hire-muted);
-		max-width: 42ch;
+		font-size: clamp(1.15rem, 1rem + 0.7vw, 1.75rem);
+		line-height: 1.3;
+		color: var(--color-text-secondary);
+		max-width: 44ch;
 		font-weight: 400;
+		letter-spacing: -0.01em;
 	}
 
 	.hire-hero__meta {
 		display: flex;
 		flex-wrap: wrap;
-		gap: var(--hire-gap-sm);
+		gap: var(--hp-gap-sm);
 		align-items: center;
-		margin-top: 0.5rem;
+		margin-top: 0.25rem;
 	}
 
 	.hire-hero__status {
@@ -282,29 +354,52 @@
 		gap: 0.5rem;
 		font-family: var(--font-mono);
 		font-size: var(--font-size-xs);
-		color: var(--color-success, #22c55e);
+		color: var(--color-success);
 	}
 
 	.hire-hero__dot {
-		width: 8px;
-		height: 8px;
+		width: 7px;
+		height: 7px;
 		border-radius: 50%;
 		background: currentColor;
-		box-shadow: 0 0 10px currentColor;
+		box-shadow: 0 0 8px currentColor;
+		animation: pulse 3s ease-in-out infinite;
+	}
+
+	@keyframes pulse {
+		0%, 100% { opacity: 1; }
+		50% { opacity: 0.5; }
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.hire-hero__dot { animation: none; }
 	}
 
 	.hire-hero__location {
 		font-family: var(--font-mono);
 		font-size: var(--font-size-xs);
-		color: var(--hire-subtle);
+		color: var(--color-text-subtle);
 		letter-spacing: 0.1em;
 		text-transform: uppercase;
 	}
 
-	/* --- MANIFEST --- */
+	.hire-hero__signal {
+		font-family: var(--font-mono);
+		font-size: var(--font-size-2xs);
+		color: var(--color-text-muted);
+		letter-spacing: 0.06em;
+		margin-left: auto;
+		display: none;
+	}
+
+	@media (min-width: 768px) {
+		.hire-hero__signal { display: inline; }
+	}
+
+	/* ---- MANIFEST ---- */
 	.hire-manifest {
 		display: grid;
-		gap: var(--hire-gap-md);
+		gap: var(--hp-gap-sm);
 	}
 
 	.hire-manifest__title {
@@ -313,371 +408,381 @@
 		font-size: var(--font-size-2xs);
 		letter-spacing: 0.18em;
 		text-transform: uppercase;
-		color: var(--hire-subtle);
+		color: var(--color-text-subtle);
 	}
 
 	.hire-manifest__body {
 		margin: 0;
-		font-size: clamp(1.25rem, 1rem + 0.8vw, 1.85rem);
-		line-height: 1.3;
-		color: var(--hire-accent);
-		max-width: 48ch;
+		font-size: clamp(1.35rem, 1rem + 1vw, 2rem);
+		line-height: 1.25;
+		color: var(--color-text);
+		max-width: 44ch;
 		font-weight: 500;
-		letter-spacing: -0.02em;
+		letter-spacing: -0.025em;
 	}
 
-	.hire-manifest__stats {
-		display: flex;
-		flex-wrap: wrap;
-		gap: clamp(2rem, 5vw, 4rem);
-		margin-top: 1rem;
-	}
-
-	.hire-stat {
-		display: flex;
-		flex-direction: column;
-		gap: 0.35rem;
-	}
-
-	.hire-stat__number {
-		font-family: var(--font-display);
-		font-size: clamp(2.5rem, 5vw, 4rem);
-		font-weight: 800;
-		line-height: 1;
-		letter-spacing: -0.04em;
-		color: var(--hire-accent);
-	}
-
-	.hire-stat__label {
-		font-family: var(--font-mono);
-		font-size: var(--font-size-2xs);
-		letter-spacing: 0.14em;
-		text-transform: uppercase;
-		color: var(--hire-subtle);
-	}
-
-	/* --- PILLARS --- */
+	/* ---- PILLARS — Broken grid, no cards ---- */
 	.hire-pillars__grid {
 		display: grid;
-		gap: 1px;
-		background: var(--hire-border);
-		border: 1px solid var(--hire-border);
+		grid-template-columns: 1fr;
+		gap: 0;
 	}
 
 	.hire-pillar {
-		background: var(--color-bg, #fff);
-		padding: clamp(1.5rem, 3vw, 2.5rem);
+		padding: var(--hp-gap-md) 0;
+		border-top: 1px solid var(--border-color);
 		display: grid;
-		gap: var(--hire-gap-sm);
+		gap: var(--hp-gap-sm);
+	}
+
+	.hire-pillar:last-child {
+		border-bottom: 1px solid var(--border-color);
 	}
 
 	.hire-pillar__index {
 		font-family: var(--font-mono);
 		font-size: var(--font-size-2xs);
-		color: var(--hire-subtle);
+		color: var(--color-text-subtle);
 		letter-spacing: 0.1em;
 	}
 
 	.hire-pillar__title {
 		margin: 0;
-		font-size: clamp(1rem, 0.9rem + 0.3vw, 1.25rem);
+		font-size: clamp(1.1rem, 1rem + 0.4vw, 1.45rem);
 		font-weight: 600;
-		line-height: 1.2;
-		color: var(--hire-accent);
+		line-height: 1.15;
+		color: var(--color-text);
+		letter-spacing: -0.02em;
 	}
 
 	.hire-pillar__detail {
 		margin: 0;
 		font-size: var(--font-size-sm);
 		line-height: 1.6;
-		color: var(--hire-muted);
-		max-width: 50ch;
+		color: var(--color-text-secondary);
+		max-width: 52ch;
 	}
 
-	/* --- SECTION TITLES --- */
+	/* On desktop: asymmetric 2-column with offset */
+	@media (min-width: 900px) {
+		.hire-pillars__grid {
+			grid-template-columns: 1fr 1fr;
+			gap: 0 var(--hp-gap-lg);
+		}
+
+		.hire-pillar:nth-child(odd) {
+			padding-right: var(--hp-gap-md);
+		}
+
+		.hire-pillar:nth-child(even) {
+			padding-left: var(--hp-gap-md);
+			border-left: 1px solid var(--border-color);
+		}
+
+		/* Remove bottom border from non-last items in 2-col layout */
+		.hire-pillar:nth-child(3) { border-bottom: none; }
+	}
+
+	/* ---- SECTION HEADERS ---- */
 	.hire-section__title {
-		margin: 0 0 var(--hire-gap-sm) 0;
+		margin: 0 0 var(--hp-gap-sm) 0;
 		font-family: var(--font-mono);
 		font-size: var(--font-size-2xs);
 		letter-spacing: 0.18em;
 		text-transform: uppercase;
-		color: var(--hire-subtle);
+		color: var(--color-text-subtle);
 	}
 
 	.hire-section__subtitle {
-		margin: 0 0 var(--hire-gap-lg) 0;
+		margin: 0 0 var(--hp-gap-lg) 0;
 		font-size: clamp(1.1rem, 1rem + 0.4vw, 1.4rem);
 		line-height: 1.35;
-		color: var(--hire-muted);
+		color: var(--color-text-secondary);
 		max-width: 48ch;
 	}
 
-	/* --- ROLES --- */
+	/* ---- ROLES — Varied, alive, not identical cards ---- */
 	.hire-roles__grid {
 		display: grid;
-		gap: var(--hire-gap-xl);
+		gap: var(--hp-gap-xl);
 	}
 
 	.hire-batch {
 		display: grid;
-		gap: var(--hire-gap-md);
-		padding-bottom: var(--hire-gap-lg);
-		border-bottom: 1px solid var(--hire-border);
+		gap: var(--hp-gap-md);
 	}
 
 	.hire-batch__name {
 		margin: 0;
 		font-family: var(--font-display);
-		font-size: clamp(1.5rem, 2.5vw, 2.25rem);
+		font-size: clamp(1.75rem, 3vw, 2.75rem);
 		font-weight: 700;
-		letter-spacing: -0.03em;
-		color: var(--hire-accent);
+		letter-spacing: -0.035em;
+		color: var(--color-text);
+		padding-bottom: var(--hp-gap-sm);
+		border-bottom: 1px solid var(--border-color);
 	}
 
 	.hire-batch__roles {
 		display: grid;
-		gap: var(--hire-gap-md);
+		gap: 1px;
+		background: var(--border-color);
 	}
 
 	.hire-role {
+		background: var(--color-bg);
+		padding: clamp(1.25rem, 2.5vw, 2rem);
 		display: grid;
-		gap: 0.6rem;
-		padding: clamp(1rem, 2vw, 1.5rem);
-		border: 1px solid var(--hire-border);
-		background: var(--hire-surface);
-		transition: border-color 0.2s ease;
+		gap: 0.65rem;
+		position: relative;
+		transition:
+			background 180ms cubic-bezier(0.23, 1, 0.32, 1),
+			transform 180ms cubic-bezier(0.23, 1, 0.32, 1);
 	}
 
-	.hire-role:hover {
-		border-color: var(--hire-accent);
+	/* Subtle hover: lift + surface shift, not just border */
+	@media (hover: hover) and (pointer: fine) {
+		.hire-role:hover {
+			background: var(--color-surface);
+			transform: translateX(4px);
+		}
 	}
 
 	.hire-role__title {
 		margin: 0;
-		font-size: clamp(1rem, 0.95rem + 0.25vw, 1.15rem);
+		font-size: clamp(1.05rem, 0.95rem + 0.3vw, 1.2rem);
 		font-weight: 600;
-		color: var(--hire-accent);
+		color: var(--color-text);
 		text-decoration: none;
 		display: inline-flex;
 		align-items: center;
-		gap: 0.4rem;
+		gap: 0.35rem;
+		transition: color 150ms ease;
 	}
 
 	.hire-role__title:hover {
-		text-decoration: underline;
-		text-underline-offset: 0.2em;
+		color: var(--color-accent);
 	}
 
 	.hire-role__arrow {
-		font-size: 0.85em;
-		color: var(--hire-subtle);
+		font-size: 0.8em;
+		color: var(--color-text-subtle);
+		transition: transform 150ms cubic-bezier(0.23, 1, 0.32, 1);
+	}
+
+	.hire-role__title:hover .hire-role__arrow {
+		transform: translate(2px, -2px);
 	}
 
 	.hire-role__meta {
-		font-family: var(--font-mono);
 		font-size: var(--font-size-2xs);
-		color: var(--hire-subtle);
-		letter-spacing: 0.08em;
+		color: var(--color-text-muted);
+		letter-spacing: 0.04em;
 	}
 
 	.hire-role__keywords {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 0.4rem;
+		gap: 0.35rem;
+		margin-top: 0.15rem;
 	}
 
 	.hire-role__kw {
-		font-family: var(--font-mono);
 		font-size: var(--font-size-3xs);
-		padding: 0.3rem 0.5rem;
-		background: color-mix(in srgb, var(--hire-border) 60%, transparent);
-		color: var(--hire-muted);
-		letter-spacing: 0.06em;
+		padding: 0.25rem 0.5rem;
+		border: 1px solid var(--border-color);
+		color: var(--color-text-muted);
+		letter-spacing: 0.03em;
+		transition: border-color 150ms ease, color 150ms ease;
+	}
+
+	.hire-role:hover .hire-role__kw {
+		border-color: var(--border-color-strong);
+		color: var(--color-text-secondary);
 	}
 
 	.hire-role__proof {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 0.4rem;
+		gap: 0.5rem;
 		align-items: center;
-		margin-top: 0.25rem;
-	}
-
-	.hire-role__proof-label {
-		font-family: var(--font-mono);
-		font-size: var(--font-size-3xs);
-		color: var(--hire-subtle);
-		text-transform: uppercase;
-		letter-spacing: 0.1em;
+		margin-top: 0.35rem;
 	}
 
 	.hire-role__proof-link {
-		font-family: var(--font-mono);
-		font-size: var(--font-size-3xs);
-		color: var(--hire-accent);
+		font-size: var(--font-size-2xs);
+		color: var(--color-text);
 		text-decoration: underline;
-		text-underline-offset: 0.15em;
+		text-underline-offset: 0.18em;
+		transition: color 150ms ease;
 	}
 
 	.hire-role__proof-link:hover {
-		color: var(--hire-muted);
+		color: var(--color-accent);
 	}
 
-	/* --- MATRIX --- */
+	/* ---- MATRIX — Clean rows, no card noise ---- */
 	.hire-matrix__list {
 		display: grid;
-		gap: 1px;
-		background: var(--hire-border);
-		border: 1px solid var(--hire-border);
+		gap: 0;
 	}
 
 	.hire-matrix__row {
-		background: var(--color-bg, #fff);
-		padding: clamp(1.25rem, 2.5vw, 2rem);
+		padding: clamp(1.5rem, 3vw, 2.5rem) 0;
+		border-top: 1px solid var(--border-color);
 		display: grid;
-		gap: var(--hire-gap-sm);
+		gap: var(--hp-gap-sm);
+		align-items: start;
+	}
+
+	.hire-matrix__row:last-child {
+		border-bottom: 1px solid var(--border-color);
 	}
 
 	.hire-matrix__skill {
-		font-size: clamp(1.05rem, 1rem + 0.2vw, 1.2rem);
+		font-size: clamp(1.1rem, 1rem + 0.3vw, 1.35rem);
 		font-weight: 600;
-		color: var(--hire-accent);
+		color: var(--color-text);
+		letter-spacing: -0.02em;
 	}
 
 	.hire-matrix__evidence {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 0.5rem;
+		gap: 0.4rem;
 	}
 
 	.hire-matrix__item {
-		font-family: var(--font-mono);
 		font-size: var(--font-size-2xs);
-		padding: 0.4rem 0.65rem;
-		border: 1px solid var(--hire-border);
-		color: var(--hire-muted);
+		padding: 0.35rem 0.6rem;
+		border: 1px solid var(--border-color);
+		color: var(--color-text-secondary);
+		transition: border-color 150ms ease;
+	}
+
+	.hire-matrix__row:hover .hire-matrix__item {
+		border-color: var(--border-color-strong);
 	}
 
 	.hire-matrix__roles {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 0.4rem;
+		gap: 0.35rem;
 	}
 
 	.hire-matrix__role {
-		font-family: var(--font-mono);
 		font-size: var(--font-size-3xs);
-		color: var(--hire-subtle);
-		letter-spacing: 0.06em;
+		color: var(--color-text-muted);
+		letter-spacing: 0.04em;
 	}
 
-	/* --- ASK --- */
+	/* ---- ASK — Press feedback, strong CTAs ---- */
 	.hire-ask {
 		display: grid;
-		gap: var(--hire-gap-md);
-		padding: var(--hire-gap-xl) 0;
-		border-top: 1px solid var(--hire-border);
-		border-bottom: 1px solid var(--hire-border);
+		gap: var(--hp-gap-md);
+		padding: var(--hp-gap-xl) 0;
+		border-top: 1px solid var(--border-color);
+		border-bottom: 1px solid var(--border-color);
 	}
 
 	.hire-ask__title {
 		margin: 0;
 		font-family: var(--font-display);
-		font-size: clamp(2rem, 4vw, 3.5rem);
+		font-size: clamp(2.25rem, 5vw, 4rem);
 		font-weight: 800;
-		letter-spacing: -0.04em;
-		color: var(--hire-accent);
+		letter-spacing: -0.045em;
+		color: var(--color-text);
 	}
 
 	.hire-ask__body {
 		margin: 0;
-		font-size: clamp(1.1rem, 1rem + 0.4vw, 1.4rem);
-		line-height: 1.4;
-		color: var(--hire-muted);
-		max-width: 52ch;
+		font-size: clamp(1.15rem, 1rem + 0.5vw, 1.5rem);
+		line-height: 1.35;
+		color: var(--color-text-secondary);
+		max-width: 50ch;
 	}
 
 	.hire-ask__actions {
 		display: flex;
 		flex-wrap: wrap;
-		gap: var(--hire-gap-sm);
+		gap: var(--hp-gap-sm);
 		margin-top: 0.5rem;
 	}
 
 	.hire-ask__cta {
 		display: inline-flex;
 		align-items: center;
-		padding: 0.85rem 1.25rem;
-		border: 1px solid var(--hire-border);
-		background: var(--hire-surface);
-		color: var(--hire-accent);
+		padding: 0.9rem 1.4rem;
+		border: 1px solid var(--border-color-strong);
+		background: transparent;
+		color: var(--color-text);
 		text-decoration: none;
-		font-family: var(--font-mono);
 		font-size: var(--font-size-xs);
-		letter-spacing: 0.08em;
-		transition: background 0.2s ease, border-color 0.2s ease;
+		letter-spacing: 0.06em;
+		transition:
+			background 160ms cubic-bezier(0.23, 1, 0.32, 1),
+			transform 120ms cubic-bezier(0.23, 1, 0.32, 1),
+			border-color 160ms ease;
 	}
 
-	.hire-ask__cta:hover {
-		background: var(--hire-accent);
-		color: var(--color-bg, #fff);
-		border-color: var(--hire-accent);
+	/* Emil: buttons must feel responsive */
+	.hire-ask__cta:active {
+		transform: scale(0.97);
+	}
+
+	@media (hover: hover) and (pointer: fine) {
+		.hire-ask__cta:hover {
+			background: var(--color-text);
+			color: var(--color-bg);
+			border-color: var(--color-text);
+		}
 	}
 
 	.hire-ask__cta--primary {
-		background: var(--hire-accent);
-		color: var(--color-bg, #fff);
-		border-color: var(--hire-accent);
+		background: var(--color-text);
+		color: var(--color-bg);
+		border-color: var(--color-text);
 	}
 
-	.hire-ask__cta--primary:hover {
-		background: var(--hire-muted);
-		border-color: var(--hire-muted);
+	@media (hover: hover) and (pointer: fine) {
+		.hire-ask__cta--primary:hover {
+			background: var(--color-text-secondary);
+			border-color: var(--color-text-secondary);
+		}
 	}
 
-	/* --- FOOTER --- */
+	/* ---- FOOTER ---- */
 	.hire-footer {
-		padding-top: var(--hire-gap-lg);
+		padding-top: var(--hp-gap-lg);
 	}
 
 	.hire-footer__text {
 		margin: 0;
-		font-family: var(--font-mono);
 		font-size: var(--font-size-3xs);
-		color: var(--hire-subtle);
+		color: var(--color-text-subtle);
 		line-height: 1.6;
-		max-width: 60ch;
-		letter-spacing: 0.06em;
+		max-width: 55ch;
+		letter-spacing: 0.04em;
 	}
 
-	/* === RESPONSIVE === */
+	/* ---- RESPONSIVE ---- */
 	@media (min-width: 768px) {
-		.hire-pillars__grid {
-			grid-template-columns: repeat(2, 1fr);
-		}
-
 		.hire-matrix__row {
-			grid-template-columns: minmax(12rem, 0.4fr) 1fr;
-			gap: var(--hire-gap-md);
-			align-items: start;
+			grid-template-columns: minmax(14rem, 0.35fr) 1fr;
+			gap: var(--hp-gap-md);
 		}
 
 		.hire-matrix__roles {
 			grid-column: 2;
 		}
-	}
-
-	@media (min-width: 1024px) {
-		.hire-pillars__grid {
-			grid-template-columns: repeat(4, 1fr);
-		}
 
 		.hire-batch__roles {
 			grid-template-columns: repeat(2, 1fr);
+			gap: 1px;
 		}
 	}
 
-	@media (min-width: 1400px) {
+	@media (min-width: 1200px) {
 		.hire-batch__roles {
 			grid-template-columns: repeat(3, 1fr);
 		}

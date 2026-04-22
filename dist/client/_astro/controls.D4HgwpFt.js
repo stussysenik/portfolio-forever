@@ -1,1 +1,0 @@
-import{d as i,w as t}from"./store.BsubIfWX.js";const n=t("full"),r=t("minimalist"),e=t("spring"),o=i(n,s=>s==="5-min");i(n,s=>s==="15-min");i(n,s=>s==="full");i(r,s=>s==="night-vision");i(r,s=>s==="brutalist");i(e,s=>s==="string");i(e,s=>s==="frictionless");export{n as d,o as i,e as p,r as t};
