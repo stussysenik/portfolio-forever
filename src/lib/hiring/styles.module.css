@@ -1,0 +1,310 @@
+/* ============================================
+   HIRING TRACKER — CSS Modules
+   Scoped styles that compose with the design system
+   ============================================ */
+
+.tracker {
+	display: grid;
+	gap: var(--hp-gap-lg, 2.5rem);
+}
+
+/* ── Stats Bar ── */
+.statsBar {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: 1px;
+	background: var(--border-color, rgba(15, 23, 42, 0.08));
+	border: 1px solid var(--border-color);
+}
+
+@media (min-width: 640px) {
+	.statsBar {
+		grid-template-columns: repeat(5, 1fr);
+	}
+}
+
+.statCell {
+	background: var(--color-bg, #f8f6f2);
+	padding: clamp(1rem, 2vw, 1.5rem);
+	display: flex;
+	flex-direction: column;
+	gap: 0.35rem;
+	align-items: flex-start;
+}
+
+.statValue {
+	font-family: var(--font-display, "Inter", sans-serif);
+	font-size: clamp(1.5rem, 3vw, 2.25rem);
+	font-weight: 800;
+	line-height: 1;
+	letter-spacing: -0.04em;
+	color: var(--color-text, #0f172a);
+}
+
+.statLabel {
+	font-family: var(--font-mono, "JetBrains Mono", monospace);
+	font-size: var(--font-size-3xs, 0.65rem);
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--color-text-subtle, #cbd5e1);
+}
+
+/* ── Filters ── */
+.filterBar {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--hp-gap-sm, 0.75rem);
+	align-items: center;
+}
+
+.filterGroup {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.35rem;
+}
+
+.filterBtn {
+	appearance: none;
+	border: 1px solid var(--border-color);
+	background: transparent;
+	color: var(--color-text-secondary);
+	padding: 0.5rem 0.85rem;
+	font-family: var(--font-mono);
+	font-size: var(--font-size-3xs);
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	cursor: pointer;
+	transition:
+		background 150ms cubic-bezier(0.23, 1, 0.32, 1),
+		color 150ms ease,
+		border-color 150ms ease;
+	min-height: 36px;
+}
+
+.filterBtn:hover {
+	border-color: var(--border-color-strong);
+}
+
+.filterBtnActive {
+	composes: filterBtn;
+	background: var(--color-text);
+	color: var(--color-bg);
+	border-color: var(--color-text);
+}
+
+.searchInput {
+	appearance: none;
+	border: 1px solid var(--border-color);
+	background: transparent;
+	color: var(--color-text);
+	padding: 0.5rem 0.85rem;
+	font-family: var(--font-mono);
+	font-size: var(--font-size-xs);
+	min-width: 12rem;
+	min-height: 36px;
+	transition: border-color 150ms ease;
+}
+
+.searchInput:focus {
+	outline: none;
+	border-color: var(--color-text);
+}
+
+.searchInput::placeholder {
+	color: var(--color-text-subtle);
+}
+
+/* ── Application List ── */
+.appList {
+	display: grid;
+	gap: 1px;
+	background: var(--border-color);
+	border: 1px solid var(--border-color);
+}
+
+.appRow {
+	background: var(--color-bg);
+	padding: clamp(1rem, 2vw, 1.5rem);
+	display: grid;
+	gap: 0.5rem;
+	cursor: pointer;
+	transition:
+		background 180ms cubic-bezier(0.23, 1, 0.32, 1),
+		transform 180ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+@media (hover: hover) and (pointer: fine) {
+	.appRow:hover {
+		background: var(--color-surface);
+		transform: translateX(3px);
+	}
+}
+
+.appRowActive {
+	composes: appRow;
+	background: var(--color-surface);
+	border-left: 2px solid var(--color-text);
+}
+
+.appHeader {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	gap: var(--hp-gap-sm);
+	flex-wrap: wrap;
+}
+
+.appCompany {
+	font-size: clamp(1rem, 0.95rem + 0.2vw, 1.15rem);
+	font-weight: 600;
+	color: var(--color-text);
+	letter-spacing: -0.01em;
+}
+
+.appRole {
+	font-size: var(--font-size-sm);
+	color: var(--color-text-secondary);
+	line-height: 1.4;
+}
+
+.appMeta {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	align-items: center;
+	margin-top: 0.25rem;
+}
+
+.stageBadge {
+	font-family: var(--font-mono);
+	font-size: var(--font-size-3xs);
+	padding: 0.25rem 0.5rem;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	border: 1px solid var(--border-color);
+}
+
+.tierBadge {
+	font-family: var(--font-mono);
+	font-size: var(--font-size-3xs);
+	padding: 0.25rem 0.5rem;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+}
+
+.tier1 {
+	composes: tierBadge;
+	background: oklch(0.25 0.02 250);
+	color: oklch(0.95 0 0);
+}
+
+.tier2 {
+	composes: tierBadge;
+	background: oklch(0.35 0.03 250);
+	color: oklch(0.95 0 0);
+}
+
+.tier3 {
+	composes: tierBadge;
+	background: oklch(0.45 0.04 250);
+	color: oklch(0.98 0 0);
+}
+
+/* ── Stage Actions ── */
+.actionBar {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.35rem;
+	margin-top: 0.5rem;
+}
+
+.actionBtn {
+	appearance: none;
+	border: 1px solid var(--border-color);
+	background: transparent;
+	color: var(--color-text-secondary);
+	padding: 0.4rem 0.7rem;
+	font-family: var(--font-mono);
+	font-size: var(--font-size-3xs);
+	letter-spacing: 0.06em;
+	cursor: pointer;
+	transition: all 150ms ease;
+	min-height: 32px;
+}
+
+.actionBtn:hover {
+	background: var(--color-text);
+	color: var(--color-bg);
+	border-color: var(--color-text);
+}
+
+/* ── Detail Panel ── */
+.detailPanel {
+	padding: var(--hp-gap-md);
+	border: 1px solid var(--border-color);
+	background: var(--color-surface);
+	display: grid;
+	gap: var(--hp-gap-sm);
+}
+
+.detailTitle {
+	font-size: clamp(1.1rem, 1rem + 0.3vw, 1.3rem);
+	font-weight: 600;
+	color: var(--color-text);
+}
+
+.detailLink {
+	font-family: var(--font-mono);
+	font-size: var(--font-size-2xs);
+	color: var(--color-accent);
+	text-decoration: underline;
+	text-underline-offset: 0.15em;
+}
+
+/* ── Empty State ── */
+.emptyState {
+	padding: var(--hp-gap-xl) var(--hp-gap-md);
+	text-align: center;
+	color: var(--color-text-muted);
+	font-size: var(--font-size-sm);
+}
+
+/* ── Conversion Bar ── */
+.conversionBar {
+	display: flex;
+	align-items: center;
+	gap: var(--hp-gap-sm);
+	padding: var(--hp-gap-sm) 0;
+	border-top: 1px solid var(--border-color);
+	border-bottom: 1px solid var(--border-color);
+}
+
+.conversionLabel {
+	font-family: var(--font-mono);
+	font-size: var(--font-size-3xs);
+	color: var(--color-text-subtle);
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	white-space: nowrap;
+}
+
+.conversionTrack {
+	flex: 1;
+	height: 4px;
+	background: var(--border-color);
+	position: relative;
+}
+
+.conversionFill {
+	height: 100%;
+	background: var(--color-text);
+	transition: width 500ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.conversionValue {
+	font-family: var(--font-mono);
+	font-size: var(--font-size-xs);
+	color: var(--color-text);
+	font-weight: 600;
+	white-space: nowrap;
+}

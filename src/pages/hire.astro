@@ -1,6 +1,7 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import HirePage from "../lib/components/hire/HirePage.svelte";
+import HiringTracker from "../lib/hiring/HiringTracker.svelte";
 import { getPublicRuntimeState } from "../lib/server/convex";
 
 const runtime = await getPublicRuntimeState();
@@ -14,4 +15,7 @@ const runtime = await getPublicRuntimeState();
 	robots="index, follow"
 >
 	<HirePage client:load />
+	<section style="margin-top: clamp(4rem, 10vw, 7rem);">
+		<HiringTracker client:load />
+	</section>
 </BaseLayout>
