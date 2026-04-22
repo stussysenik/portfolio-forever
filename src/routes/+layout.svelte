@@ -372,10 +372,39 @@ if (!isExcluded) {			// Load site config from Convex
 {:else if currentPath.startsWith('/admin')}
 	<slot />
 {:else if isInPreview}
-<!-- PREVIEW MODE: WYSIWYG only — no Convex calls, no chrome, just the content -->
-<main class="main-content preview-content" style="padding-top: 0; padding-bottom: 0;">
-	<slot />
-</main>
+<!-- PREVIEW MODE: show selected nav paradigm without Convex calls -->
+{#if $navParadigm === 'sidebar'}
+	<NavSidebar
+		{navItems}
+		socialLinks={socialLinksData}
+		{profileName}
+		currentPath={$page.url.pathname}
+		profileAvailable={profileAvailable}
+	/>
+	<main class="main-content main-content--sidebar preview-content">
+		<slot />
+	</main>
+{:else if $navParadigm === 'drawer'}
+	<NavDrawer
+		{navItems}
+		socialLinks={socialLinksData}
+		{profileName}
+		currentPath={$page.url.pathname}
+	/>
+	<main class="main-content preview-content">
+		<slot />
+	</main>
+{:else}
+	<NavHybrid
+		{navItems}
+		socialLinks={socialLinksData}
+		{profileName}
+		currentPath={$page.url.pathname}
+	/>
+	<main class="main-content preview-content">
+		<slot />
+	</main>
+{/if}
 {:else if $navParadigm === 'sidebar'}
         <NavSidebar
                 {navItems}

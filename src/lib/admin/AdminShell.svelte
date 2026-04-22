@@ -1,635 +1,469 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
-	import './tokens/admin-tokens.css';
-	import './tokens/admin-shell-tokens.css';
-	import PageSidebar from './PageSidebar.svelte';
-	import CMSidebar from './CMSidebar.svelte';
-	import { adminViewStore } from './stores/adminViewStore';
-	import PageBar from './PageBar.svelte';
-	import PreviewDrawer from './PreviewDrawer.svelte';
-	import AdminIcon from './AdminIcon.svelte';
-	import { IconSettings } from './admin-icons';
-	import WipBadge from './WipBadge.svelte';
-	import MobileDock from './MobileDock.svelte';
+  import { onMount, tick } from 'svelte';
+  import { createNavParadigmMachine, type NavParadigm } from './stores/navParadigmMachine';
 
-	export let pages: any[] = [];
-	export let activePage: any = null;
-	export let featureFlags: any[] = [];
-	export let entriesByTable: Record<string, any[]> = {};
-	export let siteConfig: any = null;
-	export let registrySections: any[] = [];
+  // Props
+  export let pages: any[] = [];
+  export let activePage: any = null;
+  export let featureFlags: any[] = [];
+  export let onToggleFlag: (key: string, category: string) => void = () => {};
 
-	// Reference props to suppress unused-export warnings — these are part of the public API
-	$: void siteConfig;
-	$: void registrySections;
+  // State machine for navigation paradigm
+  const navMachine = createNavParadigmMachine('hybrid');
+  let navState = navMachine.getState();
 
-	const dispatch = createEventDispatcher<{
-		selectpage: { pageId: string };
-		selectsection: { index: number };
-		opensettings: void;
-		reorderpages: { pageIds: string[] };
-		openpages: void;
-		opensections: void;
-		openpreview: void;
-	}>();
+  const unsubNav = navMachine.subscribe((s) => {
+    navState = s;
+  });
 
-	export let activeMobileSheet: 'pages' | 'sections' | 'preview' | null = null;
+  onMount(() => {
+    return () => {
+      unsubNav();
+    };
+  });
 
-	let configOpen = false;
-	let overflowOpen = false;
-	let previewOpen = false;
+  // Preview URL and iframe ref
+  $: previewUrl = activePage?.route ?? '/';
+  let iframeEl: HTMLIFrameElement;
+  let iframeKey = 0;
 
-	// Read theme/font/mode from document for top bar chips
-	let currentTheme = '';
-	let currentFont = '';
+  // Send config to iframe via postMessage
+  function syncToIframe() {
+    if (iframeEl?.contentWindow) {
+      iframeEl.contentWindow.postMessage({
+        type: 'admin:setNavParadigm',
+        navParadigm: navState.current === 'none' ? 'hybrid' : navState.current
+      }, '*');
+      iframeEl.contentWindow.postMessage({
+        type: 'admin:setTheme',
+        theme: currentTheme
+      }, '*');
+      iframeEl.contentWindow.postMessage({
+        type: 'admin:setFont',
+        font: currentFont
+      }, '*');
+    }
+  }
 
-	function readDocMeta() {
-		if (typeof document === 'undefined') return;
-		currentTheme = document.documentElement.dataset.theme || 'minimal';
-		currentFont = document.documentElement.dataset.font || 'inter';
-	}
+  // Handle switching with animation
+  async function handleSwitch(to: NavParadigm) {
+    navMachine.send({ type: 'SWITCH', to });
+    await tick();
+    setTimeout(() => {
+      navMachine.send({ type: 'TRANSITION_END' });
+      syncToIframe();
+    }, 300);
+  }
 
-	// Initialise on mount-like first render
-	$: if (typeof document !== 'undefined') {
-		readDocMeta();
-	}
+  // Current meta
+  let currentTheme = 'minimal';
+  let currentFont = 'inter';
 
-	let themeDropdownOpen = false;
-	let fontDropdownOpen = false;
+  onMount(() => {
+    if (typeof document !== 'undefined') {
+      currentTheme = document.documentElement.dataset.theme || 'minimal';
+      currentFont = document.documentElement.dataset.font || 'inter';
+    }
+  });
 
-	const THEME_OPTIONS = [
-		{ id: 'minimal', label: 'Minimal', accent: '#2563EB' },
-		{ id: 'studio', label: 'Studio', accent: '#8B7355' },
-		{ id: 'terminal', label: 'Terminal', accent: '#00FF00' },
-		{ id: 'bw', label: 'B&W', accent: '#000000' },
-	];
+  const paradigms: { id: NavParadigm; label: string }[] = [
+    { id: 'sidebar', label: 'SIDEBAR' },
+    { id: 'drawer', label: 'DRAWER' },
+    { id: 'hybrid', label: 'HYBRID' },
+    { id: 'none', label: 'NONE' },
+  ];
 
-	const FONT_OPTIONS = [
-		{ id: 'inter', label: 'Inter' },
-		{ id: 'rubik', label: 'Rubik' },
-		{ id: 'helvetica', label: 'Helvetica' },
-		{ id: 'crimson', label: 'Crimson' },
-		{ id: 'times', label: 'Times' },
-		{ id: 'ibm-plex', label: 'IBM Plex' },
-		{ id: 'jetbrains', label: 'JetBrains' },
-		{ id: 'fira', label: 'Fira Code' },
-		{ id: 'space', label: 'Space' },
-	];
+  const themes = [
+    { id: 'minimal', label: 'MINIMAL', swatch: '#2563EB' },
+    { id: 'studio', label: 'STUDIO', swatch: '#8a8a8a' },
+    { id: 'terminal', label: 'TERMINAL', swatch: '#00d9ff' },
+    { id: 'bw', label: 'B&W', swatch: '#1a1a1a' },
+    { id: 'inverse', label: 'INVERSE', swatch: '#ffffff' },
+  ];
 
-	function selectTheme(themeId: string) {
-		currentTheme = themeId;
-		document.documentElement.dataset.theme = themeId;
-		localStorage.setItem('theme', themeId);
-		themeDropdownOpen = false;
-	}
+  function selectTheme(themeId: string) {
+    currentTheme = themeId;
+    if (typeof document !== 'undefined') {
+      document.documentElement.dataset.theme = themeId;
+      localStorage.setItem('theme', themeId);
+    }
+    syncToIframe();
+  }
 
-	function selectFont(fontId: string) {
-		currentFont = fontId;
-		document.documentElement.dataset.font = fontId;
-		localStorage.setItem('font', fontId);
-		fontDropdownOpen = false;
-	}
-
-	function handleClickOutside(e: MouseEvent) {
-		const target = e.target as HTMLElement;
-		if (!target.closest('.dropdown-wrapper')) {
-			themeDropdownOpen = false;
-			fontDropdownOpen = false;
-		}
-		if (!target.closest('.topbar-overflow-chip') && !target.closest('.topbar-overflow-dropdown')) {
-			overflowOpen = false;
-		}
-	}
-
-	function toggleConfig() {
-		configOpen = !configOpen;
-	}
-
-	$: activePageId = activePage?.pageId ?? '';
-
-	function handleSelectPage(e: CustomEvent<{ pageId: string }>) {
-		dispatch('selectpage', e.detail);
-	}
-
-	function getEntryCount(page: any): number {
-		if (!page?.sections?.length) return 0;
-		const dt = page.sections[0]?.dataTable;
-		if (!dt) return 0;
-		return entriesByTable[dt]?.length ?? 0;
-	}
+  function selectFont(fontId: string) {
+    currentFont = fontId;
+    if (typeof document !== 'undefined') {
+      document.documentElement.dataset.font = fontId;
+      localStorage.setItem('preferred-font', fontId);
+    }
+    syncToIframe();
+  }
 </script>
 
-<svelte:window on:click={handleClickOutside} />
+<div class="admin-shell" data-admin>
+  <!-- Top bar — surgical precision -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <span class="brand">PORTFOLIO.OS</span>
+      <span class="sep">|</span>
+      <span class="meta">{navState.current.toUpperCase()}</span>
+      <span class="sep">|</span>
+      <span class="meta">{currentTheme.toUpperCase()}</span>
+    </div>
+    <div class="topbar-right">
+      <span class="status-indicator" class:active={navState.status === 'idle'}></span>
+      <span class="status-text">{navState.status.toUpperCase()}</span>
+    </div>
+  </header>
 
-<div class="admin-shell" data-admin class:config-open={configOpen}>
-	<!-- Top bar -->
-	<header class="topbar">
-		<div class="topbar-left">
-			<span class="breadcrumb">
-				<span class="topbar-breadcrumb-full">
-					<span class="breadcrumb-root">admin</span>
-					{#if activePage}
-						<span class="breadcrumb-sep">/</span>
-						<span class="breadcrumb-current">{activePage.label ?? activePage.pageId}</span>
-					{/if}
-				</span>
-				<span class="topbar-breadcrumb-short">
-					<span class="breadcrumb-current">{activePage?.label ?? 'admin'}</span>
-				</span>
-			</span>
-		</div>
-		<div class="topbar-right">
-			<button class="chip" on:click={() => dispatch('opensettings')} title="Open settings" aria-label="Settings">
-				<AdminIcon icon={IconSettings} size="sm" tone="inherit" />
-			</button>
-			<WipBadge />
-			<div class="topbar-collapsible">
-				<div class="dropdown-wrapper">
-					<button class="chip" on:click={() => { themeDropdownOpen = !themeDropdownOpen; fontDropdownOpen = false; }} title="Select theme">
-						{currentTheme}
-					</button>
-					{#if themeDropdownOpen}
-						<div class="dropdown">
-							{#each THEME_OPTIONS as theme}
-								<button
-									class="dropdown-item"
-									class:dropdown-item-active={currentTheme === theme.id}
-									on:click={() => selectTheme(theme.id)}
-								>
-									<span class="theme-dot" style="background: {theme.accent};"></span>
-									{theme.label}
-								</button>
-							{/each}
-						</div>
-					{/if}
-				</div>
-				<div class="dropdown-wrapper">
-					<button class="chip" on:click={() => { fontDropdownOpen = !fontDropdownOpen; themeDropdownOpen = false; }} title="Select font">
-						{currentFont}
-					</button>
-					{#if fontDropdownOpen}
-						<div class="dropdown">
-							{#each FONT_OPTIONS as font}
-								<button
-									class="dropdown-item"
-									class:dropdown-item-active={currentFont === font.id}
-									on:click={() => selectFont(font.id)}
-								>
-									{font.label}
-								</button>
-							{/each}
-						</div>
-					{/if}
-				</div>
-			</div>
-			<button class="topbar-overflow-chip" on:click={() => overflowOpen = !overflowOpen}>...</button>
-			{#if overflowOpen}
-				<div class="topbar-overflow-dropdown">
-					<div class="overflow-row">
-						<span class="overflow-label">THEME</span>
-						<div class="dropdown-wrapper">
-							<button class="chip" on:click={() => { themeDropdownOpen = !themeDropdownOpen; fontDropdownOpen = false; }} title="Select theme">
-								{currentTheme}
-							</button>
-							{#if themeDropdownOpen}
-								<div class="dropdown">
-									{#each THEME_OPTIONS as theme}
-										<button
-											class="dropdown-item"
-											class:dropdown-item-active={currentTheme === theme.id}
-											on:click={() => selectTheme(theme.id)}
-										>
-											<span class="theme-dot" style="background: {theme.accent};"></span>
-											{theme.label}
-										</button>
-									{/each}
-								</div>
-							{/if}
-						</div>
-					</div>
-					<div class="overflow-row">
-						<span class="overflow-label">FONT</span>
-						<div class="dropdown-wrapper">
-							<button class="chip" on:click={() => { fontDropdownOpen = !fontDropdownOpen; themeDropdownOpen = false; }} title="Select font">
-								{currentFont}
-							</button>
-							{#if fontDropdownOpen}
-								<div class="dropdown">
-									{#each FONT_OPTIONS as font}
-										<button
-											class="dropdown-item"
-											class:dropdown-item-active={currentFont === font.id}
-											on:click={() => selectFont(font.id)}
-										>
-											{font.label}
-										</button>
-									{/each}
-								</div>
-							{/if}
-						</div>
-					</div>
-				</div>
-			{/if}
-			<button
-				class="chip"
-				class:chip-active={configOpen}
-				on:click={toggleConfig}
-				title="Toggle config panel"
-			>
-				{configOpen ? 'preview' : 'config'}
-			</button>
-		</div>
-	</header>
+  <!-- Control surface — navigation paradigm switcher -->
+  <nav class="control-surface">
+    <div class="control-group">
+      <span class="control-label">NAV</span>
+      <div class="control-buttons">
+        {#each paradigms as p}
+          <button
+            class="control-btn"
+            class:active={navState.current === p.id}
+            on:click={() => handleSwitch(p.id)}
+          >
+            {p.label}
+          </button>
+        {/each}
+      </div>
+    </div>
 
-	<!-- Mobile page bar (visible < 768px) -->
-	<PageBar
-		{pages}
-		activePage={activePageId}
-		{entriesByTable}
-		on:selectpage
-	/>
+    <div class="control-group">
+      <span class="control-label">THEME</span>
+      <div class="control-buttons">
+        {#each themes as t}
+          <button
+            class="control-btn"
+            class:active={currentTheme === t.id}
+            on:click={() => selectTheme(t.id)}
+          >
+            <span class="swatch" style="background: {t.swatch}"></span>
+            {t.label}
+          </button>
+        {/each}
+      </div>
+    </div>
 
-	<!-- Sidebar (visible >= 768px) -->
-	<aside class="sidebar">
-		<PageSidebar
-			{pages}
-			{activePageId}
-			{featureFlags}
-			{entriesByTable}
-			on:selectpage={handleSelectPage}
-			on:newpage
-			on:toggleflag
-			on:togglepage
-			on:reorderpages
-			on:archivepage
-		/>
-		<div class="sidebar-footer">
-			<slot name="sidebar-footer" />
-		</div>
-	</aside>
+    <div class="control-group">
+      <span class="control-label">FONT</span>
+      <div class="control-buttons">
+        {#each ['inter', 'jetbrains', 'crimson', 'space'] as f}
+          <button
+            class="control-btn"
+            class:active={currentFont === f}
+            on:click={() => selectFont(f)}
+          >
+            {f.toUpperCase()}
+          </button>
+        {/each}
+      </div>
+    </div>
 
-	<!-- Builder pane -->
-	<main class="builder">
-		<slot />
-	</main>
+    {#if featureFlags.length > 0}
+      <div class="control-group">
+        <span class="control-label">FLAGS</span>
+        <div class="control-buttons">
+          {#each featureFlags as flag}
+            <button
+              class="control-btn"
+              class:active={flag.enabled}
+              on:click={() => onToggleFlag(flag.key, flag.category)}
+              title="{flag.key}: {flag.enabled ? 'ON' : 'OFF'}"
+            >
+              <span class="flag-dot" class:on={flag.enabled}></span>
+              {flag.key.toUpperCase()}
+            </button>
+          {/each}
+        </div>
+      </div>
+    {/if}
+  </nav>
 
-	<!-- Preview pane (visible >= 1024px, hidden when config-open) -->
-	<section class="preview">
-		<slot name="preview" />
-	</section>
-
-	<!-- Mobile dock (shown on < 768px via CSS) -->
-	<div class="mobile-dock-wrap">
-		<MobileDock
-			active={activeMobileSheet}
-			on:openpages={() => dispatch('openpages')}
-			on:opensections={() => dispatch('opensections')}
-			on:openpreview={() => dispatch('openpreview')}
-		/>
-	</div>
-
-	<!-- Legacy preview drawer (tablet only, hidden on mobile + desktop) -->
-	<PreviewDrawer
-		open={previewOpen}
-		siteUrl={typeof window !== 'undefined' ? window.location.origin : ''}
-		on:close={() => (previewOpen = false)}
-		on:open={() => (previewOpen = true)}
-	/>
+  <!-- Live preview — the proof -->
+  <main class="preview-frame">
+    <div class="preview-header">
+      <span class="preview-label">LIVE PREVIEW</span>
+      <span class="preview-route">{previewUrl}</span>
+    </div>
+    <div class="preview-container">
+      {#key iframeKey}
+        <iframe
+          bind:this={iframeEl}
+          src="{typeof window !== 'undefined' ? window.location.origin : ''}{previewUrl}?preview=true&nav={navState.current}"
+          title="Live Preview"
+          class="preview-iframe"
+          sandbox="allow-scripts allow-same-origin"
+          on:load={syncToIframe}
+        ></iframe>
+      {/key}
+    </div>
+  </main>
 </div>
 
 <style>
-	/* === Shell grid === */
-	.admin-shell {
-		display: flex;
-		flex-direction: column;
-		height: 100dvh;
-		width: 100vw;
-		overflow: hidden;
-		background: var(--admin-chrome-bg);
-		color: var(--admin-text);
-		font-family: var(--admin-font-sans);
-	}
+  /* === Right-Angle Edges Philosophy === */
+  /* 0px border-radius. 1px borders. Monospace. Precision. */
 
-	/* Tablet: sidebar + main */
-	@media (min-width: 768px) {
-		.admin-shell {
-			display: grid;
-			grid-template-rows: var(--admin-topbar-h) minmax(0, 1fr);
-			grid-template-columns: var(--admin-sidebar-w) 1fr;
-			grid-template-areas:
-				"topbar topbar"
-				"sidebar builder";
-		}
-	}
+  .admin-shell {
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+    width: 100vw;
+    overflow: hidden;
+    background: #0a0a0a;
+    color: #e8e8e8;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 11px;
+    line-height: 1.4;
+    letter-spacing: 0.02em;
+  }
 
-	/* Desktop: sidebar + builder + preview */
-	@media (min-width: 1024px) {
-		.admin-shell {
-			grid-template-rows: var(--admin-topbar-h) minmax(0, 1fr);
-			grid-template-columns: var(--admin-sidebar-w) 1fr 1fr;
-			grid-template-areas:
-				"topbar topbar topbar"
-				"sidebar builder preview";
-		}
+  /* === Top Bar === */
+  .topbar {
+    flex: 0 0 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 12px;
+    border-bottom: 1px solid #1a1a1a;
+    background: #0a0a0a;
+    text-transform: uppercase;
+  }
 
-		/* Config mode: hide preview, expand builder */
-		.admin-shell.config-open {
-			grid-template-columns: var(--admin-sidebar-w) 1fr;
-			grid-template-areas:
-				"topbar topbar"
-				"sidebar builder";
-		}
-	}
+  .topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
 
-	/* === Top bar === */
-	.topbar {
-		flex: 0 0 var(--admin-topbar-h);
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		padding: 0 var(--admin-space-4, 16px);
-		border-bottom: 1px solid var(--admin-keyline);
-		background: var(--admin-chrome-bg);
-		color: var(--admin-text);
-		width: 100%;
-	}
+  .brand {
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    color: #fff;
+  }
 
-	@media (min-width: 768px) {
-		.topbar {
-			grid-area: topbar;
-		}
-	}
+  .sep {
+    color: #333;
+  }
 
-	.topbar-left {
-		display: flex;
-		align-items: center;
-		gap: var(--admin-space-2, 8px);
-		min-width: 0;
-	}
+  .meta {
+    color: #666;
+    letter-spacing: 0.06em;
+  }
 
-	.topbar-right {
-		display: flex;
-		align-items: center;
-		gap: var(--admin-space-2, 8px);
-	}
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
 
-	.breadcrumb {
-		font-family: var(--font-mono);
-		font-size: var(--admin-text-sm, 13px);
-		display: flex;
-		align-items: center;
-		gap: var(--admin-space-1, 4px);
-		overflow: hidden;
-		white-space: nowrap;
-	}
+  .status-indicator {
+    width: 6px;
+    height: 6px;
+    background: #333;
+    border-radius: 0; /* Right-angle */
+  }
 
-	.breadcrumb-root {
-		color: var(--admin-text-muted);
-	}
+  .status-indicator.active {
+    background: #44D62C;
+    box-shadow: 0 0 4px #44D62C;
+  }
 
-	.breadcrumb-sep {
-		color: var(--admin-text-subtle);
-	}
+  .status-text {
+    color: #666;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+  }
 
-	.breadcrumb-current {
-		color: var(--admin-text);
-		font-weight: 500;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
+  /* === Control Surface === */
+  .control-surface {
+    flex: 0 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+    border-bottom: 1px solid #1a1a1a;
+    background: #0f0f0f;
+  }
 
-	.chip {
-		font-family: var(--admin-font-mono);
-		font-size: var(--admin-text-xs, 12px);
-		text-transform: uppercase;
-		letter-spacing: 0.06em;
-		padding: var(--admin-space-2, 8px) var(--admin-space-3, 12px);
-		border: 1px solid var(--admin-keyline);
-		border-radius: 2px;
-		background: transparent;
-		color: var(--admin-text-subtle);
-		cursor: pointer;
-		transition: all var(--admin-transition, 120ms ease);
-		white-space: nowrap;
-		min-height: var(--admin-touch-compact, 36px);
-	}
+  .control-group {
+    display: flex;
+    align-items: center;
+    border-right: 1px solid #1a1a1a;
+  }
 
-	.chip:hover {
-		border-color: var(--admin-keyline-strong);
-		color: var(--admin-text);
-	}
+  .control-group:last-child {
+    border-right: none;
+  }
 
-	.chip-active {
-		background: var(--admin-active-outline, #00FF00);
-		border-color: var(--admin-active-outline, #00FF00);
-		color: #000;
-	}
+  .control-label {
+    padding: 8px 10px;
+    color: #444;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    font-weight: 600;
+    border-right: 1px solid #1a1a1a;
+    user-select: none;
+  }
 
-	.chip-active:hover {
-		background: var(--admin-active-outline, #00FF00);
-		border-color: var(--admin-active-outline, #00FF00);
-		color: #000;
-	}
+  .control-buttons {
+    display: flex;
+    gap: 0;
+  }
 
-	/* === Dropdowns === */
-	.dropdown-wrapper {
-		position: relative;
-	}
+  .control-btn {
+    padding: 8px 12px;
+    font-family: inherit;
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    background: transparent;
+    border: none;
+    border-right: 1px solid #1a1a1a;
+    color: #666;
+    cursor: pointer;
+    transition: all 120ms ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 32px;
+  }
 
-	.dropdown {
-		position: absolute;
-		top: calc(100% + 4px);
-		right: 0;
-		min-width: 140px;
-		background: var(--admin-chrome-bg);
-		border: 1px solid var(--admin-keyline);
-		border-radius: 4px;
-		padding: 4px;
-		z-index: 100;
-		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-	}
+  .control-btn:last-child {
+    border-right: none;
+  }
 
-	.dropdown-item {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		width: 100%;
-		padding: 8px 10px;
-		font-family: var(--admin-font-mono);
-		font-size: var(--admin-text-sm, 13px);
-		background: transparent;
-		border: none;
-		color: var(--admin-text-subtle);
-		cursor: pointer;
-		border-radius: 2px;
-		transition: all var(--admin-transition, 120ms ease);
-		text-align: left;
-		min-height: var(--admin-touch-compact, 36px);
-	}
+  .control-btn:hover {
+    color: #ccc;
+    background: #1a1a1a;
+  }
 
-	.dropdown-item:hover {
-		background: var(--admin-frame-bg);
-		color: var(--admin-text);
-	}
+  .control-btn.active {
+    color: #fff;
+    background: #1a1a1a;
+    border-left: 2px solid #2563EB;
+    padding-left: 10px; /* compensate for border */
+  }
 
-	.dropdown-item-active {
-		color: var(--admin-active-outline, #00FF00);
-	}
+  .swatch {
+    width: 8px;
+    height: 8px;
+    border-radius: 0;
+    border: 1px solid #333;
+  }
 
-	.theme-dot {
-		width: 8px;
-		height: 8px;
-		border-radius: 50%;
-		flex-shrink: 0;
-	}
+  .flag-dot {
+    width: 6px;
+    height: 6px;
+    background: #333;
+    border-radius: 0;
+    transition: background 120ms ease;
+  }
 
-	/* Mobile pills styling now in PageBar.svelte */
+  .flag-dot.on {
+    background: #44D62C;
+    box-shadow: 0 0 3px #44D62C;
+  }
 
-	/* === Sidebar === */
-	.sidebar {
-		grid-area: sidebar;
-		display: none;
-		flex-direction: column;
-		border-right: 1px solid var(--admin-keyline);
-		overflow-y: auto;
-		background: var(--admin-chrome-bg);
-		color: var(--admin-text);
-	}
+  /* === Preview Frame === */
+  .preview-frame {
+    flex: 1 1 0%;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+    background: #000;
+  }
 
-	@media (min-width: 768px) {
-		.sidebar {
-			display: flex;
-		}
-	}
+  .preview-header {
+    flex: 0 0 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 12px;
+    border-bottom: 1px solid #1a1a1a;
+    background: #0a0a0a;
+    text-transform: uppercase;
+  }
 
-	.sidebar-footer {
-		margin-top: auto;
-	}
+  .preview-label {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: #444;
+    font-weight: 600;
+  }
 
-	/* === Mobile dock (bottom row, hidden tablet+) === */
-	.mobile-dock-wrap {
-		flex: 0 0 auto;
-		display: block;
-		width: 100%;
-	}
-	@media (min-width: 768px) {
-		.mobile-dock-wrap {
-			grid-area: dock;
-			display: none;
-		}
-	}
+  .preview-route {
+    font-size: 10px;
+    color: #666;
+    letter-spacing: 0.04em;
+  }
 
-	/* === Builder (workspace surface) === */
-	.builder {
-		flex: 1 1 0%;
-		min-height: 0;
-		overflow-y: auto;
-		overscroll-behavior: contain;
-		padding: var(--admin-space-4, 16px);
-		background: var(--admin-workspace-bg);
-		color: var(--admin-text);
-		width: 100%;
-	}
+  .preview-container {
+    flex: 1 1 0%;
+    position: relative;
+    overflow: hidden;
+    background: #000;
+  }
 
-	@media (min-width: 768px) {
-		.builder {
-			grid-area: builder;
-		}
-	}
+  .preview-iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: var(--color-bg, #fff);
+  }
 
-	@media (max-width: 767px) {
-		.builder {
-			padding: var(--admin-space-2, 8px) 0;
-		}
-	}
+  /* === GPU Morphing Animation === */
+  /* Applied when nav paradigm changes */
+  @keyframes morphIn {
+    from {
+      opacity: 0;
+      transform: scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
 
-	/* === Preview frame === */
-	.preview {
-		grid-area: preview;
-		display: none;
-		overflow-y: auto;
-		border-left: 1px solid var(--admin-keyline);
-		background: var(--admin-frame-bg);
-		padding: 8px;
-	}
+  .preview-iframe {
+    animation: morphIn 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
 
-	@media (min-width: 1024px) {
-		.preview {
-			display: block;
-		}
+  /* === Responsive === */
+  @media (max-width: 767px) {
+    .control-surface {
+      flex-direction: column;
+    }
 
-		.config-open .preview {
-			display: none;
-		}
-	}
+    .control-group {
+      border-right: none;
+      border-bottom: 1px solid #1a1a1a;
+      width: 100%;
+    }
 
-	/* === Priority collapse === */
-	@media (max-width: 1023px) {
-		.topbar-collapsible { display: none; }
-		.topbar-overflow-chip { display: inline-flex; }
-		.topbar-breadcrumb-full { display: none; }
-		.topbar-breadcrumb-short { display: inline; }
-	}
-	@media (min-width: 1024px) {
-		.topbar-collapsible { display: flex; gap: 4px; }
-		.topbar-overflow-chip { display: none; }
-		.topbar-breadcrumb-full { display: inline; }
-		.topbar-breadcrumb-short { display: none; }
-	}
+    .control-group:last-child {
+      border-bottom: none;
+    }
 
-	.topbar-overflow-chip {
-		font-family: var(--admin-font-mono);
-		font-size: var(--admin-text-sm, 13px);
-		padding: var(--admin-space-2, 8px) var(--admin-space-3, 12px);
-		border: 1px solid var(--admin-keyline);
-		border-radius: 2px;
-		background: transparent;
-		color: var(--admin-text-subtle);
-		cursor: pointer;
-		min-height: var(--admin-touch-compact, 36px);
-		display: none; /* shown via media query */
-		align-items: center;
-		transition: all var(--admin-transition, 120ms ease);
-	}
-	.topbar-overflow-chip:hover {
-		border-color: var(--admin-keyline-strong);
-		color: var(--admin-text);
-	}
+    .control-buttons {
+      flex-wrap: wrap;
+    }
+  }
 
-	.topbar-overflow-dropdown {
-		position: absolute;
-		top: calc(var(--admin-topbar-h, 44px) + 4px);
-		right: var(--admin-space-4, 16px);
-		background: var(--admin-chrome-bg);
-		border: 1px solid var(--admin-keyline);
-		border-radius: 4px;
-		padding: var(--admin-space-2, 8px);
-		z-index: 50;
-		display: flex;
-		flex-direction: column;
-		gap: var(--admin-space-2, 8px);
-		min-width: 160px;
-		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-	}
+  @media (prefers-reduced-motion: reduce) {
+    .preview-iframe {
+      animation: none;
+    }
 
-	.overflow-row {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: var(--admin-space-2, 8px);
-	}
-
-	.overflow-label {
-		font-family: var(--admin-font-mono);
-		font-size: var(--admin-text-xs, 12px);
-		text-transform: uppercase;
-		letter-spacing: 0.08em;
-		color: var(--admin-text-muted);
-		font-weight: 600;
-	}
-</style>
-08em;
-		color: var(--admin-text-muted);
-		font-weight: 600;
-	}
+    .control-btn {
+      transition: none;
+    }
+  }
 </style>

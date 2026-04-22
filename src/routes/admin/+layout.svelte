@@ -191,7 +191,3 @@
 		background: var(--color-admin-github-hover);
 	}
 </style>
-tn-github:hover {
-		background: var(--color-admin-github-hover);
-	}
-</style>

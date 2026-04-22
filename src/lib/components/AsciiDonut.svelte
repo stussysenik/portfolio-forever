@@ -419,137 +419,46 @@
                 gap: var(--space-md);
         }
 
-<<<<<<< Updated upstream
-        .donut-display {
-                overflow: hidden;
-                max-width: 100%;
-                will-change: transform;
-                touch-action: none;
-                cursor: grab;
-                user-select: none;
-                -webkit-user-select: none;
-        }
+  .donut-display {
+    overflow: hidden;
+    max-width: 100%;
+    will-change: transform;
+    touch-action: none;
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+  }
 
-        .donut-display.is-dragging {
-                cursor: grabbing;
-        }
+  .donut-display.is-dragging {
+    cursor: grabbing;
+  }
 
-        .donut-display.shift-ready {
-                cursor: move;
-        }
+  .donut-display.shift-ready {
+    cursor: move;
+  }
 
-        .donut-display.is-positional {
-                cursor: move;
-        }
+  .donut-display.is-positional {
+    cursor: move;
+  }
 
-        .donut-display.is-positional.is-dragging {
-                cursor: grabbing;
-        }
+  .donut-display.is-positional.is-dragging {
+    cursor: grabbing;
+  }
 
-        .donut-ascii {
-                will-change: opacity, transform;
-                font-family: var(--font-mono);
-                font-size: clamp(5px, 1.6vw, 11px);
-                line-height: 1.1;
-                letter-spacing: 0.1em;
-                color: var(--color-accent);
-                margin: 0;
-                text-align: center;
-                white-space: pre;
-                overflow: hidden;
-                touch-action: none;
-                pointer-events: none;
-        }
-
-        @media (min-width: 768px) {
-                .donut-ascii {
-                        font-size: clamp(8px, 1.35vw, 13px);
-                }
-        }
-
-        .source-toggle {
-                align-self: center;
-                font-family: var(--font-mono);
-                font-size: var(--font-size-xs);
-                color: var(--color-text-subtle);
-                background: transparent;
-                border: none;
-                cursor: pointer;
-                padding: var(--space-sm) 0;
-                margin-top: var(--space-sm);
-                transition: color var(--duration-fast) var(--easing);
-        }
-
-        .source-toggle:hover {
-                color: var(--color-text);
-        }
-
-        .source-panel {
-                background: var(--color-surface);
-                border: var(--border-width) solid var(--border-color);
-                border-radius: var(--radius-md);
-                overflow: hidden;
-                animation: slideDown 0.2s ease-out;
-                align-self: stretch;
-        }
-
-        .source-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: var(--space-sm) var(--space-md);
-                background: var(--color-bg-alt);
-                border-bottom: var(--border-width) solid var(--border-color);
-        }
-
-        .source-filename {
-                font-family: var(--font-mono);
-                font-size: var(--font-size-xs);
-                color: var(--color-text);
-        }
-
-        .source-lang {
-                font-family: var(--font-mono);
-                font-size: var(--font-size-2xs);
-                color: var(--color-text-subtle);
-                text-transform: uppercase;
-                letter-spacing: var(--letter-spacing-wider);
-        }
-
-        .source-code {
-                font-family: var(--font-mono);
-                font-size: var(--font-size-xs);
-                line-height: var(--line-height-relaxed);
-                color: var(--color-text-secondary);
-                margin: 0;
-                padding: var(--space-md);
-                overflow-x: auto;
-                max-height: 400px;
-                overflow-y: auto;
-                white-space: pre;
-        }
-
-        @keyframes slideDown {
-                from {
-                        opacity: 0;
-                        transform: translateY(-10px);
-                }
-                to {
-                        opacity: 1;
-                        transform: translateY(0);
-                }
-        }
-=======
   .donut-ascii {
+    will-change: opacity, transform;
     font-family: var(--font-mono);
     font-size: 5px;
     line-height: 1;
     letter-spacing: 1px;
     color: var(--color-accent);
     margin: 0;
+    text-align: center;
     white-space: pre;
-    user-select: none;
+    overflow: hidden;
+    touch-action: none;
     pointer-events: none;
+    user-select: none;
   }
 
   @media (min-width: 600px) {
@@ -558,5 +467,77 @@
       letter-spacing: 2px;
     }
   }
->>>>>>> Stashed changes
+
+  .source-toggle {
+    align-self: center;
+    font-family: var(--font-mono);
+    font-size: var(--font-size-xs);
+    color: var(--color-text-subtle);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: var(--space-sm) 0;
+    margin-top: var(--space-sm);
+    transition: color var(--duration-fast) var(--easing);
+  }
+
+  .source-toggle:hover {
+    color: var(--color-text);
+  }
+
+  .source-panel {
+    background: var(--color-surface);
+    border: var(--border-width) solid var(--border-color);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    animation: slideDown 0.2s ease-out;
+    align-self: stretch;
+  }
+
+  .source-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-sm) var(--space-md);
+    background: var(--color-bg-alt);
+    border-bottom: var(--border-width) solid var(--border-color);
+  }
+
+  .source-filename {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-xs);
+    color: var(--color-text);
+  }
+
+  .source-lang {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-2xs);
+    color: var(--color-text-subtle);
+    text-transform: uppercase;
+    letter-spacing: var(--letter-spacing-wider);
+  }
+
+  .source-code {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-xs);
+    line-height: var(--line-height-relaxed);
+    color: var(--color-text-secondary);
+    margin: 0;
+    padding: var(--space-md);
+    overflow-x: auto;
+    max-height: 400px;
+    overflow-y: auto;
+    white-space: pre;
+  }
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 </style>

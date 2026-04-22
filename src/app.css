@@ -52,27 +52,6 @@
   --font-weight-normal: 400;
   --font-weight-medium: 450;
   --font-weight-semibold: 550;
-  --font-weight-bold: 650;
-
-<<<<<<< Updated upstream
-  --line-height-tight: 1.05;
-  --line-height-snug: 1.2;
-  --line-height-normal: 1.55;
-  --line-height-relaxed: 1.7;
-  --letter-spacing-tighter: -0.04em;
-  --letter-spacing-tight: -0.025em;
-  --letter-spacing-normal: -0.011em;
-  --letter-spacing-wide: 0.025em;
-  --letter-spacing-wider: 0.08em;
-  --letter-spacing-widest: 0.15em;
-
-  /* === Theme: Minimal (Default) === */
-  /* 60% — Background/neutral: --color-bg, --color-bg-alt, --color-surface */
-  --color-bg: oklch(0.985 0.002 80); /* #FAFAF9 */
-  --color-bg-alt: oklch(0.970 0.002 80); /* #F5F5F4 */
-  --color-surface: oklch(1.000 0 0); /* #FFFFFF */
-  --color-surface-raised: oklch(1.000 0 0); /* #FFFFFF */
-=======
   --font-weight-normal: 430;
   --font-weight-medium: 520;
   --font-weight-semibold: 600;
@@ -87,8 +66,16 @@
   --letter-spacing-tight: -0.015em;
   --letter-spacing-normal: -0.005em;
   --letter-spacing-wide: 0.1em;
+  --letter-spacing-wider: 0.08em;
+  --letter-spacing-widest: 0.15em;
   --letter-spacing-huge: 0.22em;
->>>>>>> Stashed changes
+
+  /* === Theme: Minimal (Default) === */
+  /* 60% — Background/neutral: --color-bg, --color-bg-alt, --color-surface */
+  --color-bg: oklch(0.985 0.002 80); /* #FAFAF9 */
+  --color-bg-alt: oklch(0.970 0.002 80); /* #F5F5F4 */
+  --color-surface: oklch(1.000 0 0); /* #FFFFFF */
+  --color-surface-raised: oklch(1.000 0 0); /* #FFFFFF */
 
   /* 30% — Text/secondary: --color-text, --color-text-secondary, --border-color */
   --color-text: oklch(0.145 0.005 285); /* #1A1A1A */
@@ -151,7 +138,6 @@
   --easing-out: cubic-bezier(0.16, 1, 0.3, 1);
   --easing-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
 
-<<<<<<< Updated upstream
   /* === Z-Index System === */
   --z-base: 0;
   --z-dropdown: 100;
@@ -160,7 +146,7 @@
   --z-modal: 2000;
   --z-popover: 2001;
   --z-tooltip: 9999;
-=======
+
   --shadow-sm: 0 2px 4px rgba(0,0,0,0.02);
   --shadow-md: 0 4px 12px rgba(0,0,0,0.05);
   --shadow-lg: 0 12px 32px rgba(0,0,0,0.1);
@@ -171,7 +157,6 @@
   --bp-lg: 1024px;
   --bp-xl: 1440px;
   --bp-2xl: 2200px;
->>>>>>> Stashed changes
 }
 
 /* ---- THEME: B&W — Japanese Craft & Sewing ---- */
@@ -568,14 +553,14 @@ body {
   position: relative;
 }
 
-<<<<<<< Updated upstream
 body:has([data-admin]) {
   padding: 0 !important;
   padding-bottom: 0 !important;
   max-width: none !important;
   margin: 0 !important;
   overflow: hidden !important;
-=======
+}
+
 /* ---- INFORMATION ARCHITECTURE: Headers ---- */
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-display);
@@ -657,7 +642,6 @@ p {
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--color-text-subtle);
->>>>>>> Stashed changes
 }
 
 /* ---- LAYER 3: Typography Classes ---- */
@@ -1104,16 +1088,21 @@ a:focus-visible {
 
 .entry {
   display: grid;
-<<<<<<< Updated upstream
-  grid-template-columns: auto 1fr auto;
-  gap: var(--space-sm);
-  padding: var(--space-xs) var(--space-sm);
-  margin-left: calc(-1 * var(--space-sm));
-  margin-right: calc(-1 * var(--space-sm));
-  border-radius: var(--radius-sm);
+  grid-template-columns: 1fr;
+  gap: var(--space-2xs);
+  padding: var(--space-sm) 0;
+  border-bottom: 1px solid var(--border-color);
   font-size: var(--font-size-sm);
   line-height: var(--line-height-snug);
   transition: background var(--duration-fast) var(--easing);
+}
+
+@media (min-width: 480px) {
+  .entry {
+    grid-template-columns: auto 1fr auto;
+    gap: var(--space-md);
+    padding: var(--space-md) 0;
+  }
 }
 
 .entry:hover {
@@ -1181,34 +1170,10 @@ a:focus-visible {
 }
 
 /* B&W: outlined, no fill */
-[data-theme="bw"] .entry {
-=======
-  grid-template-columns: 1fr;
-  gap: var(--space-2xs);
-  padding: var(--space-sm) 0;
->>>>>>> Stashed changes
-  border-bottom: 1px solid var(--border-color);
-}
-
-<<<<<<< Updated upstream
 [data-theme="bw"] .entry[data-highlight] {
   background: transparent;
   border: 1px solid #1A1A1A;
   border-radius: 2px;
-=======
-@media (min-width: 480px) {
-  .entry {
-    grid-template-columns: auto 1fr auto;
-    gap: var(--space-md);
-    padding: var(--space-md) 0;
-  }
-}
-
-.entry-date {
-  font-family: var(--font-mono);
-  font-size: var(--font-size-xs);
-  color: var(--color-text-muted);
->>>>>>> Stashed changes
 }
 
 [data-theme="bw"] .entry[data-highlight] .entry-date,
@@ -1228,6 +1193,12 @@ a:focus-visible {
 
 .entry[data-highlight]:hover {
   filter: brightness(0.97);
+}
+
+.entry-date {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
 }
 
 .entry-date {

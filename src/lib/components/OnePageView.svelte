@@ -297,13 +297,6 @@
 <style>
   .one-page {
     position: relative;
-<<<<<<< Updated upstream
-  }
-
-  .section-wrapper {
-    min-height: 50vh;
-    padding-block: var(--space-2xl);
-=======
     width: 100%;
     display: grid;
     max-width: 100%;
@@ -361,14 +354,11 @@
 
   .section-wrapper--hero {
     scroll-margin-top: 0;
->>>>>>> Stashed changes
   }
 
   .section-wrapper.parallaxing {
     will-change: transform;
   }
-<<<<<<< Updated upstream
-=======
 
   .home-module {
     display: grid;
@@ -479,5 +469,4 @@
       max-width: min(92rem, 100%);
     }
   }
->>>>>>> Stashed changes
 </style>

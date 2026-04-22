@@ -121,23 +121,8 @@ function handleLoad(index: number) {
 		loaded = { ...loaded, [index]: true };
 	}
 
-<<<<<<< Updated upstream
-                const client = getConvexClient();
-                const unsub1 = client.onUpdate(api.works.getVisibleWorks, {}, (data) => {
-                        if (data && data.length > 0) {
-                                projects = data;
-                        }
-                });
-                const unsub2 = client.onUpdate(api.thumbnails.getConfig, { section: 'works' }, (data) => {
-                        thumbnailConfig = data;
-                });
-                const unsub3 = client.onUpdate(api.sectionRegistry.getBySectionId, { sectionId: 'works' }, (data: any) => {
-                        sectionConfig = data;
-                });
-=======
 	onMount(() => {
 		isTouchDevice = window.matchMedia('(hover: none)').matches;
->>>>>>> Stashed changes
 
 		const client = getConvexClient();
 		const unsub = setupWorksSubscriptions(client, {
@@ -162,10 +147,6 @@ function handleLoad(index: number) {
 			}
 		});
 
-<<<<<<< Updated upstream
-                return () => { unsub1(); unsub2(); unsub3(); };
-        });
-=======
 		document.querySelectorAll('.preview-image').forEach((img, _) => {
 			if ((img as HTMLImageElement).complete) {
 				const index = projects.findIndex(p => p.preview && (img as HTMLImageElement).src.includes(p.preview.replace(/^\//, '')));
@@ -187,7 +168,6 @@ function handleLoad(index: number) {
 			clearTimeout(skeletonTimeout);
 		};
 	});
->>>>>>> Stashed changes
 </script>
 
 <svelte:head>
@@ -458,14 +438,6 @@ function handleLoad(index: number) {
 
         @media (min-width: 768px) {
                 .overlay-cta {
-<<<<<<< Updated upstream
-                        opacity: 1;
-                        transform: translateY(0);
-                }
-
-                .project-overlay {
-                        background: hsla(0, 0%, 0%, 0.08);
-=======
                         opacity: 0;
                         transform: translateY(4px);
                         background: hsla(0, 0%, 0%, 0.7);
@@ -473,7 +445,6 @@ function handleLoad(index: number) {
 
                 .project-overlay {
                         background: hsla(0, 0%, 0%, 0);
->>>>>>> Stashed changes
                 }
         }
 

@@ -143,7 +143,6 @@
 </section>
 
 <style>
-<<<<<<< Updated upstream
 	/* HERO */
 	.hero {
 		position: relative;
@@ -154,7 +153,8 @@
 		margin-bottom: var(--space-xl);
 		padding-top: var(--space-md);
 		gap: var(--space-2xl);
-=======
+	}
+
 	.hero-section {
 		padding-top: 0;
 		animation: fadeIn var(--duration-slow) var(--easing);
@@ -179,7 +179,6 @@
 			gap: 0;
 			min-height: min(52rem, 72vh);
 		}
->>>>>>> Stashed changes
 	}
 
 	.hero-content {
@@ -268,28 +267,22 @@
 		font-weight: 700;
 		letter-spacing: var(--letter-spacing-tight);
 		color: var(--color-text);
-<<<<<<< Updated upstream
-		margin: 0;
-		line-height: var(--line-height-dense);
-=======
 		text-transform: uppercase;
 		letter-spacing: var(--letter-spacing-tighter);
 		font-weight: var(--font-weight-bold);
 		max-width: none;
+		margin: 0;
+		line-height: var(--line-height-dense);
 	}
 
 	@media (min-width: 768px) {
 		.hero-name {
 			max-width: 8ch;
 		}
->>>>>>> Stashed changes
 	}
 
 	.hero-tagline {
 		font-family: var(--font-sans);
-<<<<<<< Updated upstream
-		font-size: var(--font-size-base);
-=======
 		font-size: clamp(1.25rem, 1rem + 0.95vw, 1.95rem);
 		font-weight: var(--font-weight-medium);
 		color: var(--color-text);
@@ -305,7 +298,6 @@
 		max-width: 36ch;
 		font-size: clamp(0.98rem, 0.9rem + 0.18vw, 1.08rem);
 		line-height: 1.55;
->>>>>>> Stashed changes
 		color: var(--color-text-secondary);
 		margin: 0;
 		line-height: var(--line-height-relaxed);
@@ -422,14 +414,15 @@
 	/* DOMAIN DISCOVERY */
 	.domains {
 		display: flex;
-<<<<<<< Updated upstream
-		flex-wrap: wrap;
-		align-items: baseline;
-=======
 		justify-content: center;
 		align-items: start;
 		order: -1;
 		min-height: auto;
+		gap: var(--space-md);
+		padding: var(--space-xl) 0;
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+		color: var(--color-text-subtle);
 	}
 
 	@media (min-width: 1024px) {
@@ -490,7 +483,6 @@
 	.hero-surfaces-panel {
 		display: grid;
 		align-content: start;
->>>>>>> Stashed changes
 		gap: var(--space-md);
 		padding: var(--space-xl) 0;
 		font-family: var(--font-mono);
@@ -502,10 +494,6 @@
 		display: inline-flex;
 		align-items: baseline;
 		gap: var(--space-xs);
-<<<<<<< Updated upstream
-	}
-</style>
-=======
 		max-width: 36rem;
 		margin-bottom: var(--space-lg);
 	}
@@ -635,4 +623,3 @@
 	}
 
 	</style>
->>>>>>> Stashed changes

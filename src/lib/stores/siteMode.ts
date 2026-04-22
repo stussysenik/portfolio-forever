@@ -57,7 +57,27 @@ if (browser) {
 	const params = new URLSearchParams(window.location.search);
 	if (params.get('preview') === 'true') {
 		previewMode.set(true);
+		// Read nav paradigm from URL param in preview mode
+		const navParam = params.get('nav');
+		if (navParam === 'sidebar' || navParam === 'drawer' || navParam === 'hybrid' || navParam === 'none') {
+			navParadigm.set(navParam === 'none' ? 'hybrid' : navParam);
+		}
 	}
+	// Listen for admin postMessage to update nav paradigm live
+	window.addEventListener('message', (e: MessageEvent) => {
+		if (e.data?.type === 'admin:setNavParadigm') {
+			const nav = e.data.navParadigm;
+			if (nav === 'sidebar' || nav === 'drawer' || nav === 'hybrid') {
+				navParadigm.set(nav);
+			}
+		}
+		if (e.data?.type === 'admin:setTheme') {
+			document.documentElement.dataset.theme = e.data.theme;
+		}
+		if (e.data?.type === 'admin:setFont') {
+			document.documentElement.dataset.font = e.data.font;
+		}
+	});
 }
 
 // Defensive blocker: returns true when Convex/Rust calls should be SUPPRESSED.

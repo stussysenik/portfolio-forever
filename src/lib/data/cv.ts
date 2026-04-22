@@ -2,7 +2,6 @@
 // Schema.org Person with timeline entries
 // Real data sourced from LinkedIn profile (Feb 2026)
 
-<<<<<<< Updated upstream
 export interface CVEntry {
 	id: string;
 	type: 'work' | 'education' | 'award' | 'publication' | 'project';
@@ -28,6 +27,7 @@ export interface PersonSchema {
 	'@type': string;
 	name: string;
 	jobTitle: string;
+	email?: string;
 	knowsAbout: { name: string; proficiency: number }[];
 	url: string;
 	sameAs: string[];
@@ -43,16 +43,8 @@ export const cvData: PersonSchema = {
 	'@type': 'Person',
 	name: 'MENGXUAN "SENIK" ZOU',
 	jobTitle: 'Design Engineer & Creative Producer',
+	email: 'itsmxzou@gmail.com',
 	url: 'https://www.stussysenik.com',
-=======
-export const cvData = {
-	context: "https://schema.org",
-	type: "Person",
-	name: "MENGXUAN \"SENIK\" ZOU",
-	jobTitle: "Design Engineer & Creative Producer",
-	email: "itsmxzou@gmail.com",
-	url: "https://www.stussysenik.com",
->>>>>>> Stashed changes
 	sameAs: [
 		'https://github.com/stussysenik',
 		'https://www.linkedin.com/in/mxzou',

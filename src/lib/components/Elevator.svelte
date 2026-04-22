@@ -191,13 +191,8 @@
 <style>
   .elevator {
     position: fixed;
-<<<<<<< Updated upstream
-    bottom: calc(var(--space-md) + 56px);
-    right: var(--space-lg);
-=======
     bottom: calc(var(--space-2xl) + 5rem);
     right: var(--space-sm);
->>>>>>> Stashed changes
     
     display: flex;
     align-items: center;
@@ -243,8 +238,6 @@
     border-color: var(--color-text-muted);
   }
 
-<<<<<<< Updated upstream
-=======
   .lobby-link {
     display: none;
     font-size: 0.62rem;
@@ -265,8 +258,6 @@
     color: white;
     border-color: var(--color-accent);
   }
-
->>>>>>> Stashed changes
   .elevator-action:focus-visible,
   .sound-btn:focus-visible {
     outline: 2px solid var(--color-accent);
