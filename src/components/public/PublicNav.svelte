@@ -25,47 +25,50 @@
 <style>
 	.astro-shell__nav {
 		display: grid;
-		gap: 1.25rem;
-		padding-left: 0.5rem;
+		gap: 0.9rem;
 	}
 
 	.astro-shell__nav a {
 		display: flex;
 		align-items: center;
-		gap: 1rem;
-		color: var(--color-text);
-		font-size: 1.15rem;
+		gap: 0.75rem;
+		color: var(--color-text-secondary);
+		font-family: var(--font-mono);
+		font-size: 0.82rem;
 		font-weight: 500;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
 		text-decoration: none;
-		transition: opacity var(--duration-fast) var(--easing);
+		transition: color var(--duration-fast) var(--easing), transform var(--duration-fast) var(--easing);
 	}
 
 	.nav-dot {
-		width: 4px;
-		height: 4px;
+		width: 0.5rem;
+		height: 0.5rem;
 		border-radius: 50%;
 		border: 1px solid var(--border-color-strong);
 		background: transparent;
-		opacity: 0.4;
+		opacity: 0.45;
 		flex-shrink: 0;
 	}
 
 	.astro-shell__nav a:hover {
-		opacity: 0.7;
+		color: var(--color-text);
+		transform: translateX(0.12rem);
 	}
 
 	.astro-shell__nav a[aria-current="page"] {
-		font-weight: 700;
+		color: var(--color-text);
 	}
 
 	.astro-shell__nav a[aria-current="page"] .nav-dot {
-		background: var(--color-text);
+		background: var(--color-accent);
 		opacity: 1;
-		border-color: var(--color-text);
+		border-color: var(--color-accent);
 	}
 
 	.astro-shell__nav a[data-archived="true"] {
-		opacity: 0.3;
+		opacity: 0.35;
 		text-decoration: line-through;
 	}
 </style>

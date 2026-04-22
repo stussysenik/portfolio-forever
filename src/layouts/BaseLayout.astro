@@ -7,7 +7,7 @@ import PublicWipBanner from "../components/public/PublicWipBanner.svelte";
 import MobileDock from "../components/public/MobileDock.svelte";
 import SanityVisualEditing from "../components/SanityVisualEditing.tsx";
 import { buildEditorialHref, getPreviewDocumentLabel } from "../lib/astro/preview";
-import { fallbackSiteConfig } from "../lib/astro/site-content";
+import { fallbackSiteConfig, homepageFallbackSlice } from "../lib/astro/site-content";
 import { layoutConfig } from "../lib/data/layout-config";
 import ThemeSwitcher from "../lib/components/ThemeSwitcher.svelte";
 import FontSwitcher from "../lib/components/FontSwitcher.svelte";
@@ -66,6 +66,7 @@ const siteMode = siteConfig.mode ?? "multi-page";
 const navMode = siteConfig.navMode ?? "sidebar";
 const showPreviewChrome = previewState.previewEnabled;
 const publicWipBannerEnabled = showPreviewChrome ? wipBannerEnabled : false;
+const shellSummary = homepageFallbackSlice.summary;
 ---
 
 <!doctype html>
@@ -109,6 +110,11 @@ const publicWipBannerEnabled = showPreviewChrome ? wipBannerEnabled : false;
 			<aside class="astro-shell__sidebar" data-testid="site-header">
 				<div class="astro-shell__sidebar-top">
 					<a href="/" class="astro-shell__wordmark astro-shell__wordmark--sidebar">Stüssy Senik</a>
+					<p class="astro-shell__sidebar-summary">{shellSummary}</p>
+					<div class="astro-shell__route-chip">
+						<span>Edition</span>
+						<strong>{siteMode === "one-page" ? "Public deck" : "Portfolio system"}</strong>
+					</div>
 				</div>
 
 				<div class="astro-shell__sidebar-groups">
@@ -162,11 +168,9 @@ const publicWipBannerEnabled = showPreviewChrome ? wipBannerEnabled : false;
 
 			<footer class="astro-terminal">
 				<div class="astro-terminal__left">
-					<span class="astro-terminal__edition">{footerEdition} · {footerYear}</span>
-					<span class="astro-terminal__sep">·</span>
-					<span class="astro-terminal__path">{activePath}</span>
-					<span class="astro-terminal__sep astro-terminal__sep--mobile-hidden">·</span>
-					<span class="astro-terminal__status astro-terminal__status--mobile-hidden">
+					<span class="astro-terminal__pill astro-terminal__pill--edition">{footerEdition} · {footerYear}</span>
+					<span class="astro-terminal__pill astro-terminal__pill--path">{activePath}</span>
+					<span class="astro-terminal__pill astro-terminal__status astro-terminal__status--mobile-hidden">
 						<span class="astro-terminal__dot"></span>
 						available
 					</span>
@@ -175,7 +179,7 @@ const publicWipBannerEnabled = showPreviewChrome ? wipBannerEnabled : false;
 				<div class="astro-terminal__controls">
 					<ThemeSwitcher client:load />
 					<FontSwitcher client:load />
-					<span class="astro-terminal__heart">♥</span>
+					<span class="astro-terminal__heart" aria-hidden="true">♥</span>
 				</div>
 			</footer>
 		</div>
@@ -198,6 +202,28 @@ const publicWipBannerEnabled = showPreviewChrome ? wipBannerEnabled : false;
 
 	.astro-shell {
 		min-height: 100vh;
+		--sidebar-width: clamp(15.5rem, 16vw, 19rem);
+		--shell-gutter: clamp(1.25rem, 3vw, 3rem);
+		--content-stage-max: 124rem;
+		--shell-edge: calc(var(--sidebar-width) + var(--shell-gutter));
+		position: relative;
+	}
+
+	.astro-shell::before {
+		content: "";
+		position: fixed;
+		inset: 0;
+		pointer-events: none;
+		z-index: 0;
+		background:
+			linear-gradient(
+				to right,
+				transparent 0,
+				transparent calc(var(--shell-edge) - 1px),
+				color-mix(in srgb, var(--border-color) 72%, transparent) calc(var(--shell-edge) - 1px),
+				color-mix(in srgb, var(--border-color) 72%, transparent) var(--shell-edge),
+				transparent var(--shell-edge)
+			);
 	}
 
 	.astro-shell__sidebar {
@@ -205,19 +231,19 @@ const publicWipBannerEnabled = showPreviewChrome ? wipBannerEnabled : false;
 		top: 0;
 		left: 0;
 		bottom: 0;
-		width: clamp(16rem, 18vw, 22rem);
-		padding: clamp(2rem, 4vh, 4rem) clamp(1.5rem, 3vw, 3rem);
-		background: var(--color-bg);
+		width: var(--sidebar-width);
+		padding: clamp(1.75rem, 3vh, 3rem) var(--shell-gutter);
+		background: color-mix(in srgb, var(--color-bg) 96%, white 4%);
 		display: flex;
 		flex-direction: column;
-		gap: 3.5rem;
+		gap: clamp(2.25rem, 4vh, 3.5rem);
 		overflow-y: auto;
 		border-right: 1px solid var(--border-color);
 	}
 
 	.astro-shell__sidebar-top {
 		display: grid;
-		gap: 0.75rem;
+		gap: 0.9rem;
 	}
 
 	.astro-shell__sidebar-groups {
@@ -226,9 +252,13 @@ const publicWipBannerEnabled = showPreviewChrome ? wipBannerEnabled : false;
 	}
 
 	.astro-shell__main {
-		margin-left: clamp(16rem, 18vw, 22rem);
-		max-width: 100%;
-		padding: clamp(2rem, 5vh, 4rem) clamp(2rem, 6vw, 6rem) 12rem;
+		position: relative;
+		z-index: 1;
+		margin-left: var(--sidebar-width);
+		width: min(var(--content-stage-max), calc(100vw - var(--sidebar-width) - (var(--shell-gutter) * 2)));
+		max-width: calc(100vw - var(--sidebar-width) - (var(--shell-gutter) * 2));
+		padding: clamp(2rem, 5vh, 4rem) var(--shell-gutter) 12rem;
+		margin-right: auto;
 	}
 
 	.astro-shell__eyebrow,
@@ -263,9 +293,9 @@ const publicWipBannerEnabled = showPreviewChrome ? wipBannerEnabled : false;
 	.astro-shell__route-chip {
 		display: grid;
 		gap: 0.2rem;
-		padding: 0.75rem 0.85rem;
-		border: 1px solid var(--border-color);
-		background: color-mix(in srgb, var(--color-surface) 78%, transparent);
+		padding: 0.8rem 0.9rem;
+		border: 1px solid color-mix(in srgb, var(--border-color) 85%, transparent);
+		background: color-mix(in srgb, var(--color-surface) 86%, transparent);
 	}
 
 	.astro-shell__route-chip strong {
@@ -353,7 +383,7 @@ const publicWipBannerEnabled = showPreviewChrome ? wipBannerEnabled : false;
 	}
 
 	.astro-shell__wordmark--sidebar {
-		font-size: 2.5rem;
+		font-size: clamp(2.2rem, 2rem + 0.9vw, 3.25rem);
 		display: block;
 		margin-bottom: 0.5rem;
 	}
@@ -394,6 +424,8 @@ const publicWipBannerEnabled = showPreviewChrome ? wipBannerEnabled : false;
 		gap: 0.8rem;
 		font-family: var(--font-mono);
 		font-size: 0.85rem;
+		padding-top: 1rem;
+		border-top: 1px solid color-mix(in srgb, var(--border-color) 80%, transparent);
 	}
 
 	.astro-shell__availability {
@@ -415,21 +447,22 @@ const publicWipBannerEnabled = showPreviewChrome ? wipBannerEnabled : false;
 
 	.astro-terminal {
 		position: fixed;
-		right: clamp(1rem, 4vw, 3rem);
-		left: calc(clamp(16rem, 18vw, 22rem) + clamp(1rem, 4vw, 3rem));
+		right: var(--shell-gutter);
 		bottom: 2rem;
+		width: fit-content;
+		max-width: min(64rem, calc(100vw - var(--sidebar-width) - (var(--shell-gutter) * 2)));
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		gap: 1rem;
-		padding: 0.95rem 1.4rem;
-		border: 1px solid var(--border-color);
-		background: var(--color-surface);
+		gap: 0.9rem;
+		padding: 0.7rem 0.8rem;
+		border: 1px solid color-mix(in srgb, var(--border-color-strong) 82%, transparent);
+		background: color-mix(in srgb, var(--color-surface) 94%, var(--color-bg-alt));
 		font-family: var(--font-mono);
 		font-size: 0.74rem;
 		z-index: 40;
-		backdrop-filter: blur(12px);
-		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+		backdrop-filter: blur(10px);
+		box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
 	}
 
 	.astro-terminal__left,
@@ -438,31 +471,31 @@ const publicWipBannerEnabled = showPreviewChrome ? wipBannerEnabled : false;
 		align-items: center;
 		gap: 0.55rem;
 		min-width: 0;
+		flex-wrap: wrap;
 	}
 
-	.astro-terminal__edition,
-	.astro-terminal__path {
+	.astro-terminal__pill {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.45rem;
+		padding: 0.45rem 0.72rem;
+		border: 1px solid color-mix(in srgb, var(--border-color) 80%, transparent);
+		background: color-mix(in srgb, var(--color-bg) 45%, transparent);
 		white-space: nowrap;
 	}
 
-	.astro-terminal__edition {
+	.astro-terminal__pill--edition {
 		color: var(--color-text-subtle);
+		max-width: 24rem;
 		overflow: hidden;
 		text-overflow: ellipsis;
 	}
 
-	.astro-terminal__path {
+	.astro-terminal__pill--path {
 		color: var(--color-text-secondary);
 	}
 
-	.astro-terminal__sep {
-		color: var(--color-text-subtle);
-	}
-
 	.astro-terminal__status {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.4rem;
 		color: var(--color-success);
 	}
 
@@ -474,16 +507,10 @@ const publicWipBannerEnabled = showPreviewChrome ? wipBannerEnabled : false;
 	}
 
 	.astro-terminal__heart {
-		font-size: 0.9rem;
+		font-size: 0.8rem;
 		color: #ef4444;
-		margin-left: 0.5rem;
 		user-select: none;
-		animation: heart-pulse 2.5s infinite var(--easing);
-	}
-
-	@keyframes heart-pulse {
-		0%, 100% { transform: scale(1); opacity: 0.8; }
-		50% { transform: scale(1.15); opacity: 1; }
+		opacity: 0.8;
 	}
 
 	.astro-terminal__hint {
@@ -492,12 +519,18 @@ const publicWipBannerEnabled = showPreviewChrome ? wipBannerEnabled : false;
 	}
 
 	@media (max-width: 900px) {
+		.astro-shell::before {
+			display: none;
+		}
+
 		.astro-shell__sidebar {
 			display: none;
 		}
 
 		.astro-shell__main {
 			margin-left: 0;
+			width: 100%;
+			max-width: 100%;
 			padding: 1rem 1rem 10rem;
 		}
 

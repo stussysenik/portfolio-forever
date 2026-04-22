@@ -33,6 +33,8 @@
   // Home page data from pages table (authoritative source for one-page section composition)
   let homePage: any = null;
   let homePageUnsub: (() => void) | null = null;
+  let pageCatalog: any[] = [];
+  let pageCatalogUnsub: (() => void) | null = null;
 
   // Derive section order from pages table, fall back to siteConfig
   $: pageSections = homePage?.sections
@@ -84,17 +86,69 @@
   // Build nav label lookup from pages sections + registry
   $: sectionLabels = (() => {
     const labels: Record<string, string> = {};
+    const pageLabels: Record<string, string> = {};
+
+    for (const page of pageCatalog) {
+      if (page?.pageId && page?.label) {
+        pageLabels[page.pageId] = page.label;
+      }
+    }
+
     if (pageSections) {
       for (const s of pageSections) {
         const key = resolveComponentKey(s.sectionType);
-        labels[key] = sectionTypeRegistry[s.sectionType]?.label ?? key;
+        labels[key] =
+          pageLabels[key] ??
+          sectionTypeRegistry[s.sectionType]?.label ??
+          key;
       }
     }
     // Fallback labels from static sections metadata
     for (const s of sections) {
       if (!labels[s.id]) labels[s.id] = s.label;
     }
+    labels.colored_works = labels.colored_works ?? "Selected Works";
+    labels.hero = labels.hero ?? "Home";
     return labels;
+  })();
+
+  $: sectionRoutes = (() => {
+    const routes: Record<string, string> = {};
+
+    for (const section of sections) {
+      routes[section.id] = section.route;
+    }
+
+    for (const page of pageCatalog) {
+      if (page?.pageId && page?.route) {
+        routes[page.pageId] = page.route;
+      }
+    }
+
+    const fallbackRoutes: Record<string, string> = {
+      hero: "/",
+      colored_works: "/#colored_works",
+      works: "/works",
+      talks: "/talks",
+      terminal: "/terminal",
+      cv: "/cv",
+      academia: "/academia",
+      blog: "/blog",
+      process: "/process",
+      gallery: "/gallery",
+      likes: "/likes",
+      minor: "/minor",
+      gifts: "/gifts",
+      os: "/os",
+      labs: "/labs",
+      media: "/media",
+    };
+
+    for (const [id, route] of Object.entries(fallbackRoutes)) {
+      if (!routes[id]) routes[id] = route;
+    }
+
+    return routes;
   })();
 
   // Map section IDs to components
@@ -171,6 +225,11 @@
         tick().then(reobserveSections);
       }
     });
+    pageCatalogUnsub = client.onUpdate(api.pages.getAll, {}, (data: any) => {
+      if (Array.isArray(data)) {
+        pageCatalog = data;
+      }
+    });
 
     // Lazy load observer: render sections when ~1 viewport away
     lazyObs = new IntersectionObserver(
@@ -244,6 +303,7 @@
     observer?.disconnect();
     lazyObs?.disconnect();
     homePageUnsub?.();
+    pageCatalogUnsub?.();
     if (_resizeHandler) window.removeEventListener('resize', _resizeHandler);
     if (_hashChangeHandler) window.removeEventListener('popstate', _hashChangeHandler);
   });
@@ -291,6 +351,10 @@
     }
     return props;
   }
+
+  function formatSectionIndex(index: number) {
+    return String(index + 1).padStart(2, "0");
+  }
 </script>
 
 <svelte:window on:keydown={handleKeydown} on:scroll={handleScroll} />
@@ -309,10 +373,11 @@
   />
   
   <!-- Sections -->
-  {#each filteredSections as id (id)}
+  {#each filteredSections as id, index (id)}
     {@const sd = sectionDataMap[id]}
     <section
       class="section-wrapper"
+      class:section-wrapper--hero={id === "hero"}
       class:parallaxing={parallaxEnabled && !$isReaderMode && inViewport.has(id)}
       {id}
       style:margin-top="{sd?.spacingBefore ?? 0}px"
@@ -325,10 +390,30 @@
         ? `translateY(${(scrollY - (sectionOffsets[id] ?? 0)) * parallaxSpeed * getParallaxMultiplier($physicsEngine)}px)`
         : undefined}
     >
-      {#if visibleSections.has(id)}
-        <svelte:component this={componentMap[id]} {...getSectionProps(id)} />
+      {#if id === "hero"}
+        {#if visibleSections.has(id)}
+          <svelte:component this={componentMap[id]} {...getSectionProps(id)} />
+        {:else}
+          <div class="section-placeholder" style="min-height: 50vh;"></div>
+        {/if}
       {:else}
-        <div class="section-placeholder" style="min-height: 50vh;"></div>
+        <div class="home-module">
+          <header class="home-module__header">
+            <div class="home-module__meta">
+              <span class="home-module__index">{formatSectionIndex(index)}</span>
+              <span class="home-module__route">{sectionRoutes[id] ?? `/${id}`}</span>
+            </div>
+            <h2 class="home-module__title">{sectionLabels[id] ?? id}</h2>
+          </header>
+
+          <div class="home-module__body">
+            {#if visibleSections.has(id)}
+              <svelte:component this={componentMap[id]} {...getSectionProps(id)} />
+            {:else}
+              <div class="section-placeholder" style="min-height: 50vh;"></div>
+            {/if}
+          </div>
+        </div>
       {/if}
     </section>
   {/each}
@@ -338,36 +423,151 @@
   .one-page {
     position: relative;
     width: 100%;
+    display: grid;
   }
 
-  /* Predictable layout: 10% cut off safety rectangle */
   .safe-boundary-viewport {
-    padding: var(--space-xl) clamp(4%, 10vw, 10%); /* DOM space and layout margin */
+    position: relative;
+    max-width: 116rem;
+    margin: 0 auto;
+    padding: clamp(1rem, 2vw, 2rem) clamp(0.35rem, 1vw, 0.9rem) var(--space-4xl);
     box-sizing: border-box;
     min-height: 100vh;
   }
 
   .safety-rectangle {
-    position: fixed;
-    top: 5vh;
-    left: 5vw;
-    right: 5vw;
-    bottom: 5vh;
-    border: 1px dotted var(--border-color);
+    position: absolute;
+    inset: 0;
+    border: 1px solid color-mix(in srgb, var(--border-color) 82%, transparent);
     pointer-events: none;
-    z-index: 100;
-    opacity: 0.15;
-    border-radius: var(--radius-lg);
+    z-index: 0;
+    opacity: 0.65;
+    border-radius: clamp(1rem, 2vw, 2rem);
   }
 
   .section-wrapper {
-    min-height: 50vh;
-    padding-block: var(--space-2xl);
+    min-height: 0;
+    padding-block: clamp(2.5rem, 5vw, 5rem);
     position: relative;
     z-index: 1;
+    scroll-margin-top: clamp(5rem, 10vw, 7rem);
+  }
+
+  .section-wrapper--hero {
+    scroll-margin-top: 0;
   }
 
   .section-wrapper.parallaxing {
     will-change: transform;
+  }
+
+  .home-module {
+    display: grid;
+    gap: var(--space-xl);
+    border-top: 1px solid color-mix(in srgb, var(--border-color-strong) 72%, transparent);
+    padding-top: clamp(1rem, 1.75vw, 1.75rem);
+  }
+
+  .home-module__header {
+    display: grid;
+    gap: var(--space-xs);
+    align-items: end;
+    align-content: start;
+  }
+
+  .home-module__meta {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    font-family: var(--font-mono);
+    font-size: var(--font-size-2xs, 0.6875rem);
+    color: var(--color-text-subtle);
+    letter-spacing: var(--letter-spacing-wide);
+  }
+
+  .home-module__index {
+    color: var(--color-accent);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .home-module__route {
+    opacity: 0.8;
+  }
+
+  .home-module__title {
+    margin: 0;
+    max-width: 11ch;
+    font-size: clamp(1.45rem, 1.05rem + 1.8vw, 3rem);
+    line-height: 0.96;
+    letter-spacing: var(--letter-spacing-tight);
+    font-weight: var(--font-weight-semibold, 600);
+  }
+
+  .home-module__body {
+    min-width: 0;
+    max-width: min(82rem, 100%);
+  }
+
+  @media (min-width: 768px) {
+    .home-module {
+      grid-template-columns: minmax(10rem, 15rem) minmax(0, 1fr);
+      gap: var(--space-xl) var(--space-2xl);
+      align-items: start;
+    }
+
+    .home-module__header {
+      position: sticky;
+      top: clamp(5rem, 9vh, 6.5rem);
+      align-self: start;
+      padding-block: 0.35rem 1rem;
+      padding-right: var(--space-lg);
+      border-right: 1px solid color-mix(in srgb, var(--border-color) 75%, transparent);
+      background:
+        linear-gradient(
+          to bottom,
+          color-mix(in srgb, var(--color-bg) 96%, transparent) 0%,
+          color-mix(in srgb, var(--color-bg) 90%, transparent) 82%,
+          transparent 100%
+        );
+    }
+
+    .home-module__title {
+      max-width: 7ch;
+    }
+  }
+
+  @media (min-width: 1440px) {
+    .safe-boundary-viewport {
+      max-width: 120rem;
+    }
+
+    .home-module {
+      grid-template-columns: minmax(12rem, 18rem) minmax(0, 1fr);
+      gap: var(--space-2xl) var(--space-3xl);
+    }
+
+    .home-module__body {
+      max-width: min(86rem, 100%);
+    }
+  }
+
+  @media (min-width: 2200px) {
+    .safe-boundary-viewport {
+      max-width: 126rem;
+      padding-inline: var(--space-md);
+    }
+
+    .section-wrapper {
+      padding-block: clamp(3rem, 4vw, 6rem);
+    }
+
+    .home-module {
+      grid-template-columns: minmax(13rem, 20rem) minmax(0, 1fr);
+      gap: var(--space-2xl) clamp(3rem, 4vw, 5rem);
+    }
+
+    .home-module__body {
+      max-width: min(92rem, 100%);
+    }
   }
 </style>

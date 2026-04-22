@@ -24,6 +24,8 @@
 
         export let id = "works";
         export let forceViewMode: "grid" | "case-study" | "minimal-list" | "colorful-table" | null = null;
+        export let maxCount: number | null = null;
+        export let showHeader = true;
 
         interface Project {
                 slug?: string;
@@ -78,7 +80,7 @@
         $: showPreview = effectiveThumbnailConfig?.showPreview ?? true;
         $: viewMode = forceViewMode ? forceViewMode : (effectiveSectionConfig?.immune ? 'grid' : (effectiveSectionConfig?.viewMode ?? 'grid'));
 
-        $: visibleProjects = effectiveProjects;
+        $: visibleProjects = maxCount ? effectiveProjects.slice(0, maxCount) : effectiveProjects;
 
         function handleLoad(index: number) {
                 loaded = { ...loaded, [index]: true };
@@ -126,12 +128,14 @@
         <meta name="description" content="Live project showcases by {profile.name}" />
 </svelte:head>
 
-<section {id} class="works-page">
+<section {id} class="works-page" class:works-page--compact={!showHeader}>
+        {#if showHeader}
         <header class="section-header">
                 <span class="section-marker">◆</span>
                 <h1 class="section-title">WORKS</h1>
                 <span class="section-meta">live embeds · {visibleProjects.length} projects{$isScreenPass ? ` of ${projects.length}` : ''}</span>
         </header>
+        {/if}
 
         {#if viewMode === 'grid'}
                 <div class="projects-grid" role="list" class:list-mode={displayMode === 'list'} style="--grid-cols: {gridCols};">
@@ -211,6 +215,10 @@
                 margin-bottom: var(--section-gap);
         }
 
+        .works-page--compact {
+                margin-bottom: 0;
+        }
+
         .section-header {
                 display: flex;
                 align-items: baseline;
@@ -246,6 +254,10 @@
 		display: grid;
 		grid-template-columns: repeat(2, 1fr);
 		gap: var(--space-sm);
+	}
+
+	.works-page--compact .projects-grid {
+		gap: var(--space-md);
 	}
 
 	@media (min-width: 480px) {

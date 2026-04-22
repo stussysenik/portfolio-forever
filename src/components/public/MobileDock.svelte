@@ -123,25 +123,25 @@
 		bottom: 1.5rem;
 		left: 1rem;
 		right: 1rem;
-		height: 4.5rem;
-		background: color-mix(in srgb, var(--color-surface) 85%, transparent);
-		backdrop-filter: blur(16px);
-		-webkit-backdrop-filter: blur(16px);
+		height: 4.2rem;
+		background: color-mix(in srgb, var(--color-surface) 92%, var(--color-bg-alt));
+		backdrop-filter: blur(12px);
+		-webkit-backdrop-filter: blur(12px);
 		border: 1px solid var(--border-color);
-		border-radius: 1.5rem;
+		border-radius: 1.1rem;
 		display: flex;
 		align-items: center;
 		justify-content: space-around;
 		padding: 0 0.5rem;
 		z-index: 1000;
-		box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+		box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
 	}
 
 	.dock-item {
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: 0.35rem;
+		gap: 0.2rem;
 		color: var(--color-text-subtle);
 		text-decoration: none;
 		font-family: var(--font-mono);
@@ -153,13 +153,13 @@
 	}
 
 	.dock-item :global(svg) {
-		font-size: 1.25rem;
+		font-size: 1.05rem;
 	}
 
 	.dock-label {
-		font-size: 0.6rem;
+		font-size: 0.52rem;
 		text-transform: uppercase;
-		letter-spacing: 0.05em;
+		letter-spacing: 0.12em;
 	}
 
 	.dock-item.active {
