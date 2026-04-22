@@ -70,34 +70,32 @@ This portfolio is the primary verification proof for 30+ targeted roles across R
 
 ## Implementation Plan
 
-### Phase 1: Permanent Manifest
+### Phase 1: Permanent Manifest ✅
 - [x] Create `HIRE.md` at repo root — immutable hiring mission
 - [x] Update `AGENTS.md` with hiring-context clause
 - [x] Update `hiring-target.ts` with actual job URLs, requirements, proof mappings
 
-### Phase 2: The `/hire` Route
+### Phase 2: The `/hire` Route ✅
 - [x] Create `src/pages/hire.astro` — dedicated recruiter landing page
-- [x] Build `src/lib/components/hire/HireManifest.svelte` — inverse-law hero
-- [x] Build `src/lib/components/hire/RoleTargets.svelte` — company/role grid with proof links
-- [x] Build `src/lib/components/hire/ProofMatrix.svelte` — skills → evidence mapping
-- [x] Build `src/lib/components/hire/CallToAction.svelte` — direct contact/schedule
+- [x] Build `src/lib/components/hire/HirePage.svelte` — inverse-law hero + manifest + roles + matrix + CTA
 
-### Phase 3: Design System — "Proof" Aesthetic
-- [x] Add `proof` theme to CSS custom properties (Rick Rubin minimalism)
+### Phase 3: Design System — "Proof" Aesthetic ✅
 - [x] High contrast, maximum whitespace, single accent
 - [x] Typography: massive headings, tiny metadata (PG LANG scale contrast)
 - [x] Motion: none. Static confidence. (Light Phone restraint)
 
-### Phase 4: Navigation & Integration
+### Phase 4: Navigation & Integration ✅
 - [x] Add `/hire` to fallback nav items
 - [x] Update `HiringProof.svelte` to link to `/hire`
 - [x] Ensure `/hire` is accessible from hero and footer
 
-### Phase 5: Validation
+### Phase 5: Validation ✅
 - [x] `bun run build` passes with zero errors
-- [x] `/hire` route renders correctly
+- [x] `bun run check` passes with 0 errors (1 pre-existing hint)
+- [x] `/hire` route bundles correctly in Vercel adapter output
 - [x] All links resolve
 - [x] Responsive from 320px to 3840px
+- [x] Git commit: `c48465c`
 
 ## Success Criteria
 
