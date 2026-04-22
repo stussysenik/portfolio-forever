@@ -113,13 +113,15 @@
         // Depth controller: limit visible projects in 5-min "screen pass" mode
         $: visibleProjects = $isScreenPass ? projects.slice(0, 3) : projects;
 
-        function handleLoad(index: number) {
-                loaded = { ...loaded, [index]: true };
-        }
+function handleLoad(index: number) {
+		loaded = { ...loaded, [index]: true };
+	}
 
-        onMount(() => {
-                isTouchDevice = window.matchMedia('(hover: none)').matches;
+	function handleError(index: number) {
+		loaded = { ...loaded, [index]: true };
+	}
 
+<<<<<<< Updated upstream
                 const client = getConvexClient();
                 const unsub1 = client.onUpdate(api.works.getVisibleWorks, {}, (data) => {
                         if (data && data.length > 0) {
@@ -132,16 +134,60 @@
                 const unsub3 = client.onUpdate(api.sectionRegistry.getBySectionId, { sectionId: 'works' }, (data: any) => {
                         sectionConfig = data;
                 });
+=======
+	onMount(() => {
+		isTouchDevice = window.matchMedia('(hover: none)').matches;
+>>>>>>> Stashed changes
 
-                document.querySelectorAll('.preview-image').forEach((img, _) => {
-                        if ((img as HTMLImageElement).complete) {
-                                const index = projects.findIndex(p => p.preview && (img as HTMLImageElement).src.includes(p.preview.replace(/^\//, '')));
-                                if (index !== -1) handleLoad(index);
-                        }
-                });
+		const client = getConvexClient();
+		const unsub = setupWorksSubscriptions(client, {
+			onWorks: (data: any[]) => {
+				if (data && data.length > 0) {
+					projects = data.map((p: any) => {
+						const url = p.url ?? p.link ?? p.links?.[0]?.url ?? '#';
+						const slug = p.slug || p.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+						return {
+							...p,
+							url,
+							slug
+						};
+					});
+				}
+			},
+			onThumbnails: (data: any) => {
+				thumbnailConfig = data;
+			},
+			onSection: (data: any) => {
+				sectionConfig = data;
+			}
+		});
 
+<<<<<<< Updated upstream
                 return () => { unsub1(); unsub2(); unsub3(); };
         });
+=======
+		document.querySelectorAll('.preview-image').forEach((img, _) => {
+			if ((img as HTMLImageElement).complete) {
+				const index = projects.findIndex(p => p.preview && (img as HTMLImageElement).src.includes(p.preview.replace(/^\//, '')));
+				if (index !== -1) handleLoad(index);
+			}
+		});
+
+		// Fallback: remove skeletons after timeout if iframe load never fires
+		const skeletonTimeout = setTimeout(() => {
+			const skeletonEls = document.querySelectorAll('.project-embed:not(.loaded) .skeleton');
+			skeletonEls.forEach((skel) => {
+				const parent = skel.closest('.project-embed');
+				if (parent) parent.classList.add('loaded');
+			});
+		}, 8000);
+
+		return () => {
+			unsub();
+			clearTimeout(skeletonTimeout);
+		};
+	});
+>>>>>>> Stashed changes
 </script>
 
 <svelte:head>
@@ -194,6 +240,7 @@
                                                                 loading="lazy"
                                                                 sandbox="allow-scripts allow-same-origin"
                                                                 on:load={() => handleLoad(i)}
+                                                                on:error={() => handleError(i)}
                                                                 tabindex="-1"
                                                                 aria-hidden="true"
                                                                 style="--vp: {project.viewport ?? 2.5}; --cam: {project.cam ?? 'top left'};"
@@ -369,7 +416,7 @@
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                background: hsla(0, 0%, 0%, 0);
+                background: hsla(0, 0%, 0%, 0.1);
                 transition: background var(--duration-normal) var(--easing);
                 text-decoration: none;
                 z-index: 2;
@@ -380,11 +427,11 @@
                 font-size: var(--font-size-sm);
                 font-weight: 500;
                 color: #fff;
-                background: hsla(0, 0%, 0%, 0.7);
+                background: hsla(0, 0%, 0%, 0.8);
                 padding: var(--space-sm) var(--space-lg);
                 border-radius: var(--radius-sm);
-                opacity: 0;
-                transform: translateY(4px);
+                opacity: 1;
+                transform: translateY(0);
                 transition:
                         opacity var(--duration-normal) var(--easing),
                         transform var(--duration-normal) var(--easing);
@@ -409,15 +456,24 @@
                 transform: translateY(0);
         }
 
-        /* Mobile touch: always show CTA */
-        @media (max-width: 767px) {
+        @media (min-width: 768px) {
                 .overlay-cta {
+<<<<<<< Updated upstream
                         opacity: 1;
                         transform: translateY(0);
                 }
 
                 .project-overlay {
                         background: hsla(0, 0%, 0%, 0.08);
+=======
+                        opacity: 0;
+                        transform: translateY(4px);
+                        background: hsla(0, 0%, 0%, 0.7);
+                }
+
+                .project-overlay {
+                        background: hsla(0, 0%, 0%, 0);
+>>>>>>> Stashed changes
                 }
         }
 
@@ -463,7 +519,7 @@
         .project-embed.loaded .skeleton {
                 opacity: 0;
                 pointer-events: none;
-                transition: opacity var(--duration-slow) var(--easing);
+                transition: opacity 0.6s var(--easing);
         }
 
         /* Meta */

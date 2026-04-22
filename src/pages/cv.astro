@@ -1,0 +1,305 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { cvExperience, cvProfile } from "../lib/astro/site-content";
+import { getPublicRuntimeState } from "../lib/server/convex";
+import { getProfileEditorialSlice } from "../lib/server/sanity";
+import { getSanityPreviewState } from "../lib/server/sanity-preview";
+
+const previewState = getSanityPreviewState(Astro);
+const [runtime, profile] = await Promise.all([getPublicRuntimeState(), getProfileEditorialSlice(previewState)]);
+
+const positionSkills: Record<string, string[]> = {
+	"Independent design engineer": ["Astro 6", "Svelte 5", "Convex", "Vite 7", "ClojureScript", "Tailwind"],
+	"Senior product designer / prototyper": ["Figma", "React", "Node.js", "Interaction Design", "Motion Physics"],
+	"Creative technologist": ["Three.js", "WebGL", "AR/XR", "Creative Coding", "Brand Systems"]
+};
+---
+
+<BaseLayout
+	title="CV | Stüssy Senik"
+	description="Structured CV for Stüssy Senik."
+	activePath="/cv"
+	runtime={runtime}
+>
+	<section class="cv-recovery">
+		<header class="cv-header-screenshot-3">
+			<div class="cv-header-left">
+				<h1 class="cv-name">{cvProfile.legalName} <span class="cv-handle">"{cvProfile.name.split(' ')[1]}"</span> {cvProfile.name.split(' ')[0].toUpperCase()}</h1>
+				<p class="cv-role">{profile.role}</p>
+				<p class="cv-meta">NYC / Prague · {cvProfile.email}</p>
+				
+				<div class="cv-external-links">
+					<a href="https://stussysenik.com">stussysenik.com</a> — dev + creative
+					<a href="https://mengxuanzou.com">mengxuanzou.com</a> — filmmaking
+					<a href="https://mxzou.com">mxzou.com</a> — main
+				</div>
+			</div>
+			
+			<div class="cv-header-right">
+				<button type="button" class="download-pdf" onclick="window.print()">Download PDF</button>
+			</div>
+		</header>
+
+		<div class="cv-body-grid">
+			<section class="cv-section">
+				<header class="cv-section-header">
+					<span class="pixel-marker" style="background: #F97242;"></span>
+					<h2>SUMMARY</h2>
+				</header>
+				<p class="cv-summary-text">
+					Polymath engineer at the convergence of software, film, music, and design. Formally trained at Cooper Union and FAMU Prague, with production experience spanning B2B product engineering, simultaneous translation across 4 languages, community radio, and EU-funded filmmaking. Building tools and experiences for 1 billion people in mind.
+				</p>
+			</section>
+
+			<section class="cv-section">
+				<header class="cv-section-header">
+					<span class="pixel-marker" style="background: #2563eb;"></span>
+					<h2>EXPERIENCE</h2>
+					<span class="section-count">{cvExperience.length} POSITIONS</span>
+				</header>
+
+				<div class="cv-timeline">
+					{cvExperience.map((entry) => (
+						<article class="cv-entry">
+							<div class="cv-entry-sidebar">
+								<span class="cv-period">{entry.period}</span>
+								<span class="cv-dot"></span>
+							</div>
+							<div class="cv-entry-main">
+								<h3 class="cv-entry-role">{entry.role}</h3>
+								<p class="cv-entry-company">{entry.company}</p>
+								<p class="cv-entry-summary">{entry.summary}</p>
+								<ul class="cv-bullets">
+									{entry.bullets.map((bullet) => (
+										<li>{bullet}</li>
+									))}
+								</ul>
+								<div class="cv-tags">
+									{(positionSkills[entry.role] || ["Engineering", "Design", "Strategy"]).map(tag => <span>{tag}</span>)}
+								</div>
+							</div>
+						</article>
+					))}
+				</div>
+			</section>
+		</div>
+	</section>
+</BaseLayout>
+
+<style>
+	.cv-recovery {
+		display: grid;
+		gap: 4rem;
+		max-width: 60rem;
+	}
+
+	.cv-header-screenshot-3 {
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+		align-items: flex-start;
+		gap: 2rem;
+		padding-bottom: 2rem;
+		border-bottom: 1px solid var(--border-color);
+	}
+
+	@media (min-width: 800px) {
+		.cv-header-screenshot-3 {
+			flex-direction: row;
+			align-items: flex-start;
+		}
+	}
+
+	.cv-name {
+		font-family: var(--font-display);
+		font-size: 3.2rem;
+		font-weight: 800;
+		letter-spacing: -0.04em;
+		margin: 0 0 0.5rem 0;
+		text-transform: uppercase;
+	}
+
+	.cv-handle {
+		color: #2563eb;
+		font-style: italic;
+		text-transform: none;
+	}
+
+	.cv-role {
+		font-size: 1.4rem;
+		color: var(--color-text-secondary);
+		margin: 0 0 0.25rem 0;
+	}
+
+	.cv-meta {
+		font-family: var(--font-mono);
+		font-size: 0.9rem;
+		color: var(--color-text-subtle);
+		margin: 0 0 1.5rem 0;
+	}
+
+	.cv-external-links {
+		display: flex;
+		gap: 1.5rem;
+		font-family: var(--font-mono);
+		font-size: 0.85rem;
+		color: var(--color-text-subtle);
+	}
+
+	.cv-external-links a {
+		color: #2563eb;
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+
+	.download-pdf {
+		background: #2563eb;
+		color: #fff;
+		border: none;
+		padding: 0.8rem 1.5rem;
+		border-radius: 6px;
+		font-family: var(--font-mono);
+		font-weight: 600;
+		font-size: 0.9rem;
+		cursor: pointer;
+		transition: transform 0.1s ease;
+	}
+
+	.download-pdf:hover {
+		transform: translateY(-2px);
+		background: #1d4ed8;
+	}
+
+	.cv-body-grid {
+		display: grid;
+		gap: 4rem;
+	}
+
+	.cv-section {
+		display: grid;
+		gap: 1.5rem;
+	}
+
+	.cv-section-header {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+		border-bottom: 1px solid var(--border-color-subtle);
+		padding-bottom: 0.75rem;
+	}
+
+	.pixel-marker {
+		width: 12px;
+		height: 12px;
+		border-radius: 2px;
+	}
+
+	.cv-section-header h2 {
+		font-family: var(--font-mono);
+		font-size: 0.9rem;
+		letter-spacing: 0.2em;
+		color: var(--color-text-subtle);
+		margin: 0;
+	}
+
+	.section-count {
+		margin-left: auto;
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+		color: var(--color-text-subtle);
+		opacity: 0.6;
+	}
+
+	.cv-summary-text {
+		font-size: 1.25rem;
+		line-height: 1.6;
+		color: var(--color-text-secondary);
+		max-width: 55ch;
+	}
+
+	.cv-timeline {
+		display: grid;
+		gap: 3rem;
+	}
+
+	.cv-entry {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: 1rem;
+	}
+
+	.cv-entry-sidebar {
+		display: flex;
+		justify-content: flex-start;
+		gap: 1rem;
+		align-items: center;
+	}
+
+	@media (min-width: 800px) {
+		.cv-entry {
+			grid-template-columns: 12rem 1fr;
+			gap: 2rem;
+		}
+
+		.cv-entry-sidebar {
+			justify-content: space-between;
+		}
+	}
+
+	.cv-period {
+		font-family: var(--font-mono);
+		font-size: 0.9rem;
+		color: var(--color-text-subtle);
+	}
+
+	.cv-dot {
+		width: 8px;
+		height: 8px;
+		background: #2563eb;
+		border-radius: 50%;
+	}
+
+	.cv-entry-role {
+		font-size: 1.6rem;
+		font-weight: 700;
+		margin: 0 0 0.5rem 0;
+		letter-spacing: -0.02em;
+	}
+
+	.cv-entry-company {
+		font-weight: 600;
+		font-size: 1.1rem;
+		margin: 0 0 1rem 0;
+	}
+
+	.cv-entry-summary {
+		font-size: 1.1rem;
+		line-height: 1.5;
+		color: var(--color-text-secondary);
+		margin-bottom: 1rem;
+	}
+
+	.cv-bullets {
+		padding-left: 1.2rem;
+		margin: 0 0 1.5rem 0;
+		display: grid;
+		gap: 0.5rem;
+		color: var(--color-text-secondary);
+	}
+
+	.cv-tags {
+		display: flex;
+		gap: 0.75rem;
+	}
+
+	.cv-tags span {
+		background: var(--color-bg-alt);
+		padding: 0.35rem 0.75rem;
+		border-radius: 4px;
+		font-family: var(--font-mono);
+		font-size: 0.8rem;
+		color: var(--color-text-subtle);
+	}
+
+	
+</style>

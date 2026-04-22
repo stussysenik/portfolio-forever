@@ -30,16 +30,14 @@
 	}
 
 	/* Mobile: scale display text down to fit single-line or 2-line max */
-	@media (max-width: 480px) {
-		.hero-block :global(.text-display) {
-			font-size: clamp(2rem, 1.4rem + 3vw, 3.5rem);
-		}
-		.hero-block :global(.text-2xl) {
-			font-size: clamp(1.125rem, 1rem + 0.5vw, 1.5rem);
-		}
+	.hero-block :global(.text-display) {
+		font-size: clamp(2rem, 1.4rem + 3vw, 3.5rem);
+	}
+	.hero-block :global(.text-2xl) {
+		font-size: clamp(1.125rem, 1rem + 0.5vw, 1.5rem);
 	}
 
-	@media (min-width: 481px) and (max-width: 768px) {
+	@media (min-width: 481px) {
 		.hero-block :global(.text-display) {
 			font-size: clamp(2.5rem, 1.8rem + 3.5vw, 5rem);
 		}

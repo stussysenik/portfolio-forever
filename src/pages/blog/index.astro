@@ -1,0 +1,188 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getPublicRuntimeState } from "../../lib/server/convex";
+import { getRecentPosts } from "../../lib/server/sanity";
+import { getSanityPreviewState } from "../../lib/server/sanity-preview";
+
+const previewState = getSanityPreviewState(Astro);
+const [runtime, posts] = await Promise.all([getPublicRuntimeState(), getRecentPosts(12, previewState)]);
+---
+
+<BaseLayout
+	title="Blog | Stüssy Senik"
+	description="Editorial notes on system architecture, design engineering, and frontend craft."
+	activePath="/blog"
+	previewLabel="Blog index and editorial notes"
+	previewDocument="post"
+	runtime={runtime}
+>
+	<section class="blog-ledger">
+		<header class="blog-header">
+			<p class="blog-eyebrow">EDITORIAL NOTES</p>
+			<h1>Notes that stay close to the system.</h1>
+			<p class="blog-summary">
+				Tracking decisions behind the portfolio: content boundaries, preview loops, and the parts of frontend work that only become real once the route is live.
+			</p>
+		</header>
+
+		<div class="blog-list" data-testid="blog-list">
+			{posts.map((post) => (
+				<article class="blog-row">
+					<span class="blog-date">{post.publishedDateShort || "DRAFT"}</span>
+					<div class="blog-content">
+						<h2>
+							<a href={`/blog/${post.slug}`}>{post.title}</a>
+						</h2>
+						<p>{post.excerpt}</p>
+					</div>
+					<a class="blog-link" href={`/blog/${post.slug}`}>
+						READ note ↗
+					</a>
+				</article>
+			))}
+		</div>
+	</section>
+</BaseLayout>
+
+<style>
+	.blog-ledger {
+		display: grid;
+		gap: 4rem;
+		max-width: 68rem;
+	}
+
+	.blog-header {
+		display: grid;
+		gap: 1.5rem;
+		padding-bottom: 2.5rem;
+		border-bottom: 1px solid var(--border-color);
+	}
+
+	.blog-eyebrow {
+		font-family: var(--font-mono);
+		font-size: 0.8rem;
+		letter-spacing: 0.2em;
+		color: var(--color-text-subtle);
+		margin: 0;
+	}
+
+	.blog-header h1 {
+		font-family: var(--font-display);
+		font-size: clamp(3rem, 7vw, 5.5rem);
+		line-height: 0.9;
+		letter-spacing: -0.04em;
+		margin: 0;
+		max-width: 15ch;
+	}
+
+	.blog-summary {
+		font-size: 1.5rem;
+		line-height: 1.4;
+		color: var(--color-text-secondary);
+		max-width: 45ch;
+		margin: 0;
+	}
+
+	.blog-list {
+		display: grid;
+		gap: 0;
+	}
+
+.blog-row {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: 1rem;
+		padding: 2rem 0;
+		border-bottom: 1px solid var(--border-color-subtle);
+		align-items: start;
+	}
+
+	.blog-date {
+		order: -1;
+		font-family: var(--font-mono);
+		font-size: 0.85rem;
+		color: var(--color-text-subtle);
+		padding-top: 0.4rem;
+	}
+
+	.blog-link {
+		font-family: var(--font-mono);
+		font-size: 0.85rem;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		color: #2563eb;
+		text-decoration: none;
+		text-align: left;
+		padding-top: 0.45rem;
+	}
+
+	@media (min-width: 900px) {
+		.blog-row {
+			grid-template-columns: 8rem 1fr 10rem;
+			gap: 2rem;
+		}
+
+		.blog-date {
+			order: 0;
+		}
+
+		.blog-link {
+			text-align: right;
+		}
+	}
+
+	.blog-date {
+		font-family: var(--font-mono);
+		font-size: 0.85rem;
+		color: var(--color-text-subtle);
+		padding-top: 0.4rem;
+	}
+
+	.blog-content {
+		display: grid;
+		gap: 0.75rem;
+	}
+
+	.blog-content h2 {
+		font-family: var(--font-display);
+		font-size: 1.8rem;
+		line-height: 1.1;
+		margin: 0;
+		letter-spacing: -0.02em;
+	}
+
+	.blog-content h2 a {
+		color: var(--color-text);
+		text-decoration: none;
+	}
+
+	.blog-content h2 a:hover {
+		color: #2563eb;
+	}
+
+	.blog-content p {
+		font-size: 1.1rem;
+		line-height: 1.6;
+		color: var(--color-text-secondary);
+		margin: 0;
+		max-width: 55ch;
+	}
+
+	.blog-link {
+		font-family: var(--font-mono);
+		font-size: 0.85rem;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		color: #2563eb;
+		text-decoration: none;
+		text-align: right;
+		padding-top: 0.45rem;
+	}
+
+	.blog-link:hover {
+		text-decoration: underline;
+		text-underline-offset: 4px;
+	}
+
+	
+</style>

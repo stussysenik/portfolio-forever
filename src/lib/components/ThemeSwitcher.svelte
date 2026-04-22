@@ -1,13 +1,22 @@
 <script lang="ts">
   import { onMount } from 'svelte';
 
-  type Theme = 'minimal' | 'studio' | 'terminal' | 'bw';
+  type Theme = 'minimal' | 'studio' | 'terminal' | 'bw' | 'inverse';
 
+<<<<<<< Updated upstream
   const themes: { id: Theme; label: string; icon: string; description: string }[] = [
     { id: 'minimal',  label: 'Minimal',  icon: '○', description: 'Warm & colorful' },
     { id: 'studio',   label: 'Studio',   icon: '◇', description: 'Achromatic precision' },
     { id: 'terminal', label: 'Terminal', icon: '▸', description: 'Hacker dark' },
     { id: 'bw',       label: 'B&W',      icon: '⋎', description: 'Ink & craft' },
+=======
+  const themes: { id: Theme; label: string; icon: string; description: string; swatch: string }[] = [
+    { id: 'minimal',  label: 'Minimal',  icon: '○', description: 'Warm editorial light', swatch: 'oklch(0.72 0.04 78)' },
+    { id: 'studio',   label: 'Studio',   icon: '◇', description: 'Achromatic review mode', swatch: '#8a8a8a' },
+    { id: 'terminal', label: 'Terminal', icon: '▸', description: 'Blue-black signal dark', swatch: '#00d9ff' },
+    { id: 'bw',       label: 'B&W',      icon: '⋎', description: 'Paper and ink', swatch: '#1a1a1a' },
+    { id: 'inverse',  label: 'Inverse',  icon: '■', description: 'Pure proof dark', swatch: '#ffffff' },
+>>>>>>> Stashed changes
   ];
 
   let currentTheme: Theme = 'minimal';

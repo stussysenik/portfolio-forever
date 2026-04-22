@@ -1,0 +1,128 @@
+---
+---
+<div class="process-flow">
+	<div class="flow-container">
+		<div class="step-box" data-step="imagine">
+			<span class="step-label">IMAGINE</span>
+			<div class="touch-point tp-1"></div>
+		</div>
+
+		<div class="flow-arrow">
+			<svg width="24" height="48" viewBox="0 0 24 48" fill="none">
+				<path d="M12 0V46M12 46L6 40M12 46L18 40" stroke="currentColor" stroke-width="2"/>
+			</svg>
+		</div>
+
+		<div class="step-box" data-step="rethink">
+			<span class="step-label">RE-THINK</span>
+			<div class="touch-point tp-2"></div>
+		</div>
+
+		<div class="flow-arrow">
+			<svg width="24" height="48" viewBox="0 0 24 48" fill="none">
+				<path d="M12 0V46M12 46L6 40M12 46L18 40" stroke="currentColor" stroke-width="2"/>
+			</svg>
+		</div>
+
+		<div class="step-box" data-step="ship">
+			<span class="step-label">SHIP</span>
+			<div class="touch-point tp-3"></div>
+		</div>
+
+		<div class="loop-back">
+			<svg width="120" height="340" viewBox="0 0 120 340" fill="none">
+				<path d="M60 340V320H10V20H60M60 20L50 10M60 20L50 30" stroke="currentColor" stroke-width="2"/>
+			</svg>
+		</div>
+	</div>
+</div>
+
+<style>
+	.process-flow {
+		display: flex;
+		justify-content: center;
+		padding: 4rem 0;
+		position: relative;
+		background: var(--color-bg);
+	}
+
+	.flow-container {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 1.5rem;
+		position: relative;
+	}
+
+	.step-box {
+		width: 220px;
+		height: 80px;
+		border: 2px solid var(--color-text);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: var(--color-surface);
+		position: relative;
+		z-index: 2;
+		transition: transform var(--duration-normal) var(--easing);
+	}
+
+	.step-box:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 8px 0 var(--color-text);
+	}
+
+	.step-label {
+		font-family: var(--font-display);
+		font-size: 1.8rem;
+		font-weight: 800;
+		letter-spacing: var(--letter-spacing-tight);
+		color: var(--color-text);
+	}
+
+	[data-font="spray"] .step-label {
+		font-family: var(--font-accent);
+		font-size: 2.8rem;
+		letter-spacing: 0;
+	}
+
+	.flow-arrow {
+		color: var(--color-text);
+		opacity: 0.8;
+	}
+
+	.loop-back {
+		position: absolute;
+		left: -80px;
+		top: 50px;
+		height: calc(100% - 100px);
+		color: var(--color-text);
+		pointer-events: none;
+	}
+
+	.touch-point {
+		position: absolute;
+		width: 12px;
+		height: 12px;
+		border: 1px solid var(--color-text);
+		background: var(--color-surface);
+		z-index: 3;
+	}
+
+	.tp-1 { top: -6px; left: -6px; background: #fbbf24; }
+	.tp-2 { top: -6px; right: -6px; background: #10b981; }
+	.tp-3 { bottom: -6px; left: 50%; transform: translateX(-50%); background: #2563eb; }
+
+	@media (min-width: 600px) {
+		.step-box {
+			width: 280px;
+			height: 100px;
+		}
+		.step-label {
+			font-size: 2.2rem;
+		}
+		.loop-back {
+			left: -140px;
+		}
+	}
+</style>

@@ -158,8 +158,13 @@
   .font-dropdown {
     position: absolute;
     bottom: calc(100% + var(--space-xs));
+<<<<<<< Updated upstream
     right: 0;
     width: 480px;
+=======
+    right: -0.25rem;
+    width: min(22rem, calc(100vw - 2rem));
+>>>>>>> Stashed changes
     background: var(--color-surface);
     border: var(--border-width) solid var(--border-color);
     border-radius: var(--radius-md);
@@ -199,8 +204,13 @@
 
   .font-grid {
     display: grid;
+<<<<<<< Updated upstream
     grid-template-columns: repeat(3, 1fr);
     gap: 6px;
+=======
+    grid-template-columns: 1fr;
+    gap: 8px;
+>>>>>>> Stashed changes
   }
 
   .font-cell {
@@ -266,11 +276,18 @@
     white-space: nowrap;
   }
 
+<<<<<<< Updated upstream
   /* Responsive: stack to 2-col on narrow dropdowns near screen edge */
   @media (max-width: 520px) {
     .font-dropdown {
       width: calc(100vw - 2 * var(--space-sm));
       right: calc(-1 * var(--space-sm));
+=======
+  @media (min-width: 640px) {
+    .font-dropdown {
+      width: 420px;
+      right: 0;
+>>>>>>> Stashed changes
     }
 
     .font-grid {

@@ -73,7 +73,7 @@
 	}
 
 	.list-item {
-		line-height: var(--line-height-tight);
+		line-height: var(--line-height-snug);
 	}
 
 	.add-btn {

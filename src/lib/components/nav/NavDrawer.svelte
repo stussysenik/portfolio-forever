@@ -92,11 +92,17 @@
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		padding: var(--space-sm) var(--space-lg);
+		padding: var(--space-xs) var(--space-md);
 		background: color-mix(in srgb, var(--color-bg), transparent 15%);
 		backdrop-filter: blur(12px);
 		-webkit-backdrop-filter: blur(12px);
 		border-bottom: 1px solid var(--border-color-subtle);
+	}
+
+	@media (min-width: 768px) {
+		.drawer-header {
+			padding: var(--space-sm) var(--space-lg);
+		}
 	}
 
 	.drawer-header.open {
@@ -164,12 +170,18 @@
 		left: 0;
 		right: 0;
 		z-index: var(--z-modal);
-		padding: 96px var(--space-2xl) var(--space-2xl);
+		padding: 76px var(--space-md) var(--space-lg);
 		border-bottom: 1px solid var(--border-color);
 		background: var(--color-bg);
 		transform: translateY(-100%);
 		transition: transform 350ms cubic-bezier(0.32, 0.72, 0, 1);
 		overflow: hidden;
+	}
+
+	@media (min-width: 768px) {
+		.drawer-panel {
+			padding: 96px var(--space-2xl) var(--space-2xl);
+		}
 	}
 
 	.drawer-panel.open {
@@ -186,7 +198,7 @@
 	.drawer-close {
 		position: absolute;
 		top: var(--space-sm);
-		right: var(--space-lg);
+		right: var(--space-md);
 		width: 44px;
 		height: 44px;
 		display: flex;
@@ -205,6 +217,12 @@
 			transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
 		z-index: 1;
 		-webkit-tap-highlight-color: transparent;
+	}
+
+	@media (min-width: 768px) {
+		.drawer-close {
+			right: var(--space-lg);
+		}
 	}
 
 	.drawer-close:active {
@@ -271,7 +289,7 @@
 
 	.drawer-link {
 		font-family: var(--font-sans);
-		font-size: var(--font-size-2xl);
+		font-size: var(--font-size-xl);
 		font-weight: var(--font-weight-medium);
 		color: var(--color-text-secondary);
 		text-decoration: none;
@@ -282,6 +300,12 @@
 		min-height: 44px;
 		display: flex;
 		align-items: center;
+	}
+
+	@media (min-width: 768px) {
+		.drawer-link {
+			font-size: var(--font-size-2xl);
+		}
 	}
 
 	.drawer-link:hover {
@@ -312,25 +336,6 @@
 
 	.drawer-link.external:hover {
 		color: var(--color-text-secondary);
-	}
-
-	@media (max-width: 767px) {
-		.drawer-header {
-			padding: var(--space-xs) var(--space-md);
-		}
-
-		.drawer-panel {
-			padding: 76px var(--space-md) var(--space-lg);
-		}
-
-		.drawer-close {
-			right: var(--space-md);
-		}
-
-		.drawer-link {
-			font-size: var(--font-size-xl);
-			min-height: 44px;
-		}
 	}
 
 	@media (prefers-reduced-motion: reduce) {

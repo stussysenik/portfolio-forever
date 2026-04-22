@@ -116,6 +116,7 @@
 </div>
 
 <style>
+<<<<<<< Updated upstream
   .academia {
     max-width: 800px;
     margin: 0 auto;
@@ -280,4 +281,24 @@
       height: 140px;
     }
   }
+=======
+  .academia { max-width: 800px; margin: 0 auto; padding: var(--space-lg) var(--space-md); }
+  .academia-header { margin-bottom: var(--space-2xl); }
+  .academia-name { font-size: var(--font-size-2xl); font-weight: 600; margin-bottom: var(--space-xs); }
+  .academia-tagline { color: var(--color-text-secondary); font-size: var(--font-size-base); margin-bottom: var(--space-xs); }
+  .academia-meta { font-size: var(--font-size-sm); color: var(--color-text-muted); margin-bottom: var(--space-sm); }
+  .academia-section-title { font-size: var(--font-size-lg); font-weight: 600; margin-bottom: var(--space-lg); border-bottom: 1px solid var(--border-color); }
+  .academia-empty { color: var(--color-text-muted); font-style: italic; }
+  .paper { display: flex; flex-direction: column; gap: var(--space-md); margin-bottom: var(--space-xl); align-items: flex-start; }
+  .paper.compact .paper-thumb { display: none; }
+  .paper-thumb { width: 100%; height: 140px; object-fit: cover; border-radius: var(--radius-sm); background: var(--color-bg-alt); }
+  .paper-content { flex: 1; min-width: 0; }
+  .paper-title { font-size: var(--font-size-base); font-weight: 600; line-height: 1.3; }
+  .paper-authors { font-size: var(--font-size-sm); color: var(--color-text-secondary); }
+  .paper-venue { font-size: var(--font-size-sm); color: var(--color-text-muted); font-style: italic; }
+  .paper-desc { font-size: var(--font-size-sm); color: var(--color-text-secondary); line-height: 1.5; }
+  .paper-links { display: flex; gap: var(--space-md); font-size: var(--font-size-sm); }
+  .paper-links a { color: var(--color-accent); font-weight: 500; }
+  @media (min-width: 600px) { .paper { flex-direction: row; } .paper-thumb { width: 160px; min-width: 160px; height: 100px; } }
+>>>>>>> Stashed changes
 </style>

@@ -143,6 +143,7 @@
 </section>
 
 <style>
+<<<<<<< Updated upstream
 	/* HERO */
 	.hero {
 		position: relative;
@@ -153,6 +154,32 @@
 		margin-bottom: var(--space-xl);
 		padding-top: var(--space-md);
 		gap: var(--space-2xl);
+=======
+	.hero-section {
+		padding-top: 0;
+		animation: fadeIn var(--duration-slow) var(--easing);
+	}
+
+	.hero-grid {
+		align-items: start;
+		gap: var(--space-2xl);
+		min-height: auto;
+		padding-block: clamp(2rem, 5vw, 5rem) clamp(1rem, 2vw, 2rem);
+		border-bottom: 1px solid color-mix(in srgb, var(--border-color-strong) 70%, transparent);
+		min-width: 0;
+	}
+
+	.hero-content,
+	.hero-visual-wrapper {
+		min-width: 0;
+	}
+
+	@media (min-width: 1024px) {
+		.hero-grid {
+			gap: 0;
+			min-height: min(52rem, 72vh);
+		}
+>>>>>>> Stashed changes
 	}
 
 	.hero-content {
@@ -241,13 +268,44 @@
 		font-weight: 700;
 		letter-spacing: var(--letter-spacing-tight);
 		color: var(--color-text);
+<<<<<<< Updated upstream
 		margin: 0;
 		line-height: var(--line-height-dense);
+=======
+		text-transform: uppercase;
+		letter-spacing: var(--letter-spacing-tighter);
+		font-weight: var(--font-weight-bold);
+		max-width: none;
+	}
+
+	@media (min-width: 768px) {
+		.hero-name {
+			max-width: 8ch;
+		}
+>>>>>>> Stashed changes
 	}
 
 	.hero-tagline {
 		font-family: var(--font-sans);
+<<<<<<< Updated upstream
 		font-size: var(--font-size-base);
+=======
+		font-size: clamp(1.25rem, 1rem + 0.95vw, 1.95rem);
+		font-weight: var(--font-weight-medium);
+		color: var(--color-text);
+		margin: 0;
+		line-height: 1.25;
+		letter-spacing: -0.02em;
+		max-width: 18ch;
+		text-wrap: balance;
+	}
+
+	.hero-description {
+		margin: 0;
+		max-width: 36ch;
+		font-size: clamp(0.98rem, 0.9rem + 0.18vw, 1.08rem);
+		line-height: 1.55;
+>>>>>>> Stashed changes
 		color: var(--color-text-secondary);
 		margin: 0;
 		line-height: var(--line-height-relaxed);
@@ -364,8 +422,75 @@
 	/* DOMAIN DISCOVERY */
 	.domains {
 		display: flex;
+<<<<<<< Updated upstream
 		flex-wrap: wrap;
 		align-items: baseline;
+=======
+		justify-content: center;
+		align-items: start;
+		order: -1;
+		min-height: auto;
+	}
+
+	@media (min-width: 1024px) {
+		.hero-visual-wrapper {
+			order: 0;
+			min-height: auto;
+		}
+	}
+
+	.hero-visual-frame {
+		width: 100%;
+		max-width: 36rem;
+		display: grid;
+		gap: var(--space-sm);
+		padding: var(--space-sm);
+		border: 1px solid color-mix(in srgb, var(--border-color-strong) 70%, transparent);
+		background: color-mix(in srgb, var(--color-surface) 85%, var(--color-bg));
+	}
+
+	@media (min-width: 768px) {
+		.hero-visual-frame {
+			padding: var(--space-md);
+		}
+	}
+
+	.hero-visual-header,
+	.hero-visual-footer {
+		display: flex;
+		justify-content: space-between;
+		gap: var(--space-sm);
+		font-family: var(--font-mono);
+		font-size: var(--font-size-2xs);
+		text-transform: uppercase;
+		letter-spacing: 0.14em;
+		color: var(--color-text-subtle);
+	}
+
+	.hero-visual {
+		width: 100%;
+		min-height: 14rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-top: 1px solid color-mix(in srgb, var(--border-color) 65%, transparent);
+		border-bottom: 1px solid color-mix(in srgb, var(--border-color) 65%, transparent);
+	}
+
+	.mt-xl { margin-top: var(--space-xl); }
+	.mt-2xl { margin-top: var(--space-2xl); }
+	.mb-2xl { margin-bottom: var(--space-2xl); }
+
+	.hero-proof-stage {
+		display: grid;
+		gap: clamp(1.5rem, 3vw, 3rem);
+	}
+
+	.hero-proof-panel,
+	.hero-surfaces-panel {
+		display: grid;
+		align-content: start;
+>>>>>>> Stashed changes
 		gap: var(--space-md);
 		padding: var(--space-xl) 0;
 		font-family: var(--font-mono);
@@ -377,5 +502,137 @@
 		display: inline-flex;
 		align-items: baseline;
 		gap: var(--space-xs);
+<<<<<<< Updated upstream
 	}
 </style>
+=======
+		max-width: 36rem;
+		margin-bottom: var(--space-lg);
+	}
+
+	.hero-ledger__eyebrow {
+		margin: 0;
+		font-family: var(--font-mono);
+		font-size: var(--font-size-2xs);
+		text-transform: uppercase;
+		letter-spacing: 0.18em;
+		color: var(--color-text-subtle);
+	}
+
+	.hero-ledger__summary {
+		margin: 0;
+		font-size: var(--font-size-sm);
+		line-height: 1.55;
+		color: var(--color-text-secondary);
+		max-width: 42ch;
+	}
+
+	.hero-table-wrap,
+	.hero-surfaces-panel {
+		padding-top: var(--space-sm);
+		border-top: 1px solid color-mix(in srgb, var(--border-color) 78%, transparent);
+	}
+
+	.hero-surfaces-panel__summary {
+		margin: 0;
+		max-width: 34ch;
+		font-size: var(--font-size-sm);
+		line-height: 1.55;
+		color: var(--color-text-secondary);
+	}
+
+	.section-header--hero {
+		display: grid;
+		grid-template-columns: auto 1fr;
+		align-items: center;
+		column-gap: var(--space-sm);
+		row-gap: var(--space-xs);
+	}
+
+	.section-note {
+		margin: 0;
+		grid-column: 1 / -1;
+		justify-self: start;
+		font-family: var(--font-mono);
+		font-size: var(--font-size-2xs);
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		color: var(--color-text-subtle);
+	}
+
+	@media (min-width: 768px) {
+		.section-header--hero {
+			grid-template-columns: auto auto minmax(0, 1fr);
+		}
+
+		.section-note {
+			grid-column: auto;
+			justify-self: end;
+		}
+	}
+
+	.grid-container {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: var(--space-md);
+	}
+
+	.col-4 { grid-column: 1 / -1; }
+
+	@media (min-width: 768px) {
+		.grid-container {
+			grid-template-columns: repeat(var(--grid-columns), 1fr);
+			gap: var(--grid-gap);
+		}
+
+		.col-4 { grid-column: span 4; }
+	}
+	
+	@media (min-width: 768px) {
+		.hero-visual {
+			min-height: clamp(16rem, 26vw, 24rem);
+		}
+
+		.hero-name {
+			max-width: 8ch;
+		}
+
+		.hero-section {
+			padding-top: clamp(1rem, 3vw, 2rem);
+		}
+
+		.md\:col-6 { grid-column: span 6; }
+		.md\:col-12 { grid-column: span 12; }
+	}
+
+	@media (min-width: 1024px) {
+		.lg\:col-12 { grid-column: span 12; }
+		.lg\:col-6 { grid-column: span 6; }
+		.lg\:col-7 { grid-column: span 7; }
+		.lg\:col-5 { grid-column: span 5; }
+	}
+
+	@media (min-width: 1800px) {
+		.hero-grid {
+			min-height: min(56rem, 78vh);
+		}
+
+		.hero-visual-frame {
+			max-width: 40rem;
+		}
+	}
+
+	@media (min-width: 1200px) {
+		.hero-proof-stage {
+			grid-template-columns: minmax(0, 1.2fr) minmax(21rem, 0.8fr);
+			align-items: start;
+		}
+
+		.hero-surfaces-panel {
+			position: sticky;
+			top: clamp(5.5rem, 9vh, 7rem);
+		}
+	}
+
+	</style>
+>>>>>>> Stashed changes

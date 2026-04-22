@@ -419,6 +419,7 @@
                 gap: var(--space-md);
         }
 
+<<<<<<< Updated upstream
         .donut-display {
                 overflow: hidden;
                 max-width: 100%;
@@ -538,4 +539,24 @@
                         transform: translateY(0);
                 }
         }
+=======
+  .donut-ascii {
+    font-family: var(--font-mono);
+    font-size: 5px;
+    line-height: 1;
+    letter-spacing: 1px;
+    color: var(--color-accent);
+    margin: 0;
+    white-space: pre;
+    user-select: none;
+    pointer-events: none;
+  }
+
+  @media (min-width: 600px) {
+    .donut-ascii {
+      font-size: clamp(6px, 1.2vw, 10px);
+      letter-spacing: 2px;
+    }
+  }
+>>>>>>> Stashed changes
 </style>

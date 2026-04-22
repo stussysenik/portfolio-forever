@@ -225,6 +225,30 @@ export const seedBuiltIn = internalMutation({
 					electricGreen: "#24a148",
 				},
 			},
+			{
+				themeId: "inverse",
+				label: "Inverse",
+				type: "dark" as const,
+				isBuiltIn: true,
+				isDefault: false,
+				colors: {
+					bg: "#000000",
+					bgAlt: "#0a0a0a",
+					surface: "#111111",
+					surfaceRaised: "#1a1a1a",
+					text: "#ffffff",
+					textSecondary: "#a0a0a0",
+					textMuted: "#666666",
+					textSubtle: "#444444",
+					accent: "#ffffff",
+					accentHover: "#e0e0e0",
+					accentSubtle: "rgba(255,255,255,0.06)",
+					success: "#3fb950",
+					warning: "#d29922",
+					danger: "#f85149",
+					electricGreen: "#3fb950",
+				},
+			},
 		];
 
 		for (const theme of builtIn) {

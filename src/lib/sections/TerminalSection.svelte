@@ -458,11 +458,11 @@
 <style>
   .terminal-page {
     min-height: var(--terminal-height, calc(100vh - 120px));
-    padding: var(--space-xs) var(--space-md);
+    padding: var(--space-sm);
     /* Clear tmux bar (fixed bottom:60px ~30px tall) + site footer (fixed bottom:16px ~40px tall) */
-    padding-bottom: 110px;
+    padding-bottom: 100px;
     font-family: 'JetBrains Mono', monospace;
-    font-size: 13px;
+    font-size: 12px;
     line-height: 1.6;
     cursor: text;
     position: relative;
@@ -540,7 +540,7 @@
   /* ── Inline Browser ── */
   .inline-browser {
     width: 100%;
-    max-width: 800px;
+    max-width: 100%;
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
     overflow: hidden;
@@ -692,15 +692,15 @@
   /* ── tmux Status Bar ── */
   .tmux-bar {
     position: fixed;
-    bottom: 60px;
-    left: var(--space-md);
-    right: var(--space-md);
+    bottom: 52px;
+    left: var(--space-sm);
+    right: var(--space-sm);
     display: flex;
     align-items: center;
     gap: var(--space-sm);
     padding: 4px var(--space-md);
     font-family: 'JetBrains Mono', monospace;
-    font-size: var(--font-size-xs, 0.75rem);
+    font-size: var(--font-size-2xs, 0.75rem);
     color: var(--color-text-subtle);
     background: var(--color-bg-alt);
     border: 1px solid var(--border-color-subtle);
@@ -732,22 +732,22 @@
   :global(.t-warning) { color: #e0af68; }
 
   /* ── Responsive ── */
-  @media (max-width: 767px) {
+  @media (min-width: 768px) {
     .terminal-page {
-      font-size: 12px;
-      padding: var(--space-sm);
-      padding-bottom: 100px;
+      font-size: 13px;
+      padding: var(--space-xs) var(--space-md);
+      padding-bottom: 110px;
     }
 
     .inline-browser {
-      max-width: 100%;
+      max-width: 800px;
     }
 
     .tmux-bar {
-      left: var(--space-sm);
-      right: var(--space-sm);
-      font-size: var(--font-size-2xs, 0.75rem);
-      bottom: 52px;
+      left: var(--space-md);
+      right: var(--space-md);
+      font-size: var(--font-size-xs, 0.75rem);
+      bottom: 60px;
     }
   }
 </style>

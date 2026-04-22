@@ -1,0 +1,17 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import HirePage from "../lib/components/hire/HirePage.svelte";
+import { getPublicRuntimeState } from "../lib/server/convex";
+
+const runtime = await getPublicRuntimeState();
+---
+
+<BaseLayout
+	title="Hire Stüssy Senik | Design Engineer"
+	description="Design Engineer — AI-Native Products. This website is the application."
+	activePath="/hire"
+	runtime={runtime}
+	robots="index, follow"
+>
+	<HirePage client:load />
+</BaseLayout>

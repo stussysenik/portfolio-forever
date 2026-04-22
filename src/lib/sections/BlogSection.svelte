@@ -150,6 +150,7 @@
     margin: 0 auto;
     padding: var(--space-lg) var(--space-lg);
   }
+<<<<<<< Updated upstream
 
   /* === PAGE HEADER === */
   .page-header {
@@ -455,4 +456,33 @@
       font-size: var(--font-size-base);
     }
   }
+=======
+  .wide-container { max-width: 1200px; }
+  .page-header { margin-bottom: var(--space-xl); }
+  .header-meta { display: flex; align-items: center; gap: var(--space-md); margin-bottom: var(--space-sm); }
+  .header-count { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--color-text-subtle); }
+  .tag-clear { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--color-accent); background: transparent; border: none; cursor: pointer; }
+  .view-toggle { margin-left: auto; display: flex; gap: var(--space-xs); }
+  .toggle-btn { font-family: var(--font-mono); font-size: var(--font-size-2xs); color: var(--color-text-subtle); background: transparent; border: none; padding: var(--space-2xs) var(--space-xs); cursor: pointer; opacity: 0.5; }
+  .toggle-btn.active { color: var(--color-text); opacity: 1; text-decoration: underline; text-underline-offset: 4px; }
+  .page-title { font-size: var(--font-size-3xl); font-weight: 600; margin: 0 0 var(--space-md) 0; }
+  .page-description { font-family: var(--font-mono); font-size: var(--font-size-sm); color: var(--color-text-muted); margin: var(--space-2xl) 0 0 0; }
+  .notes-list { display: flex; flex-direction: column; gap: var(--space-lg); }
+  .notes-grid { display: grid; grid-template-columns: 1fr; gap: var(--space-md); }
+  @media (min-width: 600px) { .notes-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 900px) { .notes-grid { grid-template-columns: repeat(3, 1fr); } }
+  .note-card { display: block; padding: var(--space-lg) 0; border-bottom: 1px solid var(--border-color-subtle); text-decoration: none; color: inherit; }
+  .note-card:hover { border-left: 2px solid var(--color-accent); padding-left: var(--space-sm); }
+  .notes-grid .note-card { border: 1px solid var(--border-color-subtle); border-radius: var(--radius-md); padding: var(--space-xl); aspect-ratio: 1/1; }
+  .note-date { display: block; font-family: var(--font-mono); font-size: var(--font-size-2xs); color: var(--color-text-subtle); text-transform: uppercase; }
+  .note-title { font-size: var(--font-size-lg); font-weight: 500; color: var(--color-text); }
+  .note-excerpt { font-size: var(--font-size-sm); color: var(--color-text-muted); }
+  .note-cta { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--color-accent); }
+  .page-footer { margin-top: var(--space-2xl); padding-top: var(--space-xl); border-top: 1px solid var(--border-color-subtle); }
+  .filter-nav { display: flex; gap: var(--space-md); flex-wrap: wrap; }
+  .filter-label { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--color-text-subtle); }
+  .filter-tags { display: flex; flex-wrap: wrap; gap: var(--space-xs); }
+  .filter-tag { font-family: var(--font-mono); font-size: var(--font-size-xs); border: 1px solid var(--border-color-subtle); padding: 2px 8px; border-radius: 4px; background: transparent; cursor: pointer; }
+  .filter-tag.active { background: var(--color-text); color: var(--color-bg); }
+>>>>>>> Stashed changes
 </style>

@@ -67,7 +67,8 @@
  */
 :root[data-theme="darkroom"] .admin-shell[data-admin],
 :root[data-theme="carbon"] .admin-shell[data-admin],
-:root[data-theme="terminal"] .admin-shell[data-admin] {
+:root[data-theme="terminal"] .admin-shell[data-admin],
+:root[data-theme="inverse"] .admin-shell[data-admin] {
 	--admin-chrome-bg: #0e0e0c;
 	--admin-workspace-bg: #141412;
 	--admin-frame-bg: #1a1a18;
@@ -77,4 +78,15 @@
 	--admin-keyline: rgba(244, 244, 242, 0.12);
 	--admin-keyline-strong: rgba(244, 244, 242, 0.22);
 	color-scheme: dark;
+}
+
+/*
+ * Inverse theme — pure proof dark.
+ * Rick Rubin essentialism + PG LANG boldness + Light Phone restraint.
+ * Maximum contrast, minimum noise. Every element earns its place.
+ */
+:root[data-theme="inverse"] {
+	--admin-chrome-bg: #000000;
+	--admin-workspace-bg: #0a0a0a;
+	--admin-frame-bg: #0f0f0f;
 }

@@ -191,8 +191,13 @@
 <style>
   .elevator {
     position: fixed;
+<<<<<<< Updated upstream
     bottom: calc(var(--space-md) + 56px);
     right: var(--space-lg);
+=======
+    bottom: calc(var(--space-2xl) + 5rem);
+    right: var(--space-sm);
+>>>>>>> Stashed changes
     
     display: flex;
     align-items: center;
@@ -203,7 +208,7 @@
     background: var(--color-bg);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
-    padding: var(--space-xs) var(--space-sm);
+    padding: var(--space-2xs) var(--space-xs);
     
     cursor: pointer;
     z-index: 90;
@@ -238,6 +243,30 @@
     border-color: var(--color-text-muted);
   }
 
+<<<<<<< Updated upstream
+=======
+  .lobby-link {
+    display: none;
+    font-size: 0.62rem;
+    color: var(--color-accent);
+    text-decoration: none;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    padding: 2px 6px;
+    border: 1px solid var(--border-color);
+    border-radius: 2px;
+    background: color-mix(in srgb, var(--color-accent) 5%, transparent);
+    transition: all var(--duration-fast) var(--easing);
+    white-space: nowrap;
+  }
+
+  .lobby-link:hover {
+    background: var(--color-accent);
+    color: white;
+    border-color: var(--color-accent);
+  }
+
+>>>>>>> Stashed changes
   .elevator-action:focus-visible,
   .sound-btn:focus-visible {
     outline: 2px solid var(--color-accent);
@@ -255,10 +284,10 @@
     align-items: center;
     justify-content: center;
     
-    min-width: 20px;
-    height: 20px;
+    min-width: 18px;
+    height: 18px;
     
-    font-size: var(--font-size-xs);
+    font-size: var(--font-size-2xs);
     font-weight: 500;
     color: var(--color-text);
     
@@ -293,7 +322,7 @@
   }
 
   .elevator-label {
-    font-size: var(--font-size-2xs);
+    font-size: var(--font-size-2xs, 0.75rem);
     color: var(--color-text-muted);
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -318,12 +347,12 @@
     align-items: center;
     justify-content: center;
     
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
     padding: 0;
     
     font-family: inherit;
-    font-size: var(--font-size-xs, 0.75rem);
+    font-size: var(--font-size-2xs, 0.75rem);
     
     background: transparent;
     border: 1px solid transparent;
@@ -351,28 +380,32 @@
     color: var(--color-text-muted);
   }
 
-  /* Mobile */
-  @media (max-width: 767px) {
+  /* Desktop */
+  @media (min-width: 900px) {
     .elevator {
-      bottom: calc(var(--space-sm) + 64px);
-      right: var(--space-md);
-      padding: var(--space-2xs) var(--space-xs);
+      bottom: calc(var(--space-md) + 64px);
+      right: clamp(var(--space-md), 5vw, var(--space-xl));
+      padding: var(--space-xs) var(--space-sm);
     }
 
     .floor-display {
-      min-width: 18px;
-      height: 18px;
-      font-size: var(--font-size-2xs);
+      min-width: 20px;
+      height: 20px;
+      font-size: var(--font-size-xs);
     }
 
     .elevator-label {
-      font-size: var(--font-size-2xs, 0.75rem);
+      font-size: var(--font-size-2xs);
     }
 
     .sound-btn {
-      width: 16px;
-      height: 16px;
-      font-size: var(--font-size-2xs, 0.75rem);
+      width: 18px;
+      height: 18px;
+      font-size: var(--font-size-xs, 0.75rem);
+    }
+
+    .lobby-link {
+      display: inline;
     }
   }
 

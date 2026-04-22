@@ -297,14 +297,187 @@
 <style>
   .one-page {
     position: relative;
+<<<<<<< Updated upstream
   }
 
   .section-wrapper {
     min-height: 50vh;
     padding-block: var(--space-2xl);
+=======
+    width: 100%;
+    display: grid;
+    max-width: 100%;
+    overflow-x: clip;
+  }
+
+  .safe-boundary-viewport {
+    position: relative;
+    max-width: 116rem;
+    margin: 0 auto;
+    padding: 1rem 1rem clamp(4rem, 8vh, 6rem);
+    box-sizing: border-box;
+    min-height: 100vh;
+    min-width: 0;
+  }
+
+  @media (min-width: 480px) {
+    .safe-boundary-viewport {
+      padding-inline: clamp(1.5rem, 3vw, 2rem);
+    }
+  }
+
+  @media (min-width: 768px) {
+    .safe-boundary-viewport {
+      padding: clamp(1rem, 2vw, 2rem) clamp(1.5rem, 4vw, 3rem) clamp(4rem, 8vh, 6rem);
+    }
+  }
+
+  @media (min-width: 1440px) {
+    .safe-boundary-viewport {
+      padding-inline: clamp(2rem, 4vw, 3rem);
+    }
+  }
+
+  .safety-rectangle {
+    position: absolute;
+    inset: 0;
+    border: 1px solid color-mix(in srgb, var(--border-color) 82%, transparent);
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.65;
+    border-radius: clamp(1rem, 2vw, 2rem);
+  }
+
+  .section-wrapper {
+    min-height: 0;
+    padding-block: clamp(3.5rem, 7vw, 7rem);
+    position: relative;
+    z-index: 1;
+    scroll-margin-top: clamp(5rem, 10vw, 7rem);
+    max-width: 100%;
+    overflow-x: clip;
+    min-width: 0;
+  }
+
+  .section-wrapper--hero {
+    scroll-margin-top: 0;
+>>>>>>> Stashed changes
   }
 
   .section-wrapper.parallaxing {
     will-change: transform;
   }
+<<<<<<< Updated upstream
+=======
+
+  .home-module {
+    display: grid;
+    gap: calc(var(--space-xl) + var(--space-md));
+    border-top: 1px solid color-mix(in srgb, var(--border-color-strong) 72%, transparent);
+    padding-top: clamp(1rem, 1.75vw, 1.75rem);
+  }
+
+  .home-module__header {
+    display: grid;
+    gap: var(--space-xs);
+    align-items: end;
+    align-content: start;
+  }
+
+  .home-module__meta {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    font-family: var(--font-mono);
+    font-size: var(--font-size-2xs, 0.6875rem);
+    color: var(--color-text-subtle);
+    letter-spacing: var(--letter-spacing-wide);
+  }
+
+  .home-module__index {
+    color: var(--color-accent);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .home-module__route {
+    opacity: 0.8;
+  }
+
+  .home-module__title {
+    margin: 0;
+    max-width: 11ch;
+    font-size: clamp(1.45rem, 1.05rem + 1.8vw, 3rem);
+    line-height: 1.1;
+    letter-spacing: var(--letter-spacing-tight);
+    font-weight: var(--font-weight-semibold, 600);
+  }
+
+  .home-module__body {
+    min-width: 0;
+    max-width: min(82rem, 100%);
+  }
+
+  @media (min-width: 768px) {
+    .home-module {
+      grid-template-columns: minmax(10rem, 15rem) minmax(0, 1fr);
+      gap: var(--space-xl) var(--space-2xl);
+      align-items: start;
+    }
+
+    .home-module__header {
+      position: sticky;
+      top: clamp(5rem, 9vh, 6.5rem);
+      align-self: start;
+      padding-block: 0.35rem 1rem;
+      padding-right: var(--space-lg);
+      border-right: 1px solid color-mix(in srgb, var(--border-color) 75%, transparent);
+      background:
+        linear-gradient(
+          to bottom,
+          color-mix(in srgb, var(--color-bg) 96%, transparent) 0%,
+          color-mix(in srgb, var(--color-bg) 90%, transparent) 82%,
+          transparent 100%
+        );
+    }
+
+    .home-module__title {
+      max-width: 7ch;
+    }
+  }
+
+  @media (min-width: 1440px) {
+    .safe-boundary-viewport {
+      max-width: 120rem;
+    }
+
+    .home-module {
+      grid-template-columns: minmax(12rem, 18rem) minmax(0, 1fr);
+      gap: var(--space-2xl) var(--space-3xl);
+    }
+
+    .home-module__body {
+      max-width: min(86rem, 100%);
+    }
+  }
+
+  @media (min-width: 2200px) {
+    .safe-boundary-viewport {
+      max-width: 126rem;
+      padding-inline: var(--space-md);
+    }
+
+    .section-wrapper {
+      padding-block: clamp(3rem, 4vw, 6rem);
+    }
+
+    .home-module {
+      grid-template-columns: minmax(13rem, 20rem) minmax(0, 1fr);
+      gap: var(--space-2xl) clamp(3rem, 4vw, 5rem);
+    }
+
+    .home-module__body {
+      max-width: min(92rem, 100%);
+    }
+  }
+>>>>>>> Stashed changes
 </style>

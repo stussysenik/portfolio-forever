@@ -9,6 +9,7 @@
 		{ id: 'studio',     label: 'Studio',     bg: '#F5F5F5', accent: '#737373' },
 		{ id: 'terminal',   label: 'Terminal',   bg: '#0A0A0A', accent: '#44D62C' },
 		{ id: 'bw',         label: 'B&W',        bg: '#FFFFFF', accent: '#000000' },
+		{ id: 'inverse',    label: 'Inverse',    bg: '#000000', accent: '#FFFFFF' },
 	];
 
 	const fonts: { id: string; name: string; family: string }[] = [

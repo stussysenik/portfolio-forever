@@ -1,0 +1,253 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import ProcessFlow from "../components/ProcessFlow.astro";
+import { processSteps } from "../lib/astro/site-content";
+import { getPublicRuntimeState } from "../lib/server/convex";
+
+const runtime = await getPublicRuntimeState();
+
+const processPrinciples = [
+	{
+		label: "INPUTS",
+		value: "Audience, proof, constraints",
+	},
+	{
+		label: "BOUNDARY",
+		value: "Editorial ownership versus live runtime",
+	},
+	{
+		label: "OUTPUTS",
+		value: "Shippable routes, real preview, verified behavior",
+	},
+];
+---
+
+<BaseLayout
+	title="Process | Stüssy Senik"
+	description="Imagine, re-think, ship: a first-principles process for product, editorial, and interface work."
+	activePath="/process"
+	runtime={runtime}
+>
+	<section class="process-recovery">
+		<header class="process-header">
+			<p class="process-eyebrow">METHODOLOGY</p>
+			<h1>Imagine.<br />Re-think.<br />Ship.</h1>
+			<p class="process-summary">
+				Start with the proof, remove the accidental system, then ship something that can survive contact with a real
+				user and a real editor.
+			</p>
+		</header>
+
+		<section class="process-grid">
+			<div class="process-main">
+				<ProcessFlow />
+				
+				<div class="process-principles">
+					{processPrinciples.map(item => (
+						<div class="principle-card">
+							<dt>{item.label}</dt>
+							<dd>{item.value}</dd>
+						</div>
+					))}
+				</div>
+			</div>
+
+			<div class="process-steps-list">
+				{processSteps.map((step, index) => (
+					<article class="process-step-row">
+						<span class="step-number">0{index + 1}</span>
+						<div class="step-content">
+							<p class="step-kicker">{step.kicker}</p>
+							<h2>{step.title}</h2>
+							<p class="step-desc">{step.description}</p>
+							<span class="step-artifact">ARTIFACT: {step.artifact}</span>
+						</div>
+					</article>
+				))}
+			</div>
+		</section>
+
+		<section class="process-manifesto">
+			<p class="process-eyebrow">CORE DISCIPLINE</p>
+			<h2>The route should explain the system,<br />not only describe taste.</h2>
+		</section>
+	</section>
+</BaseLayout>
+
+<style>
+	.process-recovery {
+		display: grid;
+		gap: 6rem;
+		max-width: 72rem;
+	}
+
+	.process-header {
+		display: grid;
+		gap: 2rem;
+	}
+
+	.process-eyebrow {
+		font-family: var(--font-mono);
+		font-size: 0.8rem;
+		letter-spacing: 0.2em;
+		color: var(--color-text-subtle);
+		margin: 0;
+	}
+
+	.process-header h1 {
+		font-family: var(--font-display);
+		font-size: clamp(4rem, 10vw, 8.5rem);
+		line-height: 0.85;
+		letter-spacing: -0.05em;
+		margin: 0;
+		text-transform: uppercase;
+	}
+
+	.process-summary {
+		font-size: 2rem;
+		line-height: 1.25;
+		color: var(--color-text-secondary);
+		max-width: 35ch;
+		margin: 0;
+	}
+
+	.process-grid {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: 4rem;
+		align-items: start;
+	}
+
+	.process-main {
+		display: grid;
+		gap: 4rem;
+		position: static;
+	}
+
+	@media (min-width: 1000px) {
+		.process-grid {
+			grid-template-columns: 1fr 1.2fr;
+		}
+
+		.process-main {
+			position: sticky;
+			top: 4rem;
+		}
+	}
+
+	.process-ascii {
+		font-family: var(--font-mono);
+		font-size: 0.85rem;
+		line-height: 1.4;
+		color: #2563eb;
+		margin: 0;
+		padding: 2rem;
+		background: var(--color-bg-alt);
+		border-radius: 4px;
+		overflow: auto;
+	}
+
+	.process-principles {
+		display: grid;
+		gap: 1.5rem;
+	}
+
+	.principle-card {
+		display: grid;
+		gap: 0.5rem;
+		padding: 1.5rem;
+		border-left: 2px solid #2563eb;
+		background: var(--color-bg-alt);
+	}
+
+	.principle-card dt {
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+		letter-spacing: 0.15em;
+		color: var(--color-text-subtle);
+	}
+
+	.principle-card dd {
+		margin: 0;
+		font-size: 1.1rem;
+		font-weight: 500;
+	}
+
+	.process-steps-list {
+		display: grid;
+		gap: 0;
+	}
+
+	.process-step-row {
+		display: grid;
+		grid-template-columns: 4rem 1fr;
+		gap: 2rem;
+		padding: 3rem 0;
+		border-bottom: 1px solid var(--border-color-subtle);
+	}
+
+	.process-step-row:first-child {
+		padding-top: 0;
+	}
+
+	.step-number {
+		font-family: var(--font-mono);
+		font-size: 1.2rem;
+		font-weight: 700;
+		color: #2563eb;
+		padding-top: 0.4rem;
+	}
+
+	.step-content {
+		display: grid;
+		gap: 1rem;
+	}
+
+	.step-kicker {
+		font-family: var(--font-mono);
+		font-size: 0.85rem;
+		letter-spacing: 0.1em;
+		color: var(--color-text-subtle);
+		margin: 0;
+	}
+
+	.step-content h2 {
+		font-family: var(--font-display);
+		font-size: 2.8rem;
+		line-height: 1;
+		margin: 0;
+		letter-spacing: -0.02em;
+	}
+
+	.step-desc {
+		font-size: 1.25rem;
+		line-height: 1.6;
+		color: var(--color-text-secondary);
+		margin: 0;
+	}
+
+	.step-artifact {
+		font-family: var(--font-mono);
+		font-size: 0.8rem;
+		letter-spacing: 0.05em;
+		color: #2563eb;
+		margin-top: 1rem;
+	}
+
+	.process-manifesto {
+		padding: 6rem 0;
+		border-top: 1px solid var(--border-color);
+		display: grid;
+		gap: 2rem;
+	}
+
+	.process-manifesto h2 {
+		font-family: var(--font-display);
+		font-size: clamp(2rem, 5vw, 4rem);
+		line-height: 1.1;
+		letter-spacing: -0.03em;
+		margin: 0;
+	}
+
+	
+</style>

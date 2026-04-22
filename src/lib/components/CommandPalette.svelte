@@ -383,13 +383,13 @@
                 padding: 0;
                 margin: 0;
                 display: grid;
-                grid-template-columns: repeat(2, 1fr);
+                grid-template-columns: 1fr;
                 gap: var(--space-xs) var(--space-lg);
         }
 
-        @media (max-width: 480px) {
+        @media (min-width: 481px) {
                 .command-list {
-                        grid-template-columns: 1fr;
+                        grid-template-columns: repeat(2, 1fr);
                 }
         }
 

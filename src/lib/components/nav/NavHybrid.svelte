@@ -101,7 +101,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		padding: var(--space-sm) var(--space-md);
+		padding: var(--space-xs) var(--space-sm);
 		max-width: var(--container-max);
 		margin: 0 auto;
 	}
@@ -211,7 +211,7 @@
 	}
 
 	.hybrid-accordion-inner {
-		padding: var(--space-sm) var(--space-md) var(--space-lg);
+		padding: var(--space-sm) var(--space-sm) var(--space-lg);
 		max-width: var(--container-max);
 		margin: 0 auto;
 		display: flex;
@@ -271,13 +271,19 @@
 
 	.hybrid-link {
 		font-family: var(--font-sans);
-		font-size: var(--font-size-sm);
+		font-size: 12px;
 		font-weight: var(--font-weight-medium);
 		color: var(--color-text-secondary);
 		text-decoration: none;
 		padding: var(--space-2xs) var(--space-sm) var(--space-2xs) 0;
 		transition: color var(--duration-fast) var(--easing);
 		letter-spacing: var(--letter-spacing-normal);
+	}
+
+	@media (min-width: 768px) {
+		.hybrid-link {
+			font-size: var(--font-size-sm);
+		}
 	}
 
 	.hybrid-link:hover {
@@ -308,19 +314,5 @@
 
 	.hybrid-link.external:hover {
 		color: var(--color-text-secondary);
-	}
-
-	@media (max-width: 767px) {
-		.hybrid-inner {
-			padding: var(--space-xs) var(--space-sm);
-		}
-
-		.hybrid-link {
-			font-size: 12px;
-		}
-
-		.hybrid-link.external {
-			font-size: var(--font-size-2xs, 0.75rem);
-		}
 	}
 </style>
