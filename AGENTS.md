@@ -87,3 +87,10 @@ This file is the Codex-native repo contract and the single source of truth for l
 ## 7. Tech And Architecture
 - Host stack: Astro 6, Svelte 5, React 19, Convex, Sanity.
 - Styling: pure CSS + OKLCH.
+
+## 8. Hiring Mission Context (Permanent)
+- This portfolio is the primary verification proof for 30+ targeted roles across Ramp, Linear, OpenAI, Basement Studio, Jane Street, Google DeepMind, Windmill, Notion, Apple, and Mistral AI.
+- The `/hire` route is the dedicated recruiter-facing landing page. It must remain accessible, fast, and evidence-first.
+- Design philosophy: Inverse-Law (Rick Rubin essentialism + PG LANG boldness + Light Phone restraint).
+- See `HIRE.md` at repo root for the immutable hiring manifest.
+- See `openspec/changes/get-the-jobs-2026/` for the active change spec.

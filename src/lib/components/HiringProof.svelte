@@ -4,7 +4,9 @@
 
 <section class="hiring-proof" aria-label="Hiring proof">
 	<p class="hiring-proof__eyebrow">Hiring proof</p>
-	<h2 class="hiring-proof__title">A structured read for design engineering, AI product, and frontend systems roles.</h2>
+	<h2 class="hiring-proof__title">
+		<a href="/hire" class="hiring-proof__link">A structured read for design engineering, AI product, and frontend systems roles. →</a>
+	</h2>
 	<p class="hiring-proof__mission">
 		{hiringMission}
 	</p>
@@ -59,6 +61,16 @@
 		font-size: clamp(1.05rem, 0.95rem + 0.4vw, 1.35rem);
 		line-height: 1.15;
 		letter-spacing: -0.03em;
+	}
+
+	.hiring-proof__link {
+		color: inherit;
+		text-decoration: none;
+	}
+
+	.hiring-proof__link:hover {
+		text-decoration: underline;
+		text-underline-offset: 0.2em;
 	}
 
 	.hiring-proof__mission {

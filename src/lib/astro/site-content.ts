@@ -74,6 +74,7 @@ export type CvEntry = {
 };
 
 export const fallbackNavItems: NavItem[] = [
+	{ label: "hire me", route: "/hire" },
 	{ label: "media", route: "/media" },
 	{ label: "re:mix", route: "/re-mix" },
 	{ label: "terminal", route: "/terminal" },
