@@ -284,6 +284,8 @@
 		display: grid;
 		gap: var(--hp-gap-xl);
 		padding-bottom: clamp(5rem, 12vw, 10rem);
+		overflow-wrap: break-word;
+		word-break: break-word;
 	}
 
 	/* ---- HERO ---- */
@@ -316,7 +318,7 @@
 	.hire-hero__name {
 		margin: 0;
 		font-family: var(--font-display);
-		font-size: clamp(4rem, 12vw, 10rem);
+		font-size: clamp(2.75rem, 14vw, 10rem);
 		font-weight: 800;
 		line-height: 0.88;
 		letter-spacing: -0.055em;
@@ -550,7 +552,7 @@
 
 	.hire-role__title {
 		margin: 0;
-		font-size: clamp(1.05rem, 0.95rem + 0.3vw, 1.2rem);
+		font-size: clamp(1rem, 0.9rem + 0.4vw, 1.2rem);
 		font-weight: 600;
 		color: var(--color-text);
 		text-decoration: none;
@@ -558,6 +560,7 @@
 		align-items: center;
 		gap: 0.35rem;
 		transition: color 150ms ease;
+		line-height: 1.2;
 	}
 
 	.hire-role__title:hover {
@@ -583,17 +586,20 @@
 	.hire-role__keywords {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 0.35rem;
+		gap: 0.4rem;
 		margin-top: 0.15rem;
 	}
 
 	.hire-role__kw {
-		font-size: var(--font-size-3xs);
-		padding: 0.25rem 0.5rem;
+		font-size: max(0.75rem, var(--font-size-3xs));
+		padding: 0.4rem 0.55rem;
 		border: 1px solid var(--border-color);
 		color: var(--color-text-muted);
 		letter-spacing: 0.03em;
 		transition: border-color 150ms ease, color 150ms ease;
+		min-height: 32px;
+		display: inline-flex;
+		align-items: center;
 	}
 
 	.hire-role:hover .hire-role__kw {
@@ -704,14 +710,22 @@
 
 	.hire-ask__actions {
 		display: flex;
-		flex-wrap: wrap;
+		flex-direction: column;
 		gap: var(--hp-gap-sm);
 		margin-top: 0.5rem;
+	}
+
+	@media (min-width: 480px) {
+		.hire-ask__actions {
+			flex-direction: row;
+			flex-wrap: wrap;
+		}
 	}
 
 	.hire-ask__cta {
 		display: inline-flex;
 		align-items: center;
+		justify-content: center;
 		padding: 0.9rem 1.4rem;
 		border: 1px solid var(--border-color-strong);
 		background: transparent;
@@ -719,6 +733,7 @@
 		text-decoration: none;
 		font-size: var(--font-size-xs);
 		letter-spacing: 0.06em;
+		min-height: 48px;
 		transition:
 			background 160ms cubic-bezier(0.23, 1, 0.32, 1),
 			transform 120ms cubic-bezier(0.23, 1, 0.32, 1),
@@ -765,7 +780,32 @@
 		letter-spacing: 0.04em;
 	}
 
-	/* ---- RESPONSIVE ---- */
+	/* ---- MOBILE OVERRIDES (< 480px) ---- */
+	@media (max-width: 479px) {
+		.hire-page {
+			--hp-gap-xl: clamp(2.5rem, 8vw, 4rem);
+			--hp-gap-md: clamp(1rem, 3vw, 1.5rem);
+		}
+
+		.hire-hero {
+			padding-top: 1rem;
+			padding-bottom: var(--hp-gap-lg);
+		}
+
+		.hire-batch__name {
+			font-size: clamp(1.35rem, 8vw, 1.75rem);
+		}
+
+		.hire-role {
+			padding: 1rem;
+		}
+
+		.hire-ask__title {
+			font-size: clamp(1.75rem, 10vw, 2.25rem);
+		}
+	}
+
+	/* ---- TABLET+ ---- */
 	@media (min-width: 768px) {
 		.hire-matrix__row {
 			grid-template-columns: minmax(14rem, 0.35fr) 1fr;
