@@ -6,14 +6,15 @@ import { previewTargets } from "../../lib/astro/site-content";
 import {
 	getEditorialFocusTarget,
 	getRecentPosts,
-	getSanityWorkspaceConfig,
+	getSanityWorkspaceStatus,
 } from "../../lib/server/sanity";
 import { getSanityPreviewState } from "../../lib/server/sanity-preview";
 
 const previewState = getSanityPreviewState(Astro);
 const posts = await getRecentPosts(6, previewState);
-const sanityConfig = getSanityWorkspaceConfig();
+const sanityStatus = getSanityWorkspaceStatus();
 const selectedDocument = Astro.url.searchParams.get("document") ?? "";
+const tool = Astro.url.searchParams.get("tool") === "presentation" ? "presentation" : "studio";
 const requestedDocuments = Array.from(
 	new Set(previewTargets.map((target) => target.document).concat(selectedDocument ? [selectedDocument] : [])),
 );
@@ -23,26 +24,50 @@ const editorialTargets = Object.fromEntries(
 const selectedTarget = selectedDocument ? editorialTargets[selectedDocument] ?? null : null;
 const previewItems = previewTargets.map((target) => ({
 	...target,
-	studioHref: editorialTargets[target.document]?.studioHref ?? sanityConfig.studioPath,
+	studioHref: editorialTargets[target.document]?.studioHref ?? sanityStatus.studioPath,
 }));
+const workspaceHref =
+	tool === "presentation"
+		? sanityStatus.presentationPath
+		: selectedTarget?.studioHref ?? sanityStatus.studioPath;
+const workspaceLabel = tool === "presentation" ? "Presentation tool" : "Embedded Studio";
+const statusItems = [
+	{ label: "dataset", value: `${sanityStatus.projectId}/${sanityStatus.dataset}`, state: sanityStatus.configured ? "ready" : "fallback" },
+	{ label: "draft mode", value: sanityStatus.draftModeReady ? "token ready" : "token missing", state: sanityStatus.draftModeReady ? "ready" : "warning" },
+	{
+		label: "visual editing",
+		value: sanityStatus.visualEditingReady ? "enabled" : sanityStatus.visualEditingAllowed ? "awaiting token" : "disabled by env",
+		state: sanityStatus.visualEditingReady ? "ready" : "warning",
+	},
+	{ label: "workspace", value: workspaceLabel, state: "ready" },
+];
 ---
 
 <AdminLayout title="Admin | Editorial" active="content">
 	<section class="content-panel">
 		<div class="content-panel__intro">
 			<p class="content-panel__eyebrow">Sanity editorial lane</p>
-			<h2>Edit in Studio, review in Astro, keep the handoff tight.</h2>
+			<h2>Sanity Live Studio is the authored lane. Astro remains the public truth.</h2>
 			<p>
-				The Studio remains the authored surface. This lane just makes the route-level handoff explicit so the preview
-				loop stays inside the same system that actually ships.
+				Use the embedded Studio or Presentation workspace below, keep document focus inside this lane, and validate the
+				same public Astro routes that actually ship.
 			</p>
 			<div class="content-panel__actions" data-testid="admin-preview-links">
-				<a href={selectedTarget?.studioHref ?? sanityConfig.studioPath}>
-					{selectedTarget ? `Edit ${selectedTarget.label} in Studio` : "Open embedded Studio"}
+				<a href={selectedTarget?.studioHref ?? sanityStatus.studioPath}>
+					{selectedTarget ? `Open ${selectedTarget.label} in Studio` : "Open Studio route"}
 				</a>
-				<a href={sanityConfig.presentationPath}>Open Presentation Tool</a>
+				<a href={sanityStatus.presentationPath}>Open Presentation Tool</a>
 				<a href={buildPreviewHref("/", "heroContent")}>Preview homepage</a>
 			</div>
+		</div>
+
+		<div class="content-panel__status-grid">
+			{statusItems.map((item) => (
+				<article class="status-card" data-state={item.state}>
+					<p class="status-card__label">{item.label}</p>
+					<strong>{item.value}</strong>
+				</article>
+			))}
 		</div>
 
 		{selectedTarget && (
@@ -50,17 +75,39 @@ const previewItems = previewTargets.map((target) => ({
 				<p class="content-panel__eyebrow">Focused handoff</p>
 				<h3>{selectedTarget.label}</h3>
 				<p>
-					Document context is already resolved. Open the matching Studio document directly, then come back to the
-					route preview below to confirm the public shell still reads correctly.
+					Document context is resolved for this editorial lane. The embedded workspace below will follow the selected
+					document in Studio mode, and the preview deck below still renders the public route that ships.
 				</p>
 				<div class="content-panel__actions">
-					<a href={selectedTarget.studioHref}>
-						{selectedTarget.resolved ? `Open ${selectedTarget.label}` : "Open Studio with context"}
-					</a>
+					<a href={`/admin/content?tool=studio&document=${selectedTarget.document}`}>Focus in embedded Studio</a>
+					<a href={`/admin/content?tool=presentation&document=${selectedTarget.document}`}>Focus in Presentation</a>
 					<a href={selectedTarget.editorialHref}>Keep this editorial lane bookmarked</a>
 				</div>
 			</article>
 		)}
+
+		<section class="workspace-shell">
+			<div class="workspace-shell__header">
+				<div>
+					<p class="content-panel__eyebrow">Editorial workspace</p>
+					<h3>{workspaceLabel}</h3>
+					<p>
+						{tool === "presentation"
+							? "Presentation is live inside the admin lane so draft-mode and route preview can stay in one loop."
+							: "Studio is embedded directly inside the admin lane so editorial work no longer depends on tab-hopping."}
+					</p>
+				</div>
+				<div class="workspace-shell__controls">
+					<a href={`/admin/content?tool=studio${selectedDocument ? `&document=${selectedDocument}` : ""}`} aria-current={tool === "studio" ? "page" : undefined}>Studio</a>
+					<a href={`/admin/content?tool=presentation${selectedDocument ? `&document=${selectedDocument}` : ""}`} aria-current={tool === "presentation" ? "page" : undefined}>Presentation</a>
+					<a href={workspaceHref}>Open full surface</a>
+				</div>
+			</div>
+
+			<div class="workspace-shell__frame">
+				<iframe src={workspaceHref} title={workspaceLabel} loading="lazy"></iframe>
+			</div>
+		</section>
 
 		<AdminPreviewDeck
 			items={previewItems}
@@ -100,6 +147,7 @@ const previewItems = previewTargets.map((target) => ({
 
 	.content-panel__intro,
 	.content-panel__handoff,
+	.workspace-shell,
 	.content-card {
 		padding: var(--space-md);
 		border: 1px solid var(--border-color);
@@ -118,6 +166,7 @@ const previewItems = previewTargets.map((target) => ({
 
 	.content-panel__intro h2,
 	.content-panel__handoff h3,
+	.workspace-shell h3,
 	.content-card h3 {
 		margin: 0;
 		font-family: var(--font-display);
@@ -126,6 +175,7 @@ const previewItems = previewTargets.map((target) => ({
 
 	.content-panel__intro p,
 	.content-panel__handoff p,
+	.workspace-shell p,
 	.content-card p {
 		margin-bottom: 0;
 		line-height: 1.62;
@@ -151,6 +201,92 @@ const previewItems = previewTargets.map((target) => ({
 		border-bottom: 1px solid color-mix(in srgb, var(--color-text) 18%, transparent);
 	}
 
+	.content-panel__status-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+		gap: var(--space-sm);
+	}
+
+	.status-card {
+		display: grid;
+		gap: 0.25rem;
+		padding: 0.9rem 1rem;
+		border: 1px solid var(--border-color);
+		background: color-mix(in srgb, var(--color-surface) 92%, transparent);
+	}
+
+	.status-card[data-state="ready"] {
+		border-color: color-mix(in srgb, var(--color-success) 30%, var(--border-color));
+	}
+
+	.status-card[data-state="warning"] {
+		border-color: color-mix(in srgb, #c58a00 30%, var(--border-color));
+	}
+
+	.status-card__label {
+		margin: 0;
+		font-size: 0.72rem;
+		font-family: var(--font-mono);
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: var(--color-text-subtle);
+	}
+
+	.status-card strong {
+		font-family: var(--font-mono);
+		font-size: 0.82rem;
+		line-height: 1.45;
+		color: var(--color-text);
+	}
+
+	.workspace-shell,
+	.workspace-shell__header {
+		display: grid;
+		gap: var(--space-sm);
+	}
+
+	.workspace-shell__header {
+		grid-template-columns: minmax(0, 1fr) auto;
+		align-items: start;
+	}
+
+	.workspace-shell__controls {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2xs);
+		justify-content: flex-end;
+	}
+
+	.workspace-shell__controls a {
+		padding: 0.72rem 0.9rem;
+		border: 1px solid var(--border-color);
+		background: color-mix(in srgb, var(--color-surface) 92%, transparent);
+		font-family: var(--font-mono);
+		font-size: 0.74rem;
+		color: var(--color-text);
+		text-decoration: none;
+	}
+
+	.workspace-shell__controls a[aria-current="page"] {
+		border-color: color-mix(in srgb, var(--color-accent) 42%, var(--border-color));
+		box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-accent) 14%, transparent);
+	}
+
+	.workspace-shell__frame {
+		min-height: min(72rem, 78vh);
+		border: 1px solid var(--border-color);
+		background: white;
+		box-shadow: var(--shadow-sm);
+		overflow: hidden;
+	}
+
+	.workspace-shell__frame iframe {
+		width: 100%;
+		height: min(72rem, 78vh);
+		border: 0;
+		background: white;
+	}
+
 	.content-panel__list {
 		display: grid;
 		grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -163,6 +299,14 @@ const previewItems = previewTargets.map((target) => ({
 	}
 
 	@media (max-width: 780px) {
+		.workspace-shell__header {
+			grid-template-columns: 1fr;
+		}
+
+		.workspace-shell__controls {
+			justify-content: flex-start;
+		}
+
 		.content-panel__list {
 			grid-template-columns: 1fr;
 		}

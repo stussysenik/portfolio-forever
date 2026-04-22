@@ -2,13 +2,20 @@
 
 ## Scope
 
-This is a runtime-stability change, not a redesign.
+This is a runtime-stability change plus a context audit for the broader requests.
 
 We are fixing the smallest set of causes that explain the observed failures:
 
 - `sandbox="allow-scripts"` on same-host preview frames creates `origin: null`
 - Astro dev-toolbar injection adds a broken dev-only dependency request
 - Admin constants exports drifted from the admin UI contract
+
+We are also recording the broader state of the repo so later work does not have to rediscover it:
+
+- mobile responsiveness is partially implemented but inconsistent
+- admin-system work spans multiple spec changes with some deferred verification
+- Storybook exists but is not aligned with every spec expectation
+- `nanostores` and `ts-pattern` are present; `xstate` and `remeda` are not currently part of the installed stack
 
 ## Decisions
 
@@ -50,3 +57,6 @@ Decision:
 - Storybook exists, but the broader design-system/testing spec is only partially completed.
 - `nanostores` and `ts-pattern` are present; `xstate` and `remeda` are not currently part of the installed runtime.
 - `/admin` has multiple existing redesign and workflow specs, but this change only restores runtime health so those can be executed sanely.
+- mobile responsiveness needs a dedicated polish/verification pass against intrinsic layout rules, especially around fixed 13px type pockets, container-query usage, and narrower admin/public layouts.
+- the public footer/status rail in `src/layouts/BaseLayout.astro` needs a dedicated composition pass; it is functional but visually under-resolved for a portfolio-quality shell.
+- future visual/responsive/admin shell work should use the `impeccable` skill as the quality bar for implementation.

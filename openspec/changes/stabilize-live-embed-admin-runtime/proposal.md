@@ -9,6 +9,14 @@ The current local runtime has three coupled failures:
 3. `/admin` is not in a reliable baseline state because `src/lib/admin/constants.ts` no longer exports symbols required by the current admin surface, which breaks Vite dependency scanning before the admin can be standardized further.
 
 These issues block the portfolio's core proof surface: live previews and route-true admin inspection.
+They also sit inside a broader request cluster from the user that this change must explicitly capture:
+
+- mobile responsiveness needs to be intrinsic and production-grade, not breakpoint-patched
+- `/admin` needs to behave like one coherent system
+- the public shell footer/status rail and lobby-control strip need a more intentional visual system
+- Storybook, design tokens, and CSS-variable workflows need a real status audit
+- the repo should be checked against already-finished `openspec` work instead of assuming the codebase matches the task sheets
+- future UI passes should meet the `impeccable` quality bar rather than generic cleanup
 
 ## What Changes
 
@@ -17,6 +25,7 @@ These issues block the portfolio's core proof surface: live previews and route-t
 - Disable Astro dev-toolbar injection for this project so embed routes stop requesting the unstable toolbar entrypoint.
 - Allow Vite dev assets to load from embed contexts when the iframe is intentionally sandboxed.
 - Record the remaining broader backlog from the current repo context rather than pretending this pass completes every open spec.
+- Add a context audit that explicitly covers mobile responsiveness, admin-system shape, Storybook/token-system status, and state-management/tooling gaps.
 
 ## Success Criteria
 
@@ -25,6 +34,8 @@ These issues block the portfolio's core proof surface: live previews and route-t
 - [ ] `bun run dev` no longer fails dependency scan because of missing admin constant exports.
 - [ ] `/admin` regains a stable baseline for further standardization work.
 - [ ] `openspec` reflects what was fixed now versus what remains in the wider admin/storybook/state-management backlog.
+- [ ] `openspec` explicitly records the mobile-responsiveness findings and the repo-shape audit requested by the user.
+- [ ] `openspec` explicitly records the footer/status-rail polish target highlighted by the user.
 
 ## Non-Goals
 

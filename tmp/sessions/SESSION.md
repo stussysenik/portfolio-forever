@@ -161,3 +161,39 @@ Integrate `opensrc` into the project mandate and establish a persistent tracing 
 - **Status**: success
 
 ---
+### [5:49:02 AM] 🔘 --phase
+- **Detail**: strategy --title OpenSpec master roadmap --detail Reconciled openspec, tmp artifacts, and product vision into complete-portfolio-operating-system roadmap for public shell, editorial CMS, runtime CMS, and tooling truth.
+- **Phase**: STRATEGY
+- **Status**: unknown
+
+---
+### [5:50:26 AM] 🔘 --phase
+- **Detail**: strategy --title Homepage section contract --detail Added explicit master-spec rules that every non-hero homepage section must be an independently legible titled module aligned with admin composition and mobile one-swipe scanning.
+- **Phase**: STRATEGY
+- **Status**: unknown
+
+---
+### [5:52:47 AM] 🔘 --phase
+- **Detail**: green --title Homepage module framing --detail Implemented a public section frame in OnePageView so every non-hero homepage block gets a visible title and route label, improving mobile scanability without changing Convex-driven section composition.
+- **Phase**: STRATEGY
+- **Status**: unknown
+
+---
+### [5:56:03 AM] 🔘 --phase
+- **Detail**: validation --title Homepage label alignment --detail Aligned homepage module titles and routes with the same Convex pages catalog used by admin, while preserving section-only modules like colored_works as local homepage constructs.
+- **Phase**: STRATEGY
+- **Status**: unknown
+
+---
+### [6:18:17 AM] 🔘 --phase
+- **Detail**: green Tightened public shell: sticky module headers, compact footer tray, stronger sidebar summary, and denser hero proof stage with limited live surfaces.
+- **Phase**: STRATEGY
+- **Status**: unknown
+
+---
+### [6:18:22 AM] 🔘 --phase
+- **Detail**: validation Validated visual pass with bun run check, bun run build, full-page screenshot tmp/portfolio-home-current.png, and viewport screenshot tmp/portfolio-home-viewport.png.
+- **Phase**: STRATEGY
+- **Status**: unknown
+
+---

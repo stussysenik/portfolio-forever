@@ -20,6 +20,14 @@
 - [x] `bun run dev` boots without the previous dependency scan failure
 - [x] Local embed requests no longer reproduce the reported CORS/dev-toolbar errors
 
+## Phase 4: Context Audit
+
+- [x] Audit mobile-responsiveness shape and record the current gaps explicitly
+- [x] Audit Storybook/design-token workflow shape and record what exists vs what specs still expect
+- [x] Audit installed state-management/tooling shape (`nanostores`, `ts-pattern`, `xstate`, `remeda`)
+- [x] Audit finished/deferred `openspec` work relevant to admin, responsive behavior, and public shell parity
+- [x] Audit the public footer/status rail highlighted by the user and record it as an explicit follow-up design target
+
 ## Context Backlog Logged
 
 - [x] Storybook/design-system completion remains a separate follow-up

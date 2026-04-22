@@ -309,5 +309,77 @@
     "confidence": "1.0",
     "phase": "green",
     "tool": "mts-session-logger"
+  },
+  {
+    "timestamp": "2026-04-22T03:49:02.723Z",
+    "intent": "--phase",
+    "detail": "strategy --title OpenSpec master roadmap --detail Reconciled openspec, tmp artifacts, and product vision into complete-portfolio-operating-system roadmap for public shell, editorial CMS, runtime CMS, and tooling truth.",
+    "rationale": "",
+    "constraints": "",
+    "impact": "",
+    "status": "unknown",
+    "confidence": "",
+    "phase": "strategy",
+    "tool": "mts-session-logger"
+  },
+  {
+    "timestamp": "2026-04-22T03:50:26.151Z",
+    "intent": "--phase",
+    "detail": "strategy --title Homepage section contract --detail Added explicit master-spec rules that every non-hero homepage section must be an independently legible titled module aligned with admin composition and mobile one-swipe scanning.",
+    "rationale": "",
+    "constraints": "",
+    "impact": "",
+    "status": "unknown",
+    "confidence": "",
+    "phase": "strategy",
+    "tool": "mts-session-logger"
+  },
+  {
+    "timestamp": "2026-04-22T03:52:47.172Z",
+    "intent": "--phase",
+    "detail": "green --title Homepage module framing --detail Implemented a public section frame in OnePageView so every non-hero homepage block gets a visible title and route label, improving mobile scanability without changing Convex-driven section composition.",
+    "rationale": "",
+    "constraints": "",
+    "impact": "",
+    "status": "unknown",
+    "confidence": "",
+    "phase": "strategy",
+    "tool": "mts-session-logger"
+  },
+  {
+    "timestamp": "2026-04-22T03:56:03.069Z",
+    "intent": "--phase",
+    "detail": "validation --title Homepage label alignment --detail Aligned homepage module titles and routes with the same Convex pages catalog used by admin, while preserving section-only modules like colored_works as local homepage constructs.",
+    "rationale": "",
+    "constraints": "",
+    "impact": "",
+    "status": "unknown",
+    "confidence": "",
+    "phase": "strategy",
+    "tool": "mts-session-logger"
+  },
+  {
+    "timestamp": "2026-04-22T04:18:17.868Z",
+    "intent": "--phase",
+    "detail": "green Tightened public shell: sticky module headers, compact footer tray, stronger sidebar summary, and denser hero proof stage with limited live surfaces.",
+    "rationale": "",
+    "constraints": "",
+    "impact": "",
+    "status": "unknown",
+    "confidence": "",
+    "phase": "strategy",
+    "tool": "mts-session-logger"
+  },
+  {
+    "timestamp": "2026-04-22T04:18:22.813Z",
+    "intent": "--phase",
+    "detail": "validation Validated visual pass with bun run check, bun run build, full-page screenshot tmp/portfolio-home-current.png, and viewport screenshot tmp/portfolio-home-viewport.png.",
+    "rationale": "",
+    "constraints": "",
+    "impact": "",
+    "status": "unknown",
+    "confidence": "",
+    "phase": "strategy",
+    "tool": "mts-session-logger"
   }
 ]

@@ -330,6 +330,21 @@ export function getSanityWorkspaceConfig() {
 	};
 }
 
+export function getSanityWorkspaceStatus() {
+	const workspace = getSanityWorkspaceConfig();
+	const draftModeReady = Boolean(import.meta.env.SANITY_API_READ_TOKEN);
+	const visualEditingAllowed = import.meta.env.PUBLIC_SANITY_VISUAL_EDITING_ENABLED !== "false";
+
+	return {
+		...workspace,
+		draftModeReady,
+		visualEditingAllowed,
+		visualEditingReady: draftModeReady && visualEditingAllowed,
+		studioRouteReady: true,
+		presentationRouteReady: true,
+	};
+}
+
 export async function getEditorialFocusTarget(document: string): Promise<EditorialFocusTarget> {
 	const workspace = getSanityWorkspaceConfig();
 	const label = getPreviewDocumentLabel(document);

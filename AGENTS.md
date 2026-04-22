@@ -18,6 +18,17 @@ This file is the Codex-native repo contract and the single source of truth for l
   - API/contract work -> `api-and-interface-design`
   - release/CI -> `ci-cd-and-automation`
 
+## 0.5. Codex Behavior Alignment
+- Treat this file as the behavior shim that makes Codex act closer to the stronger Gemini sessions.
+- For broad or multi-part requests, do not collapse the work into the first bug you can fix. First enumerate the user's asks, then map them into one active `openspec` change or a clearly linked set of changes.
+- Name the skill or skills being used at the start of the task when the work is non-trivial.
+- If the user mentions a quality bar or named skill such as `impeccable`, use it for the relevant implementation or audit pass instead of treating it as optional flavor text.
+- Before editing app code for a principal-mode task, audit the already-finished related `openspec` changes and record any deferred, stale, or unverified items in the active change.
+- After fixing the immediate blocker, continue long enough to update the active `openspec` with: what was fixed, what was verified, what remains deferred, and why.
+- Broad user asks are not complete until every requested thread is either:
+  - implemented and validated, or
+  - explicitly captured in `openspec` with a concrete follow-up path.
+
 ## 1. Default Design Reference
 - For UI, frontend, design-system, motion, spacing, typography, color, or admin-shell work, read `DESIGN.md` before changing code.
 - In this repo, `DESIGN.md` is the repo-root gateway to the canonical design system document at `DOCS/design/DESIGN.md`.
@@ -35,6 +46,7 @@ This file is the Codex-native repo contract and the single source of truth for l
 - Builder mode: short, frequent Research -> Red -> Green loops for incremental work, UI polish, and feature exploration.
 - Principal mode: deep Research -> `openspec/` definition -> atomic execution for larger refactors, new subsystems, and multi-file architecture changes.
 - For principal-mode work, finalize the relevant `openspec/` change before editing `src/`.
+- If the task mixes runtime bugs, UX polish, responsiveness, admin-system work, and design-system verification, default to principal mode even if the first fix is small.
 
 ## 4. Execution Protocol
 
@@ -43,19 +55,24 @@ This file is the Codex-native repo contract and the single source of truth for l
 - If search fails, broaden the query or pivot sources instead of assuming the information does not exist.
 - Failure to find information is a research failure, not a tool limitation.
 - For principal-mode changes, create or update `openspec/changes/<feature>/` as part of the research pass.
+- Research must include adjacent completed specs when the user asks for verification, consistency, standardization, or "make sure everything mentioned is covered."
+- For design or responsiveness requests, identify the exact public/admin surfaces involved and write them down in the active spec. Do not hide them inside generic "polish" language.
 
 ### Red
 - Prove the problem first when practical.
 - Empirically demonstrate the bug, failing path, or need for the feature before declaring the fix complete.
+- For multi-part work, keep a running checklist in the active spec so each red/green pair has a visible target.
 
 ### Green
 - Apply the smallest surgical change that satisfies the proven requirement.
 - Preserve existing style and local architecture. Do not widen scope casually.
+- If the user points to a specific visual surface, record that surface explicitly in spec language before or while editing it.
 
 ### Validation
 - Validate with the real build, checks, repro, or tests before handoff.
 - Before any handoff, the project must build cleanly with zero errors using the relevant project command (`npm run build`, `bun run check`, or equivalent).
 - A claim about behavior is not done until it has been checked directly.
+- When the task is broader than one code patch, validation also means checking whether the current codebase still matches the relevant finished `openspec` changes, and documenting any mismatch.
 
 ## 5. Context Engineering And Tracing
 - Keep logging and session traces aligned with the existing `tmp/sessions` workflow when the task uses it.
