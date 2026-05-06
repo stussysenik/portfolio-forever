@@ -8,6 +8,7 @@
 	export let currentPath: string = "/";
 
 	let accordionOpen = false;
+	// Unblocked: always show navigation children
 	let navGroupOpen = true;
 	let connectionsGroupOpen = true;
 
@@ -41,7 +42,7 @@
 				<button class="hybrid-group-header" on:click={() => navGroupOpen = !navGroupOpen}>
 					<span class="arrow" style:transform={navGroupOpen ? 'rotate(90deg)' : 'none'}><IconCaretRight /></span> navigation
 				</button>
-				{#if navGroupOpen}
+				{#if true}
 					<div class="hybrid-group-links">
 						{#each navItems as item}
 							<a
@@ -63,7 +64,7 @@
 					<button class="hybrid-group-header" on:click={() => connectionsGroupOpen = !connectionsGroupOpen}>
 						<span class="arrow" style:transform={connectionsGroupOpen ? 'rotate(90deg)' : 'none'}><IconCaretRight /></span> connections
 					</button>
-					{#if connectionsGroupOpen}
+					{#if true}
 						<div class="hybrid-group-links">
 							{#each socialLinks as link}
 								<a href={link.url} target="_blank" rel="noopener" class="hybrid-link external">
@@ -323,4 +324,4 @@
 			font-size: var(--font-size-2xs, 0.75rem);
 		}
 	}
-</style>
+</style></style>

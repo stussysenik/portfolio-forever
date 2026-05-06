@@ -89,11 +89,23 @@
 </script>
 
 {#if loading}
-  <!-- Loading state -->
+  <!-- Loading state - render fallback if available -->
+  {#if fallback}
+    <section class="section-wrapper dynamic-page-section fallback-section">
+      <svelte:component this={fallback} {...getSectionProps(fallbackId || pageId)} />
+    </section>
+  {/if}
 {:else if activeSections.length === 0 && fallback}
   <!-- Render Fallback if no sections configured yet -->
   <section class="section-wrapper dynamic-page-section fallback-section">
     <svelte:component this={fallback} {...getSectionProps(fallbackId || pageId)} />
+  </section>
+{:else if activeSections.length === 0 && !fallback}
+  <!-- No sections and no fallback - show a message -->
+  <section class="section-wrapper dynamic-page-section">
+    <div class="empty-page-message">
+      <p>Page content not yet configured.</p>
+    </div>
   </section>
 {:else}
   <!-- Render dynamic sections from admin configuration -->
@@ -132,5 +144,12 @@
   
   .fallback-section {
     padding-top: 0; /* Let the fallback component handle its own top padding if needed */
+  }
+
+  .empty-page-message {
+    padding: var(--space-2xl);
+    text-align: center;
+    color: var(--color-text-muted);
+    font-family: var(--font-mono);
   }
 </style>

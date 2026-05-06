@@ -21,7 +21,7 @@
 				<button class="sidebar-section-header" on:click={() => navOpen = !navOpen}>
 					<span class="arrow" style:transform={navOpen ? 'rotate(90deg)' : 'none'}><IconCaretRight /></span> navigation
 				</button>
-				{#if navOpen}
+				{#if true}
 					<div class="sidebar-section-links">
 						{#each navItems as item}
 							<a
@@ -43,7 +43,7 @@
 				<button class="sidebar-section-header" on:click={() => connectionsOpen = !connectionsOpen}>
 					<span class="arrow" style:transform={connectionsOpen ? 'rotate(90deg)' : 'none'}><IconCaretRight /></span> connections
 				</button>
-				{#if connectionsOpen}
+				{#if true}
 					<div class="sidebar-section-links">
 						{#each socialLinks as link}
 							<a href={link.url} target="_blank" rel="noopener" class="sidebar-link external">

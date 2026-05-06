@@ -62,6 +62,13 @@
 
 <!-- Hero - Impeccable 12-Column Grid Layout -->
 <section {id} class="hero-section">
+	<!-- Donut positioned behind all content as first element -->
+	{#if showDonut}
+		<div class="hero-donut-backdrop">
+			<AsciiDonut />
+		</div>
+	{/if}
+	
 	<header class="grid-container hero-grid">
 		<!-- Identity Column -->
 		<div class="col-4 md:col-6 lg:col-{effectiveLayout.identity} hero-content">
@@ -89,7 +96,6 @@
 		<!-- Visual/Donut Column -->
 		<div class="col-4 md:col-6 lg:col-{effectiveLayout.visual} hero-visual-wrapper">
 			<div class="hero-visual">
-				{#if showDonut}<AsciiDonut />{/if}
 				{#if showWave}<AsciiWave />{/if}
 			</div>
 		</div>
@@ -215,6 +221,47 @@
 
 	.status-available {
 		color: var(--color-success);
+	}
+
+	.hero-donut-backdrop {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		z-index: 0;
+		pointer-events: none;
+		overflow: hidden;
+	}
+
+	.hero-donut-backdrop .donut-wrapper {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		pointer-events: none;
+	}
+
+	.hero-donut-backdrop .donut-container {
+		background: transparent;
+		pointer-events: none;
+	}
+
+	.hero-donut-backdrop .donut-ascii {
+		color: var(--color-accent);
+		opacity: 0.15;
+		font-size: clamp(8px, 1.5vw, 12px);
+		pointer-events: none;
+		user-select: none;
+	}
+
+	.hero-section {
+		position: relative;
+	}
+
+	.hero-grid {
+		position: relative;
+		z-index: 1;
 	}
 
 	.hero-visual-wrapper {

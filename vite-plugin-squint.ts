@@ -1,7 +1,10 @@
 import { Plugin } from 'vite';
-import { execSync } from 'child_process';
+import { exec, execSync } from 'child_process';
 import { watch } from 'fs';
 import { resolve, relative } from 'path';
+import { promisify } from 'util';
+
+const execAsync = promisify(exec);
 
 /**
  * Vite plugin: compiles Clojure (Squint) sources to ESM JavaScript.
@@ -19,11 +22,11 @@ export default function squintPlugin(options: {
   const outDir = options.outDir || 'clj/out';
   const shouldWatch = options.watch ?? (process.env.NODE_ENV === 'development');
 
-  function compileFile(filePath: string) {
+  async function compileFile(filePath: string): Promise<boolean> {
     try {
-      execSync(
+      await execAsync(
         `npx squint compile "${filePath}" --output-dir "${outDir}" --paths "${srcDir}"`,
-        { stdio: 'pipe', cwd: process.cwd() }
+        { cwd: process.cwd() }
       );
       return true;
     } catch (err: any) {
@@ -32,17 +35,23 @@ export default function squintPlugin(options: {
     }
   }
 
-  function compileAll() {
+  async function compileAll(): Promise<boolean> {
     try {
       const files = execSync(`find ${srcDir} -name '*.cljs'`, { encoding: 'utf-8' })
         .trim()
         .split('\n')
         .filter(Boolean);
-      let ok = true;
-      for (const f of files) {
-        if (!compileFile(f)) ok = false;
+      
+      if (files.length === 0) {
+        console.log('[squint] No .cljs files found');
+        return true;
       }
-      return ok;
+      
+      console.log(`[squint] Compiling ${files.length} Clojure files in parallel...`);
+      const results = await Promise.all(
+        files.map(file => compileFile(file))
+      );
+      return results.every(r => r);
     } catch {
       return false;
     }
@@ -51,12 +60,11 @@ export default function squintPlugin(options: {
   return {
     name: 'vite-plugin-squint',
 
-    buildStart() {
-      if (!compileAll()) {
-        console.warn('[squint] Initial compilation had errors — some modules may be stale');
-      } else {
-        console.log('[squint] Clojure sources compiled to ESM');
-      }
+    async buildStart() {
+      const start = Date.now();
+      const success = await compileAll();
+      const elapsed = Date.now() - start;
+      console.log(`[squint] ${success ? 'All' : 'Some'} Clojure sources compiled in ${elapsed}ms`);
     },
 
     configureServer(server) {
@@ -70,10 +78,10 @@ export default function squintPlugin(options: {
         if (typeof filename !== 'string' || !filename.endsWith('.cljs')) return;
 
         if (debounceTimer) clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(() => {
+        debounceTimer = setTimeout(async () => {
           console.log(`[squint] Recompiling — ${filename} changed`);
           const absPath = resolve(process.cwd(), srcDir, filename);
-          if (compileFile(absPath)) {
+          if (await compileFile(absPath)) {
             // Compute the output path: namespace dots become slashes, .cljs → .mjs
             const relPath = relative(resolve(process.cwd(), srcDir), absPath);
             const outPath = resolve(

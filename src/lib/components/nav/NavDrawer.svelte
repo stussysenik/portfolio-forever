@@ -46,7 +46,7 @@
 			<button class="drawer-group-header" on:click={() => navGroupOpen = !navGroupOpen}>
 				<span class="arrow" style:transform={navGroupOpen ? 'rotate(90deg)' : 'none'}><IconCaretRight /></span> navigation
 			</button>
-			{#if navGroupOpen}
+			{#if true}
 				<div class="drawer-group-links">
 					{#each navItems as item}
 						<a
@@ -68,7 +68,7 @@
 				<button class="drawer-group-header" on:click={() => connectionsGroupOpen = !connectionsGroupOpen}>
 					<span class="arrow" style:transform={connectionsGroupOpen ? 'rotate(90deg)' : 'none'}><IconCaretRight /></span> connections
 				</button>
-				{#if connectionsGroupOpen}
+				{#if true}
 					<div class="drawer-group-links">
 						{#each socialLinks as link}
 							<a href={link.url} target="_blank" rel="noopener" class="drawer-link external" on:click={close}>
@@ -346,6 +346,12 @@
 		.drawer-trigger,
 		.drawer-link,
 		.drawer-group-header {
+			transition: none;
+		}
+	}
+</style>
+/style>
+er-group-header {
 			transition: none;
 		}
 	}
