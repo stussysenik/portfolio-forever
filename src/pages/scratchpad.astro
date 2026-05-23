@@ -1,0 +1,45 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { getPublicRuntimeState } from "../lib/server/convex";
+
+const runtime = await getPublicRuntimeState();
+---
+
+<BaseLayout
+	title="Scratchpad | Stüssy Senik"
+	description="Draft area and loose thoughts."
+	activePath="/scratchpad"
+	runtime={runtime}
+>
+	<section class="scratchpad-recovery">
+		<header class="scratchpad-header">
+			<h1>SCRATCHPAD</h1>
+			<p>Draft area and loose thoughts.</p>
+		</header>
+		<div class="scratchpad-content">
+			<p>No drafts currently available.</p>
+		</div>
+	</section>
+</BaseLayout>
+
+<style>
+	.scratchpad-recovery {
+		display: grid;
+		gap: 2rem;
+		max-width: 60rem;
+	}
+	.scratchpad-header h1 {
+		font-family: var(--font-display);
+		font-size: 3rem;
+		font-weight: 800;
+		text-transform: uppercase;
+		margin-bottom: 0.5rem;
+	}
+	.scratchpad-header p {
+		color: var(--color-text-secondary);
+	}
+	.scratchpad-content {
+		font-family: var(--font-mono);
+		color: var(--color-text-subtle);
+	}
+</style>

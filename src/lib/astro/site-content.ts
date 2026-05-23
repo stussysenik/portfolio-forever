@@ -76,7 +76,7 @@ export type CvEntry = {
 export const fallbackNavItems: NavItem[] = [
 	{ label: "hire me", route: "/hire" },
 	{ label: "media", route: "/media" },
-	{ label: "re:mix", route: "/re-mix" },
+	{ label: "re:mix", route: "/academia" },
 	{ label: "terminal", route: "/terminal" },
 	{ label: "process", route: "/process" },
 	{ label: "works", route: "/works" },
@@ -85,6 +85,11 @@ export const fallbackNavItems: NavItem[] = [
 	{ label: "blog", route: "/blog" },
 	{ label: "gifts", route: "/gifts" },
 	{ label: "cv", route: "/cv" },
+	{ label: "gallery", route: "/gallery" },
+	{ label: "labs", route: "/labs" },
+	{ label: "os", route: "/os" },
+	{ label: "minor", route: "/minor" },
+	{ label: "scratchpad", route: "/scratchpad" },
 ];
 
 export const fallbackConnections = [
